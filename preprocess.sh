@@ -40,11 +40,11 @@ case $COMMAND in
         echo "mecab, tokenizing..."
         python preprocess/supervised_nlputils.py mecab data/corpus.txt data/tokenized_corpus_mecab.txt
         ;;
-    komoran_tokenize)
+    hannanum_tokenize)
         echo "hannanum, tokenizing..."
         python preprocess/supervised_nlputils.py hannanum data/corpus.txt data/tokenized_corpus_hannanum.txt
         ;;
-    komoran_tokenize)
+    khai_tokenize)
         echo "khai, tokenizing..."
         python preprocess/supervised_nlputils.py khai data/corpus.txt data/tokenized_corpus_khai.txt
         ;;
