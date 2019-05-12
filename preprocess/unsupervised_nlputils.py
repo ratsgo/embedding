@@ -34,7 +34,7 @@ def process_nvc(corpus_fname, output_fname):
             f2.writelines(sentence + "\n")
 
 
-def compute_word_score(corpus_fname, model_fname):
+def compute_soy_word_score(corpus_fname, model_fname):
     sentences = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
     word_extractor = WordExtractor(min_frequency=100,
                                    min_cohesion_forward=0.05,
@@ -44,7 +44,7 @@ def compute_word_score(corpus_fname, model_fname):
     word_extractor.save(model_fname)
 
 
-def tokenize(corpus_fname, model_fname, output_fname):
+def soy_tokenize(corpus_fname, model_fname, output_fname):
     word_extractor = WordExtractor(min_frequency=100,
                                    min_cohesion_forward=0.05,
                                    min_right_branching_entropy=0.0
@@ -86,15 +86,15 @@ if __name__ == '__main__':
         in_f = sys.argv[2]
         out_f = sys.argv[3]
         process_nvc(in_f, out_f)
-    elif preprocess_mode == "compute_word_score":
+    elif preprocess_mode == "compute_soy_word_score":
         in_f = sys.argv[2]
         model_f = sys.argv[3]
-        compute_word_score(in_f, model_f)
-    elif preprocess_mode == "tokenize":
+        compute_soy_word_score(in_f, model_f)
+    elif preprocess_mode == "soy_tokenize":
         in_f = sys.argv[2]
         model_f = sys.argv[3]
         out_f = sys.argv[4]
-        tokenize(in_f, model_f, out_f)
+        soy_tokenize(in_f, model_f, out_f)
     elif preprocess_mode == "train_noun":
         in_f = sys.argv[2]
         model_f = sys.argv[3]
