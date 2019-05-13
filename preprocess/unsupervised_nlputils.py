@@ -1,4 +1,4 @@
-import sys, pickle
+import sys, pickle, math
 from soynlp.word import WordExtractor
 from soynlp.tokenizer import LTokenizer
 from soynlp.normalizer import *
@@ -51,13 +51,18 @@ def soy_tokenize(corpus_fname, model_fname, output_fname):
                                    )
     word_extractor.load(model_fname)
     scores = word_extractor.word_scores()
+    # https://github.com/lovit/soynlp/blob/master/tutorials/wordextractor_lecture.ipynb
+    # (1) 주어진 글자가 유기적으로 연결되어 함께 자주 나타나고,
+    # (2) 그 단어의 우측에 다양한 조사, 어미, 혹은 다른 단어가 등장하여 단어의 우측의 branching entropy가 높다
+    scores = {key:(scores[key].cohesion_forward * math.exp(scores[key].right_branching_entropy)) for key in scores.keys()}
     tokenizer = LTokenizer(scores=scores)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
         for line in f1:
             sentence = line.replace('\n', '').strip()
             normalized_sent = emoticon_normalize(sentence, num_repeats=3)
-            tokenized_sent = tokenizer.tokenize(normalized_sent)
+            tokens = tokenizer.tokenize(normalized_sent)
+            tokenized_sent = ' '.join(tokens)
             f2.writelines(tokenized_sent + '\n')
 
 
