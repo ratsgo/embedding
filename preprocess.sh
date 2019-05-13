@@ -49,8 +49,10 @@ case $COMMAND in
         ;;
     sentencepiece)
         echo "processing sentencepiece..."
-        spm_train --input=data/corpus.txt --model_prefix=sentpiece --vocab_size=10000
+        spm_train --input=data/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=10000
         mv sentpiece.model data
         mv sentpiece.vocab data
+        python preprocess/unsupervised_nlputils.py process_sp_vocab data/sentpiece.vocab data/processd_sentpiece.vocab
+        python preprocess/unsupervised_nlputils.py sentencepiece_tokenize data/processd_sentpiece.vocab data/corrected_ratings_corpus.txt data/tokenized_corpus_sentpiece.txt
         ;;
 esac
