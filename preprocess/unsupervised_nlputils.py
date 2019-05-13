@@ -1,9 +1,8 @@
-import sys, pickle, math
+import sys, math
 from soynlp.word import WordExtractor
 from soynlp.tokenizer import LTokenizer
 from soynlp.normalizer import *
 from soyspacing.countbase import CountSpace
-from soynlp.noun import LRNounExtractor_v2
 
 
 def train_space_model(corpus_fname, model_fname):
@@ -66,16 +65,6 @@ def soy_tokenize(corpus_fname, model_fname, output_fname):
             f2.writelines(tokenized_sent + '\n')
 
 
-def train_noun(corpus_fname, model_fname):
-    sentences = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
-    noun_extractor = LRNounExtractor_v2(verbose=True)
-    nouns = noun_extractor.train_extract(sentences)  # {str:namedtuple} 형식
-    noun_extractor.predict("우리나라")
-    with open(model_fname, 'wb') as f:
-        pickle.dump(nouns, f)
-
-
-
 if __name__ == '__main__':
     preprocess_mode = sys.argv[1]
     if preprocess_mode == "train_space":
@@ -100,7 +89,3 @@ if __name__ == '__main__':
         model_f = sys.argv[3]
         out_f = sys.argv[4]
         soy_tokenize(in_f, model_f, out_f)
-    elif preprocess_mode == "train_noun":
-        in_f = sys.argv[2]
-        model_f = sys.argv[3]
-        train_noun(in_f, model_f)
