@@ -47,4 +47,10 @@ case $COMMAND in
         echo "khai, tokenizing..."
         python preprocess/supervised_nlputils.py khai data/corpus.txt data/tokenized_corpus_khai.txt
         ;;
+    sentencepiece)
+        echo "processing sentencepiece..."
+        spm_train --input=data/corpus.txt --model_prefix=sentpiece --vocab_size=10000
+        mv sentpiece.model data
+        mv sentpiece.vocab data
+        ;;
 esac
