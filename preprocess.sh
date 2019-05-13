@@ -16,17 +16,16 @@ case $COMMAND in
         python preprocess/wikidump.py data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
         ;;
     space_correct)
-        echo "processing corpus..."
+        echo "processing naver movie corpus..."
         python preprocess/unsupervised_nlputils.py process_nvc data/ratings.txt data/processed_ratings.txt
-        cat data/processed_ratings.txt data/wiki_ko_raw.txt > data/corpus.txt
         echo "apply space correct..."
-        python preprocess/unsupervised_nlputils.py train_space data/corpus.txt data/space.model
-        python preprocess/unsupervised_nlputils.py apply_space_correct data/corpus.txt data/space.model data/corrected_corpus.txt
+        python preprocess/unsupervised_nlputils.py train_space data/processed_ratings.txt data/space.model
+        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings.txt data/space.model data/corrected_ratings_corpus.txt
         ;;
     soy_tokenize)
         echo "soynlp, LTokenizing..."
-        python preprocess/unsupervised_nlputils.py compute_soy_word_score data/corpus.txt data/soyword.model
-        python preprocess/unsupervised_nlputils.py soy_tokenize data/corpus.txt data/soyword.model data/tokenized_corpus_soynlp.txt
+        python preprocess/unsupervised_nlputils.py compute_soy_word_score data/corrected_ratings_corpus.txt data/soyword.model
+        python preprocess/unsupervised_nlputils.py soy_tokenize data/corrected_ratings_corpus.txt data/soyword.model data/tokenized_corpus_soynlp.txt
         ;;
     komoran_tokenize)
         echo "komoran, tokenizing..."
