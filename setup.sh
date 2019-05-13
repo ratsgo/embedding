@@ -42,6 +42,9 @@ sudo make install
 # sudo ldconfig -v # except macOS
 sudo update_dyld_shared_cache # macOS
 
+# pytorch bert (for BERT tokenizer)
+pip install pytorch_pretrained_bert
+
 # glove
 cd ~/works
 git clone http://github.com/stanfordnlp/glove
@@ -51,3 +54,10 @@ cd glove && make
 cd ~/works
 git clone https://github.com/facebookresearch/fastText.git
 cd fastText && make
+
+# swivel
+# brew install protobuf
+cd ~/works
+git clone https://github.com/tensorflow/models.git
+cd models/research/swivel
+make -f fastprep.mk
