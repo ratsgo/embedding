@@ -29,13 +29,11 @@ EMAIL_PATTERN = re.compile("(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)",
 URL_PATTERN = re.compile("((ftp|http|https):\/\/)?(www.)?(?!.*(ftp|http|https|www.))[a-zA-Z0-9_-]+(\.[a-zA-Z]+)+((\/)[\w#]+)*(\/\w+\?[a-zA-Z0-9_]+=\w+(&[a-zA-Z0-9_]+=\w+)*)?$", re.UNICODE)
 WIKI_REMOVE_TOKEN_CHARS = re.compile("(\\*$|:$|^파일:.+|^;)", re.UNICODE)
 MULTIPLE_SPACES = re.compile(' +', re.UNICODE)
-NUMBER_PATTERN = re.compile("[0-9]+", re.UNICODE)
 
 def tokenize(content, token_min_len=2, token_max_len=100, lower=True):
     content = re.sub(EMAIL_PATTERN, ' ', content)  # remove email pattern
     content = re.sub(URL_PATTERN, ' ', content) # remove url pattern
     content = re.sub(WIKI_REMOVE_CHARS, ' ', content)  # remove unnecessary chars
-    content = re.sub(NUMBER_PATTERN, ' NUMBER_TOKEN ', content) # add spaces between numbers
     content = re.sub(WIKI_SPACE_CHARS, ' ', content)
     content = re.sub(MULTIPLE_SPACES, ' ', content)
     tokens = content.replace(", )", "").split(" ")
