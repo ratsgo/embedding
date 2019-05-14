@@ -8,17 +8,39 @@ case $COMMAND in
         wget https://github.com/e9t/nsmc/raw/master/ratings.txt
         wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt
         wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt
-        mv *.txt ../data
+        mv rating* data
         echo "download ko-wikipedia..."
         wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 data/kowiki-latest-pages-articles.xml.bz2
         mv kowiki-latest-pages-articles.xml.bz2 data
+        echo "download KorSqaad data..."
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json
+        mv KorQuAD_v1* data
+        ;;
+    process_wiki)
         echo "processing ko-wikipedia..."
         python preprocess/wikidump.py data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
         ;;
-    space_correct)
+    process_navermovie)
         echo "processing naver movie corpus..."
         python preprocess/unsupervised_nlputils.py process_nvc data/ratings.txt data/processed_ratings.txt
-        echo "apply space correct..."
+        ;;
+    process_korsquad)
+        echo "processing KorSqaud corpus..."
+        python preprocess/supervised_nlputils.py korsquad data/KorQuAD_v1.0_train.json data/processed_korsquad_train.txt
+        python preprocess/supervised_nlputils.py korsquad data/KorQuAD_v1.0_dev.json data/processed_korsquad_dev.txt
+        cat data/processed_korsquad_train.txt data/processed_korsquad_dev.txt > data/processed_korsquad.txt
+        rm data/processed_korsquad_*.txt
+        ;;
+    mecab_tokenize)
+        echo "mecab, tokenizing..."
+        python preprocess/supervised_nlputils.py mecab data/wiki_ko_raw.txt data/wiki_ko_mecab.txt
+        python preprocess/supervised_nlputils.py mecab data/processed_ratings.txt data/ratings_mecab.txt
+        python preprocess/supervised_nlputils.py mecab data/processed_korsquad.txt data/korsquad_mecab.txt
+        cat data/wiki_ko_mecab.txt data/ratings_mecab.txt data/korsquad_mecab.txt > data/corpus_mecab.txt
+        ;;
+    space_correct)
+        echo "train & apply space correct..."
         python preprocess/unsupervised_nlputils.py train_space data/processed_ratings.txt data/space.model
         python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings.txt data/space.model data/corrected_ratings_corpus.txt
         ;;
@@ -34,10 +56,6 @@ case $COMMAND in
     okt_tokenize)
         echo "okt, tokenizing..."
         python preprocess/supervised_nlputils.py okt data/corpus.txt data/tokenized_corpus_okt.txt
-        ;;
-    mecab_tokenize)
-        echo "mecab, tokenizing..."
-        python preprocess/supervised_nlputils.py mecab data/corpus.txt data/tokenized_corpus_mecab.txt
         ;;
     hannanum_tokenize)
         echo "hannanum, tokenizing..."
