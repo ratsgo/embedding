@@ -12,7 +12,7 @@ case $COMMAND in
         echo "download ko-wikipedia..."
         wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 data/kowiki-latest-pages-articles.xml.bz2
         mv kowiki-latest-pages-articles.xml.bz2 data
-        echo "download KorSqaad data..."
+        echo "download KorSquad data..."
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json
         mv KorQuAD_v1* data
