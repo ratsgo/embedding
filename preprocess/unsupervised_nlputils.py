@@ -24,16 +24,6 @@ def apply_space_correct(corpus_fname, model_fname, output_corpus_fname):
             f2.writelines(sent_corrected + "\n")
 
 
-def process_nvc(corpus_fname, output_fname):
-    with open(corpus_fname, 'r', encoding='utf-8') as f1, \
-            open(output_fname, 'w', encoding='utf-8') as f2:
-        next(f1) # skip head line
-        for line in f1:
-            sentence = line.replace('\n', '').split('\t')[1]
-            if not sentence: continue
-            f2.writelines(sentence + "\n")
-
-
 def compute_soy_word_score(corpus_fname, model_fname):
     sentences = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
     word_extractor = WordExtractor(min_frequency=100,
@@ -97,10 +87,6 @@ if __name__ == '__main__':
         model_f = sys.argv[3]
         out_f = sys.argv[4]
         apply_space_correct(in_f, model_f, out_f)
-    elif preprocess_mode == "process_nvc":
-        in_f = sys.argv[2]
-        out_f = sys.argv[3]
-        process_nvc(in_f, out_f)
     elif preprocess_mode == "compute_soy_word_score":
         in_f = sys.argv[2]
         model_f = sys.argv[3]
