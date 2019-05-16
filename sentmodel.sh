@@ -5,7 +5,7 @@ COMMAND=$1
 case $COMMAND in
     process-nsmc)
         echo ".."
-        python models/sent_utils.py process_nsmc /Users/david/works/nsmc/raw data/review_movieid.txt
+        python models/sent_utils.py nsmc-json /Users/david/works/nsmc/raw data/review_movieid.txt
         ;;
     lsa-tfidf)
         echo "latent semantic analysis with tf-idf matrix..."

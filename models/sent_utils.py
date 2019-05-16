@@ -1,10 +1,9 @@
-import sys, glob, json, re
+import sys
 from collections import Counter
 from gensim import corpora
 from gensim.models import Doc2Vec, ldamulticore
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
-from konlpy.tag import Mecab
 from gensim.models.doc2vec import TaggedDocument
 
 
@@ -58,12 +57,11 @@ def latent_dirichlet_allocation(corpus_fname, output_fname):
         for line in f:
             tokens, movie_id = line.replace('\n', '').strip().split("\u241E")
             raw_corpus.append(tokens.split(" "))
-            movie_ids.extend(movie_id)
+            movie_ids.append(movie_id)
     dictionary = corpora.Dictionary(raw_corpus)  # token : idx
     corpus = [dictionary.doc2bow(text) for text in raw_corpus]  # construct DTM, (token_id, freq)
     LDA = ldamulticore.LdaMulticore(corpus, id2word=dictionary,
-                                    num_topics=100,
-                                    minimum_probability=0.,
+                                    num_topics=128,
                                     workers=4)
     with open(output_fname + ".vecs", 'w') as f:
         for doc_idx, doc in enumerate(corpus):
@@ -88,27 +86,6 @@ def construct_elmo_vocab(corpus_fname, output_fname):
             f2.writelines(word + "\n")
 
 
-def process_nsmc(corpus_dir, output_fname):
-    tokenizer = Mecab()
-    file_paths = glob.glob(corpus_dir + "/*")
-    with open(output_fname, 'w', encoding='utf-8') as f:
-        for path in file_paths:
-            contents = json.load(open(path))
-            for content in contents:
-                tokens = tokenizer.morphs(content['review'])
-                tokenized_sent = ' '.join(post_processing(tokens))
-                f.writelines(tokenized_sent + "\u241E" + content['movie_id'] + "\n")
-
-
-def post_processing(tokens):
-    results = []
-    for token in tokens:
-        # 숫자에 공백을 주어서 띄우기
-        processed_token = [el for el in re.sub(r"(\d)", r" \1 ", token).split(" ") if len(el) > 0]
-        results.extend(processed_token)
-    return results
-
-
 if __name__ == '__main__':
     util_mode = sys.argv[1]
     in_f = sys.argv[2]
@@ -121,5 +98,3 @@ if __name__ == '__main__':
         latent_dirichlet_allocation(in_f, out_f)
     elif util_mode == "construct_elmo_vocab":
         construct_elmo_vocab(in_f, out_f)
-    elif util_mode == "process_nsmc":
-        process_nsmc(in_f, out_f)
