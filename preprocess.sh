@@ -19,16 +19,16 @@ case $COMMAND in
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
-        python preprocess/wikidump.py data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
+        python preprocess/dump.py wiki data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
         ;;
     process_navermovie)
         echo "processing naver movie corpus..."
-        python preprocess/unsupervised_nlputils.py process_nvc data/ratings.txt data/processed_ratings.txt
+        python preprocess/dump.py nsmc data/ratings.txt data/processed_ratings.txt
         ;;
     process_korsquad)
         echo "processing KorSqaud corpus..."
-        python preprocess/supervised_nlputils.py korsquad data/KorQuAD_v1.0_train.json data/processed_korsquad_train.txt
-        python preprocess/supervised_nlputils.py korsquad data/KorQuAD_v1.0_dev.json data/processed_korsquad_dev.txt
+        python preprocess/dump.py korsquad data/KorQuAD_v1.0_train.json data/processed_korsquad_train.txt
+        python preprocess/dump.py korsquad data/KorQuAD_v1.0_dev.json data/processed_korsquad_dev.txt
         cat data/processed_korsquad_train.txt data/processed_korsquad_dev.txt > data/processed_korsquad.txt
         rm data/processed_korsquad_*.txt
         ;;
