@@ -1,9 +1,9 @@
-import sys, re, json
+import sys, re
 from khaiii import KhaiiiApi
 from konlpy.tag import Okt, Komoran, Mecab, Hannanum
 
 
-def tokenize(tokenizer_name, corpus_fname, output_fname, pos=False):
+def get_tokenizer(tokenizer_name):
     if tokenizer_name == "komoran":
         tokenizer = Komoran()
     elif tokenizer_name == "okt":
@@ -16,6 +16,11 @@ def tokenize(tokenizer_name, corpus_fname, output_fname, pos=False):
         tokenizer = KhaiiiApi()
     else:
         tokenizer = Mecab()
+    return tokenizer
+
+
+def tokenize(tokenizer_name, corpus_fname, output_fname, pos=False):
+    tokenizer = get_tokenizer(tokenizer_name)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
         for line in f1:
@@ -46,29 +51,8 @@ def post_processing(tokens):
     return results
 
 
-def process_korsquad(corpus_fname, output_fname):
-    with open(corpus_fname) as f1, \
-        open(output_fname, 'w', encoding='utf-8') as f2:
-        dataset_json = json.load(f1)
-        dataset = dataset_json['data']
-        for article in dataset:
-            w_lines = []
-            for paragraph in article['paragraphs']:
-                w_lines.append(paragraph['context'])
-                for qa in paragraph['qas']:
-                    q_text = qa['question']
-                    for a in qa['answers']:
-                        a_text = a['text']
-                        w_lines.append(q_text + " " + a_text)
-            for line in w_lines:
-                f2.writelines(line + "\n")
-
-
 if __name__ == '__main__':
     tokenizer_name = sys.argv[1]
     in_f = sys.argv[2]
     out_f = sys.argv[3]
-    if tokenizer_name == "korsquad":
-        process_korsquad(in_f, out_f)
-    else:
-        tokenize(tokenizer_name, in_f, out_f)
+    tokenize(tokenizer_name, in_f, out_f)
