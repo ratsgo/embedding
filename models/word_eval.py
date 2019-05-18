@@ -1,17 +1,19 @@
 import numpy as np
 import scipy.stats as st
 from gensim.models import Word2Vec
+from sklearn.manifold import TSNE
 from sklearn.preprocessing import normalize
 from preprocess import get_tokenizer
 
-"""
-Word similarity test
-Inspired by:
-https://github.com/dongjun-Lee/kor2vec/blob/master/test/similarity_test.py
-"""
-class WordSimilarityCheck:
+import pandas as pd
+from bokeh.io import show
+from bokeh.plotting import figure
+from bokeh.models import ColumnDataSource, LabelSet, LinearColorMapper
 
-    def __init__(self, vecs_fname, method="word2vec", dim=128, tokenize=True):
+
+class WordEmbeddingEval:
+
+    def __init__(self, vecs_fname, method="word2vec", dim=100, tokenize=True):
         if tokenize:
             self.tokenizer = get_tokenizer("mecab")
         else:
@@ -44,13 +46,24 @@ class WordSimilarityCheck:
             dictionary[word] = vec
         return dictionary, words, unit_vecs
 
-    def compute_total_cosine(self, query, topn=10):
+    def most_similar(self, query, topn=10):
         query_vec = self.get_sentence_vector(query)
-        query_unit_vec = query_vec / np.linalg.norm(query_vec)
-        scores = np.dot(self.vecs, query_unit_vec)
-        print(scores)
-        return sorted(zip(self.words, scores), key=lambda x: x[1], reverse=True)[:topn]
+        return self.most_similar_by_vector(query_vec, topn)
 
+    def most_similar_by_vector(self, query_vec, topn=10):
+        query_vec_norm = np.linalg.norm(query_vec)
+        if query_vec_norm != 0:
+            query_unit_vec = query_vec / np.linalg.norm(query_vec)
+        else:
+            query_unit_vec = query_vec
+        scores = np.dot(self.vecs, query_unit_vec)
+        return sorted(zip(self.words, scores), key=lambda x: x[1], reverse=True)[1:topn+1]
+
+    """
+    Word similarity test
+    Inspired by:
+    https://github.com/dongjun-Lee/kor2vec/blob/master/test/similarity_test.py
+    """
     def word_sim_test(self, test_fname):
         actual_sim_list, pred_sim_list = [], []
         missed = 0
@@ -69,6 +82,45 @@ class WordSimilarityCheck:
         pearson, _ = st.pearsonr(actual_sim_list, pred_sim_list)
         print(spearman, pearson, missed)
 
+    """
+    Word Analogy test
+    Inspired by:
+    https://github.com/dongjun-Lee/kor2vec/blob/master/test/analogy_test.py
+    """
+    def word_analogy_test(self, test_fname, topn=30, verbose=False):
+        correct, total, missed = 0, 0, 0
+        with open(test_fname, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.startswith("#") or len(line) <= 1:
+                    continue
+                words = line.strip().split(" ")
+                query_vecs = self.get_analogy_vector(words[:-1])
+                try:
+                    word_with_scores = self.most_similar_by_vector(query_vecs, topn)
+                    if verbose:
+                        print(words[0] + " + " + words[1] + " - " + words[2])
+                        print("correct answer:", words[3])
+                        print("predicted answers:", word_with_scores)
+                        print("")
+                    similar_words = [el[0] for el in word_with_scores]
+                    if words[-1] in similar_words:
+                        correct += 1
+                except:
+                    missed += 1
+                total += 1
+        print(correct, total, missed)
+
+    def get_analogy_vector(self, words):
+        if len(words) == 3:
+            token_1 = self.get_sentence_vector(words[0])
+            token_2 = self.get_sentence_vector(words[1])
+            token_3 = self.get_sentence_vector(words[2])
+            result = token_1 - token_2 + token_3
+        else:
+            result = np.zeros(self.dim)
+        return result
+
+    # token vector들을 lookup한 뒤 평균을 취한다
     def get_sentence_vector(self, sentence):
         if self.tokenize:
             tokens = self.tokenizer.morphs(sentence)
@@ -79,22 +131,86 @@ class WordSimilarityCheck:
             if token in self.dictionary.keys():
                 token_vecs.append(self.dictionary[token])
         if len(token_vecs) > 0:
-            result = np.mean(token_vecs, axis=1)
-            print(token_vecs)
-            print(result)
+            result = np.mean(token_vecs, axis=0)
         else:
             result = np.zeros(self.dim)
         return result
 
+    """
+    Visualize word representions with T-SNE, Bokeh
+    Inspired by:
+    https://www.kaggle.com/yohanb/t-sne-bokeh
+    https://bokeh.pydata.org
+    """
+    def visualize_tsne(self, words_fname, palette="Viridis256"):
+        words = set()
+        for line in open(words_fname, 'r'):
+            if not line.startswith("#"):
+                for word in line.strip().split(" "):
+                    words.add(word)
+        vecs = np.array([self.get_sentence_vector(word) for word in words])
+        tsne = TSNE(n_components=2)
+        tsne_results = tsne.fit_transform(vecs)
+        df = pd.DataFrame(columns=['x', 'y', 'word'])
+        df['x'], df['y'], df['word'] = tsne_results[:, 0], tsne_results[:, 1], list(words)
+        source = ColumnDataSource(ColumnDataSource.from_df(df))
+        labels = LabelSet(x="x", y="y", text="word", y_offset=8,
+                          text_font_size="8pt", text_color="#555555",
+                          source=source, text_align='center')
+        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
+        plot = figure(plot_width=1200, plot_height=600)
+        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None, fill_alpha=0.8)
+        plot.add_layout(labels)
+        show(plot, notebook_handle=True)
 
-model = WordSimilarityCheck("data/word2vec.vecs", "word2vec", dim=128, tokenize=True)
-model.word_sim_test("data/kor_ws353.csv") # 0.07967824412220588 0.052695494326999485 0
 
-model = WordSimilarityCheck("data/glove.vecs.txt", "glove", dim=128, tokenize=True)
-model.word_sim_test("data/kor_ws353.csv") # 0.04503284244559433 0.052921610272604946 0
+model = WordEmbeddingEval("data/word2vec.vecs", "word2vec", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.5770993871014621 0.5956751142850295 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 158 420 0
+model.word_analogy_test("data/kor_analogy_syntactic.txt")
+model.most_similar("문재인") # [('박근혜', 0.9221434), ('이명박', 0.9151239), ('노무현', 0.90462077), ('김대중', 0.8763489), ('노태우', 0.8345808), ('김영삼', 0.8336141), ('이회창', 0.8229812), ('박원순', 0.81067884), ('전두환', 0.8074833), ('안철수', 0.8040389)]
+model.visualize_tsne("data/kor_analogy_semantic.txt", palette="Viridis256")
+model.visualize_tsne("data/kor_analogy_syntactic.txt", palette="Greys256")
 
-model = WordSimilarityCheck("data/fasttext.vecs.vec", "fasttext", dim=100, tokenize=True)
-model.word_sim_test("data/kor_ws353.csv") # 0.10824313907957996 0.10782498999451953 0
+model = WordEmbeddingEval("data/glove.vecs.txt", "glove", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.49029953452220065 0.5383746018370396 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 110 420 0
+model.most_similar("문재인") # ('이명박', 0.845631133898592), ('박근혜', 0.8174952332797571), ('노무현', 0.8042187984352386), ('김대중', 0.7265464328203921), ('대통령', 0.7200989781982694), ('대선', 0.6938117143292233), ('문재', 0.6911781464368917), ('김영삼', 0.6797721738977291), ('이회창', 0.6789389835604196), ('청와대', 0.6771037890591527)]
+model.visualize_tsne("data/kor_analogy_semantic.txt", palette="Inferno256")
+model.visualize_tsne("data/kor_analogy_syntactic.txt", palette="Magma256")
 
-model = WordSimilarityCheck("data/swivel.vecs/row_embedding.tsv", "swivel", dim=128, tokenize=True)
-model.word_sim_test("data/kor_ws353.csv") # 0.09000367565864958 0.11364630219391056 0
+model = WordEmbeddingEval("data/fasttext.vecs.vec", "fasttext", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.636179558597476 0.6386177571595193 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 81 420 0
+model.most_similar("문재인") # [('박근혜', 0.9239191680881065), ('이명박', 0.9129016338164864), ('노무현', 0.8974644850690527), ('문재', 0.8477265842739639), ('노태우', 0.8271708135634908), ('김대중', 0.8241289233466147), ('청와대', 0.808890823843111), ('이회창', 0.8088008847778916), ('박원순', 0.8075874801817806), ('홍준표', 0.7973925010954298)]
+model.visualize_tsne("data/kor_analogy_semantic.txt", palette="Plasma256")
+model.visualize_tsne("data/kor_analogy_syntactic.txt", palette="Cividis256")
+
+model = WordEmbeddingEval("data/swivel.vecs/row_embedding.tsv", "swivel", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.549541215508716 0.5727286333920304 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 92 420 0
+model.most_similar("문재인") # [('이명박', 0.7587751892657401), ('박근혜', 0.7347895426965483), ('노무현', 0.720725618392337), ('청와대', 0.7050805661577202), ('대선', 0.7016249703619943), ('홍준표', 0.6821123111055576), ('안희정', 0.6746228614203431), ('이회창', 0.6746018345903241), ('한나라당', 0.6669747023554933), ('대통령', 0.66614570376648)]
+model.visualize_tsne("data/kor_analogy_semantic.txt")
+model.visualize_tsne("data/kor_analogy_syntactic.txt")
+
+# TODO : word2vec-lsa vs lsa-pmi 차이 검증
+model = WordEmbeddingEval("data/word2vec-lsa.vecs", "word2vec", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.44151727940351265 0.4246878668643376 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 94 420 0
+model.most_similar("문재인") # [('청와대', 0.828278), ('김대중', 0.7862822), ('당선자', 0.78047204), ('이정희', 0.7796035), ('홍준표', 0.77874863), ('박원순', 0.7736834), ('야권', 0.77013516), ('유시민', 0.76993674), ('반기문', 0.76893556), ('원내대표', 0.76648307)]
+model.visualize_tsne("data/kor_analogy_semantic.txt")
+model.visualize_tsne("data/kor_analogy_syntactic.txt")
+
+model = WordEmbeddingEval("data/lsa-pmi.vecs", "lsa-pmi", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.1824178080678877 0.16985325941114984 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 34 420 0
+model.most_similar("문재인") # [('이명박', 0.9668353235506264), ('김대중', 0.965416730672013), ('이승만', 0.9642945139418547), ('노무현', 0.962421106788593), ('전두환', 0.9601622267707821), ('오딘', 0.9509565666301292), ('김영삼', 0.9489033288641142), ('이회창', 0.9479594521397682), ('나폴레옹', 0.9445780885897337), ('선장', 0.9415429819696624)]
+model.visualize_tsne("data/kor_analogy_semantic.txt")
+model.visualize_tsne("data/kor_analogy_syntactic.txt")
+
+model = WordEmbeddingEval("data/lsa-cooc.vecs", "lsa-cooc", dim=100, tokenize=True)
+model.word_sim_test("data/kor_ws353.csv") # 0.1824464486427594 0.16992081424024436 0
+model.word_analogy_test("data/kor_analogy_semantic.txt") # 34 420 0
+model.most_similar("문재인") # [('이명박', 0.9668487901512071), ('김대중', 0.9653821384884316), ('이승만', 0.9643050967698661), ('노무현', 0.9623744447003055), ('전두환', 0.9601431274381929), ('오딘', 0.9509792551908478), ('김영삼', 0.9489595747780442), ('이회창', 0.9478132961857701), ('나폴레옹', 0.9445455485081845), ('김연경', 0.9414856648101293)]
+model.visualize_tsne("data/kor_analogy_semantic.txt")
+model.visualize_tsne("data/kor_analogy_syntactic.txt")
