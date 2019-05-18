@@ -77,6 +77,9 @@ git clone https://github.com/allenai/bilm-tf.git
 cd $PARENT_PATH
 git clone https://github.com/google-research/bert.git
 
+# bokeh
+pip install bokeh
+
 # workstation
 python3.6 -m venv tf120
 pip install tensorflow-gpu==1.12
