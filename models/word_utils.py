@@ -7,11 +7,16 @@ from soynlp.vectorizer import sent_to_word_contexts_matrix
 
 def train_word2vec(corpus_fname, model_fname):
     corpus = [sent.replace('\n', '').strip().split(" ") for sent in open(corpus_fname, 'r').readlines()]
-    model = Word2Vec(corpus, size=128, workers=4, sg=1)
+    model = Word2Vec(corpus, size=100, workers=4, sg=1)
     model.save(model_fname)
 
-
-def latent_semantic_analysis(corpus_fname, output_fname, mode):
+"""
+Latent Semantic Analysis
+Inspired by:
+https://lovit.github.io/nlp/2018/04/22/context_vector_for_word_similarity
+https://lovit.github.io/nlp/2018/04/22/implementing_pmi_numpy_practice
+"""
+def latent_semantic_analysis(corpus_fname, output_fname):
     corpus = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
     # construct co-occurrence matrix (=word_context)
     # dynamic weight if True. co-occurrence weight = [1, (w-1)/w, (w-2)/w, ... 1/w]
@@ -21,20 +26,25 @@ def latent_semantic_analysis(corpus_fname, output_fname, mode):
         min_tf=10,
         dynamic_weight=True,
         verbose=True)
-    if mode == 'pmi':
-        # Shift PPMI at k=0, (equal PPMI)
-        # return
-        # pmi(word, contexts)
-        # px: Probability of rows(items)
-        # py: Probability of columns(features)
-        input_matrix, _, _ = pmi(input_matrix, min_pmi=0, alpha=0)
     # compute truncated SVD
-    svd = TruncatedSVD(n_components=128)
-    vecs = svd.fit_transform(input_matrix)
-    with open(output_fname, 'w') as f:
-        for word, vec in zip(idx2vocab, vecs):
+    cooc_svd = TruncatedSVD(n_components=100)
+    cooc_vecs = cooc_svd.fit_transform(input_matrix)
+    with open(output_fname + "-cooc.vecs", 'w') as f1:
+        for word, vec in zip(idx2vocab, cooc_vecs):
             str_vec = [str(el) for el in vec]
-            f.writelines(word + ' ' + ' '.join(str_vec) + "\n")
+            f1.writelines(word + ' ' + ' '.join(str_vec) + "\n")
+    # Shift PPMI at k=0, (equal PPMI)
+    # pmi(word, contexts)
+    # px: Probability of rows(items)
+    # py: Probability of columns(features)
+    pmi_matrix, _, _ = pmi(input_matrix, min_pmi=0, alpha=0)
+    # compute truncated SVD
+    pmi_svd = TruncatedSVD(n_components=100)
+    pmi_vecs = pmi_svd.fit_transform(input_matrix)
+    with open(output_fname + "-pmi.vecs", 'w') as f2:
+        for word, vec in zip(idx2vocab, pmi_vecs):
+            str_vec = [str(el) for el in vec]
+            f2.writelines(word + ' ' + ' '.join(str_vec) + "\n")
 
 
 def construct_weighted_embedding(corpus_fname, embedding_fname, output_fname):
@@ -45,12 +55,11 @@ def construct_weighted_embedding(corpus_fname, embedding_fname, output_fname):
 
 if __name__ == '__main__':
     util_mode = sys.argv[1]
+    in_f = sys.argv[2]
+    out_f = sys.argv[3]
     if util_mode == "train_word2vec":
-        in_f = sys.argv[2]
-        out_f = sys.argv[3]
         train_word2vec(in_f, out_f)
     elif util_mode == "latent_semantic_analysis":
-        in_f = sys.argv[2]
-        out_f = sys.argv[3]
-        analysis_mode = sys.argv[4]
-        latent_semantic_analysis(in_f, out_f, analysis_mode)
+        latent_semantic_analysis(in_f, out_f)
+    elif util_mode == "construct_weighted_embedding":
+        construct_weighted_embedding(in_f, out_f)
