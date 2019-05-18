@@ -38,6 +38,7 @@ case $COMMAND in
         python preprocess/supervised_nlputils.py mecab data/processed_ratings.txt data/ratings_mecab.txt
         python preprocess/supervised_nlputils.py mecab data/processed_korsquad.txt data/korsquad_mecab.txt
         cat data/wiki_ko_mecab.txt data/ratings_mecab.txt data/korsquad_mecab.txt > data/corpus_mecab.txt
+        cat data/ratings_mecab.txt data/korsquad_mecab.txt > data/for-lsa-mecab.txt
         ;;
     space_correct)
         echo "train & apply space correct..."
