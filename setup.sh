@@ -69,14 +69,6 @@ git clone https://github.com/tensorflow/models.git
 cd models/research/swivel
 make -f fastprep.mk
 
-# elmo
-cd $PARENT_PATH
-git clone https://github.com/allenai/bilm-tf.git
-
-# bert
-cd $PARENT_PATH
-git clone https://github.com/google-research/bert.git
-
 # bokeh
 pip install bokeh
 
