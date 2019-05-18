@@ -6,6 +6,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from gensim.models.doc2vec import TaggedDocument
 from bilm.training import dump_weights as dump_elmo_weights
+import tensorflow as tf
+from models.bilm import Batcher, BidirectionalLanguageModel, weight_layers
+
 
 def latent_semantic_analysis(corpus_fname, output_fname):
     corpus = []
@@ -101,6 +104,46 @@ def construct_elmo_vocab(corpus_fname, output_fname):
             f2.writelines(word + "\n")
 
 
+def extract_elmo_embeddings(sentence_fname, model_fname,
+                            options_fname,
+                            vocab_fname, output_fname,
+                            tune=False,
+                            max_char_length=30):
+    # Create a Batcher to map text to character ids.
+    batcher = Batcher(vocab_fname, max_char_length)
+    # Input placeholders to the biLM.
+    character_ids = tf.placeholder('int32', shape=(None, None, max_char_length))
+    # Build the biLM graph.
+    bilm = BidirectionalLanguageModel(options_fname, model_fname)
+    # Get ops to compute the LM embeddings.
+    embeddings_op = bilm(character_ids)
+    # Get ELMo embeddings
+    # 정석대로라면 특정 task 수행을 위한 튜닝 과정에서 구축되는,
+    # BiLM의 모든 벡터들의 weighted sum이 ELMo embeddings임
+    # 하지만 컴퓨팅 리소스가 부족하고 BiLM 자체의 품질을 확인하고 싶을 때
+    # BiLM의 벡터들을 그대로 뽑아 본다
+    if tune:
+        elmo_embeddings = weight_layers('elmo_embeddings', embeddings_op, l2_coef=0.0)
+    # load corpus
+    # 학습 데이터와 같은 토크나이저를 사용한 tokenized corpus여야 한다
+    corpus = [line.strip().split(" ") for line in open(sentence_fname, 'r')]
+    # extract ELMo embeddings
+    with tf.Session() as sess:
+        # It is necessary to initialize variables once before running inference.
+        sess.run(tf.global_variables_initializer())
+        with open(output_fname, 'w') as f:
+            for tokenized_sent in corpus:
+                # Create batches of data.
+                ids = batcher.batch_sentences([tokenized_sent])
+                # Compute ELMo representations
+                if tune:
+                    vector = sess.run(elmo_embeddings['weighted_op'], feed_dict={character_ids: ids})
+                else:
+                    vector = sess.run(embeddings_op, feed_dict={character_ids: ids})
+                str_vector = [str(el) for el in vector]
+                f.writelines(' '.join(str_vector) + "\n")
+
+
 if __name__ == '__main__':
     util_mode = sys.argv[1]
     in_f = sys.argv[2]
@@ -115,3 +158,5 @@ if __name__ == '__main__':
         construct_elmo_vocab(in_f, out_f)
     elif util_mode == "dump_elmo_weights":
         dump_elmo_weights(in_f, out_f)
+    elif util_mode == "extract_elmo_embeddings":
+        extract_elmo_embeddings()
