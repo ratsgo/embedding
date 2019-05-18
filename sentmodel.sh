@@ -27,12 +27,10 @@ case $COMMAND in
         echo "train ELMo..."
         python models/sent_utils.py construct_elmo_vocab data/corpus_mecab.txt data/elmo-vocab.txt
         # options.json (small)
-        wget https://s3-us-west-2.amazonaws.com/allennlp/models/elmo/2x1024_128_2048cnn_1xhighway/elmo_2x1024_128_2048cnn_1xhighway_options.json
-        mv elmo_2x1024_128_2048cnn_1xhighway_options.json data/elmo-options.json
         scp -P 30800 models/train_elmo.py ratsgo@112.217.184.162:~/bilm-tf
+        scp -P 30800 models/bilm/* ratsgo@112.217.184.162:~/bilm-tf/bilm
         scp -P 30800 data/corpus_mecab.txt ratsgo@112.217.184.162:~/data
         scp -P 30800 data/elmo-vocab.txt ratsgo@112.217.184.162:~/data
-        scp -P 30800 data/elmo-options.json ratsgo@112.217.184.162:~/data
         # @workstation
         mkdir data/traindata
         split -l 20000 data/corpus_mecab.txt data/traindata/data_
@@ -44,5 +42,16 @@ case $COMMAND in
             --train_prefix='/home/ratsgo/data/traindata/*' \
             --vocab_file /home/ratsgo/data/elmo-vocab.txt \
             --save_dir /home/ratsgo/elmo-model
+        ;;
+    dump-elmo)
+        echo "dump pretrained ELMo weights..."
+        python models/sent_utils.py dump_elmo_weights data/elmo/checkpoint data/elmo/elmo.model
+        ;;
+    dump-bert)
+        echo "dump pretrained BERT weights..."
+        wget https://storage.googleapis.com/bert_models/2018_11_23/multi_cased_L-12_H-768_A-12.zip
+        mv multi_cased_L-12_H-768_A-12.zip data/bert
+        cd data/bert
+        unzip multi_cased_L-12_H-768_A-12.zip
         ;;
 esac

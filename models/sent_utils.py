@@ -5,7 +5,7 @@ from gensim.models import Doc2Vec, ldamulticore
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from gensim.models.doc2vec import TaggedDocument
-
+from bilm.training import dump_weights as dump_elmo_weights
 
 def latent_semantic_analysis(corpus_fname, output_fname):
     corpus = []
@@ -113,3 +113,5 @@ if __name__ == '__main__':
         latent_dirichlet_allocation(in_f, out_f)
     elif util_mode == "construct_elmo_vocab":
         construct_elmo_vocab(in_f, out_f)
+    elif util_mode == "dump_elmo_weights":
+        dump_elmo_weights(in_f, out_f)
