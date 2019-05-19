@@ -88,13 +88,13 @@ class Tuner(object):
             for pred, label in zip(current_preds, current_labels):
                 if pred == label:
                     valid_pred += 1
-            valid_score = valid_pred / valid_num_data
-            tf.logging.info("step %d valid_loss %.4f valid_score %.4f" %
-                            (global_step.eval(sess), valid_loss, valid_score))
-            if valid_score > self.best_valid_score:
-                self.best_valid_score = valid_score
-                path = self.model_save_path + "/" + str(valid_score)
-                saver.save(sess, path, global_step=global_step)
+        valid_score = valid_pred / valid_num_data
+        tf.logging.info("step %d valid_loss %.4f valid_score %.4f" %
+                        (global_step.eval(sess), valid_loss, valid_score))
+        if valid_score > self.best_valid_score:
+            self.best_valid_score = valid_score
+            path = self.model_save_path + "/" + str(valid_score)
+            saver.save(sess, path, global_step=global_step)
 
     def get_batch(self, data, num_epochs, is_training=True):
         if is_training:
@@ -167,9 +167,9 @@ class ELMoTuner(Tuner):
         # Load pretrained ELMo model.
         bilm = BidirectionalLanguageModel(self.options_fname, self.pretrain_model_fname)
         # Input placeholders to the biLM.
-        ids_placeholder = tf.placeholder('int64', shape=(None, None, self.max_characters_per_token), name='input')
+        ids_placeholder = tf.placeholder(tf.int32, shape=(None, None, self.max_characters_per_token), name='input')
         # Output placeholders to the fine-tuned Net.
-        labels_placeholder = tf.placeholder('int64', shape=(None))
+        labels_placeholder = tf.placeholder(tf.int32, shape=(None))
         # Get ops to compute the LM embeddings.
         embeddings_op = bilm(ids_placeholder)
         # Get lengths.
