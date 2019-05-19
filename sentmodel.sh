@@ -48,7 +48,7 @@ case $COMMAND in
         # @workstation
         source ~/tf120/bin/activate
         export CUDA_VISIBLE_DEVICES=0
-        python3.6 models/sent_utils.py dump_elmo_weights data/elmo data/elmo/elmo.model
+        python3.6 models/sent_utils.py dump_elmo_weights data/elmo/ckpt data/elmo/elmo.model
         ;;
     tune-elmo)
         echo "tune ELMo..."
@@ -60,7 +60,7 @@ case $COMMAND in
         source ~/tf120/bin/activate
         export CUDA_VISIBLE_DEVICES=0
         export LC_CTYPE=C.UTF-8
-        nohup sh -c "python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/checkpoint/options.json data/elmo" > elmo.log &
+        nohup sh -c "python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/ckpt/options.json data/elmo" > elmo.log &
         ;;
     dump-bert)
         echo "dump pretrained BERT weights..."

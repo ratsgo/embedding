@@ -15,7 +15,7 @@ class Tuner(object):
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
                  test_corpus_fname=None, tokenized_test_corpus_fname=None,
                  model_name="bert", model_save_path=None, vocab_fname=None, eval_every=1000,
-                 batch_size=32, num_epochs=3, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
+                 batch_size=32, num_epochs=1, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
         # configurations
         self.model_name = model_name
         self.eval_every = eval_every
@@ -147,6 +147,8 @@ class ELMoTuner(Tuner):
                          tokenized_test_corpus_fname=test_corpus_fname + ".elmo.tokenized",
                          model_name="elmo", vocab_fname=vocab_fname,
                          model_save_path=model_save_path, batch_size=batch_size)
+        self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
+        self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
         # Create a Batcher to map text to character ids.
         # lm_vocab_file = ELMo는 token vocab이 없어도 on-the-fly로 입력 id들을 만들 수 있다
         # 하지만 자주 나오는 char sequence, 즉 vocab을 미리 id로 만들어 놓으면 좀 더 빠른 학습이 가능
@@ -279,7 +281,7 @@ class BERTTuner(Tuner):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
-                         test_corpus_fname=test_corpus_fname,
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
                          tokenized_test_corpus_fname=test_corpus_fname + ".bert.tokenized",
                          model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
         self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
