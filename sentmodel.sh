@@ -26,7 +26,7 @@ case $COMMAND in
     train-elmo)
         echo "train ELMo..."
         python models/sent_utils.py construct_elmo_vocab data/corpus_mecab.txt data/elmo-vocab.txt
-        # options.json (small)
+        # options.json
         scp -P 30800 models/train_elmo.py ratsgo@112.217.184.162:~/bilm-tf
         scp -P 30800 models/bilm/* ratsgo@112.217.184.162:~/bilm-tf/bilm
         scp -P 30800 data/corpus_mecab.txt ratsgo@112.217.184.162:~/data
@@ -45,7 +45,21 @@ case $COMMAND in
         ;;
     dump-elmo)
         echo "dump pretrained ELMo weights..."
-        python models/sent_utils.py dump_elmo_weights data/elmo/checkpoint data/elmo/elmo.model
+        # @workstation
+        source ~/tf120/bin/activate
+        export CUDA_VISIBLE_DEVICES=0
+        python3.6 models/sent_utils.py dump_elmo_weights data/elmo data/elmo/elmo.model
+        ;;
+    tune-elmo)
+        echo "tune ELMo..."
+        # @local
+        scp -P 30800 data/ratings_train.txt.elmo.tokenized ratsgo@112.217.184.162:~/embedding/data
+        scp -P 30800 data/ratings_test.txt.elmo.tokenized ratsgo@112.217.184.162:~/embedding/data
+        scp -P 30800 data/elmo-vocab.txt ratsgo@112.217.184.162:~/embedding/data
+        # @workstation
+        source ~/tf120/bin/activate
+        export CUDA_VISIBLE_DEVICES=1
+        python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/options.json
         ;;
     dump-bert)
         echo "dump pretrained BERT weights..."
@@ -53,5 +67,17 @@ case $COMMAND in
         mv multi_cased_L-12_H-768_A-12.zip data/bert
         cd data/bert
         unzip multi_cased_L-12_H-768_A-12.zip
+        ;;
+    tune-bert)
+        echo "tune BERT..."
+        # @local
+        scp -P 30800 data/ratings_train.txt.bert.tokenized ratsgo@112.217.184.162:~/embedding/data
+        scp -P 30800 data/ratings_test.txt.bert.tokenized ratsgo@112.217.184.162:~/embedding/data
+        scp -P 30800 data/elmo-vocab.txt ratsgo@112.217.184.162:~/embedding/data
+        # @workstation
+        source ~/tf120/bin/activate
+        export CUDA_VISIBLE_DEVICES=1
+        python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/options.json
+        ;;
         ;;
 esac
