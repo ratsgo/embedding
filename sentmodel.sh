@@ -58,8 +58,9 @@ case $COMMAND in
         scp -P 30800 data/elmo-vocab.txt ratsgo@112.217.184.162:~/embedding/data
         # @workstation
         source ~/tf120/bin/activate
-        export CUDA_VISIBLE_DEVICES=1
-        python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/options.json
+        export CUDA_VISIBLE_DEVICES=0
+        export LC_CTYPE=C.UTF-8
+        nohup sh -c "python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/checkpoint/options.json data/elmo" > elmo.log &
         ;;
     dump-bert)
         echo "dump pretrained BERT weights..."
@@ -73,11 +74,12 @@ case $COMMAND in
         # @local
         scp -P 30800 data/ratings_train.txt.bert.tokenized ratsgo@112.217.184.162:~/embedding/data
         scp -P 30800 data/ratings_test.txt.bert.tokenized ratsgo@112.217.184.162:~/embedding/data
-        scp -P 30800 data/elmo-vocab.txt ratsgo@112.217.184.162:~/embedding/data
+        scp -P 30800 data/bert/multi_cased_L-12_H-768_A-12/* ratsgo@112.217.184.162:~/embedding/data/bert/multi_cased_L-12_H-768_A-12
         # @workstation
         source ~/tf120/bin/activate
         export CUDA_VISIBLE_DEVICES=1
-        python3.6 models/tune_utils.py elmo data/ratings_train.txt data/ratings_test.txt data/elmo-vocab.txt data/elmo/elmo.model data/elmo/options.json
+        export LC_CTYPE=C.UTF-8
+        nohup sh -c "python3.6 models/tune_utils.py bert data/ratings_train.txt data/ratings_test.txt data/bert/multi_cased_L-12_H-768_A-12/vocab.txt data/bert/multi_cased_L-12_H-768_A-12/bert_model.ckpt data/bert/multi_cased_L-12_H-768_A-12/bert_config.json data/bert" > bert.log &
         ;;
         ;;
 esac

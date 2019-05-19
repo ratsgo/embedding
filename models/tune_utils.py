@@ -14,12 +14,13 @@ class Tuner(object):
 
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
                  test_corpus_fname=None, tokenized_test_corpus_fname=None,
-                 model_name="bert", vocab_fname=None, eval_every=1000,
+                 model_name="bert", model_save_path=None, vocab_fname=None, eval_every=1000,
                  batch_size=64, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
         # configurations
         self.model_name = model_name
         self.eval_every = eval_every
         self.model_ckpt_path = model_ckpt_path
+        self.model_save_path = model_save_path
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.dropout_keep_prob_rate = dropout_keep_prob_rate
@@ -40,7 +41,8 @@ class Tuner(object):
             with open(tokenized_corpus_fname, 'r') as f1:
                 for line in f1:
                     tokens, label = line.strip().split("\u241E")
-                    data_set.append([tokens.split(" "), int(label)])
+                    if len(tokens) > 0:
+                        data_set.append([tokens.split(" "), int(label)])
         else:
             print("tokenize corpus :", corpus_fname, ">", tokenized_corpus_fname)
             with open(corpus_fname, 'r') as f2:
@@ -68,9 +70,9 @@ class Tuner(object):
         for current_input_feed in train_batches:
             _, _, _, current_loss = sess.run(output_feed, current_input_feed)
             checkpoint_loss += current_loss
-            if global_step.eval() % self.eval_every == 0:
+            if global_step.eval(sess) % self.eval_every == 0:
                 tf.logging.info("global step %d loss %.4f" %
-                                (global_step.eval(), checkpoint_loss / self.eval_every))
+                                (global_step.eval(sess), checkpoint_loss / self.eval_every))
                 checkpoint_loss = 0.0
                 self.validation(sess, saver, global_step, output_feed)
 
@@ -88,10 +90,10 @@ class Tuner(object):
                     valid_pred += 1
             valid_score = valid_pred / valid_num_data
             tf.logging.info("step %d valid_loss %.4f valid_score %.4f" %
-                            (global_step.eval(), valid_loss, valid_score))
+                            (global_step.eval(sess), valid_loss, valid_score))
             if valid_score > self.best_valid_score:
                 self.best_valid_score = valid_score
-                path = self.model_ckpt_path + "/" + str(valid_score)
+                path = self.model_save_path + "/" + str(valid_score)
                 saver.save(sess, path, global_step=global_step)
 
     def get_batch(self, data, num_epochs, is_training=True):
@@ -100,7 +102,7 @@ class Tuner(object):
         else:
             data_size = self.test_data_size
         num_batches_per_epoch = int((data_size - 1) / self.batch_size) + 1
-        tf.logging.info("num_batches_per_epoch : ", num_batches_per_epoch)
+        tf.logging.info("num_batches_per_epoch : " + str(num_batches_per_epoch))
         for epoch in range(num_epochs):
             idx = random.sample(range(data_size), data_size)
             data = np.array(data)[idx]
@@ -114,7 +116,7 @@ class Tuner(object):
                     sentence, label = feature
                     batch_sentences.append(sentence)
                     batch_labels.append(int(label))
-                yield self.make_input(batch_sentences, batch_labels)
+                yield self.make_input(batch_sentences, batch_labels, is_training)
 
     def buildGraph(self):
         raise NotImplementedError
@@ -130,7 +132,7 @@ class ELMoTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  vocab_fname, options_fname, pretrain_model_fname,
-                 max_characters_per_token=30):
+                 model_save_path, max_characters_per_token=30):
         # configurations
         self.options_fname = options_fname
         self.pretrain_model_fname = pretrain_model_fname
@@ -141,7 +143,7 @@ class ELMoTuner(Tuner):
                          tokenized_train_corpus_fname=train_corpus_fname + ".elmo.tokenized",
                          test_corpus_fname=test_corpus_fname,
                          tokenized_test_corpus_fname=test_corpus_fname + ".elmo.tokenized",
-                         model_name="elmo", vocab_fname=vocab_fname)
+                         model_name="elmo", vocab_fname=vocab_fname, model_save_path=model_save_path)
         # Create a Batcher to map text to character ids.
         # lm_vocab_file = ELMo는 token vocab이 없어도 on-the-fly로 입력 id들을 만들 수 있다
         # 하지만 자주 나오는 char sequence, 즉 vocab을 미리 id로 만들어 놓으면 좀 더 빠른 학습이 가능
@@ -165,9 +167,9 @@ class ELMoTuner(Tuner):
         # Load pretrained ELMo model.
         bilm = BidirectionalLanguageModel(self.options_fname, self.pretrain_model_fname)
         # Input placeholders to the biLM.
-        ids_placeholder = tf.placeholder('int32', shape=(None, None, self.max_characters_per_token), name='input')
+        ids_placeholder = tf.placeholder('int64', shape=(None, None, self.max_characters_per_token), name='input')
         # Output placeholders to the fine-tuned Net.
-        labels_placeholder = tf.placeholder('int32', shape=(None))
+        labels_placeholder = tf.placeholder('int64', shape=(None))
         # Get ops to compute the LM embeddings.
         embeddings_op = bilm(ids_placeholder)
         # Get lengths.
@@ -224,7 +226,7 @@ class ELMoTuner(Tuner):
         return ids_placeholder, labels_placeholder, dropout_keep_prob, logits, loss
 
     def tune(self):
-        global_step = tf.Variable(0, name="global_step", trainable=False)
+        global_step = tf.train.get_or_create_global_step()
         optimizer = tf.train.AdamOptimizer(learning_rate=0.0001)
         grads_and_vars = optimizer.compute_gradients(self.loss)
         train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
@@ -256,8 +258,8 @@ class ELMoTuner(Tuner):
 
 class BERTTuner(Tuner):
 
-    def __init__(self, train_corpus_fname, test_corpus_fname,
-                 vocab_fname, pretrain_model_fname, bertconfig_fname,
+    def __init__(self, train_corpus_fname, test_corpus_fname, vocab_fname,
+                 pretrain_model_fname, bertconfig_fname, model_save_path,
                  max_seq_length=32, warmup_proportion=0.1,
                  batch_size=32, learning_rate=5e-05):
         # configurations
@@ -265,9 +267,6 @@ class BERTTuner(Tuner):
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
         self.batch_size = batch_size
-        self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
-        self.num_warmup_steps = int(self.num_train_steps * warmup_proportion)
-        self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
         self.learning_rate = learning_rate
         self.num_labels = 2 # positive, negative
         self.PAD_INDEX = 0
@@ -278,7 +277,10 @@ class BERTTuner(Tuner):
                          tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
                          test_corpus_fname=test_corpus_fname,
                          tokenized_test_corpus_fname=test_corpus_fname + ".bert.tokenized",
-                         model_name="bert", vocab_fname=vocab_fname)
+                         model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
+        self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
+        self.num_warmup_steps = int(self.num_train_steps * warmup_proportion)
+        self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
         self.training = tf.placeholder(tf.bool)
         # build train graph
         self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = self.buildGraph()
@@ -317,6 +319,7 @@ class BERTTuner(Tuner):
         sess = tf.Session()
         tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
         saver = tf.train.Saver(max_to_keep=1)
+        sess.run(tf.global_variables_initializer())
         self.train(sess, saver, global_step, output_feed)
 
     def make_input(self, sentences, labels, is_training):
@@ -351,11 +354,6 @@ class BERTTuner(Tuner):
         return input_feed
 
 
-model = BERTTuner(train_corpus_fname="data/ratings_train.txt",
-                  test_corpus_fname="data/ratings_test.txt",
-                  vocab_fname="data/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
-                  pretrain_model_fname="data/bert/multi_cased_L-12_H-768_A-12")
-
 if __name__ == '__main__':
     model_name = sys.argv[1]
     train_corpus_fname = sys.argv[2]
@@ -363,31 +361,19 @@ if __name__ == '__main__':
     vocab_fname = sys.argv[4]
     pretrain_model_fname = sys.argv[5]
     config_fname = sys.argv[6]
+    model_save_path = sys.argv[7]
     if model_name == "elmo":
         model = ELMoTuner(train_corpus_fname=train_corpus_fname,
                           test_corpus_fname=test_corpus_fname,
                           vocab_fname=vocab_fname,
                           options_fname=config_fname,
-                          pretrain_model_fname=pretrain_model_fname)
-        '''
-        model = ELMoTuner(train_corpus_fname="data/ratings_train.txt",
-                      test_corpus_fname="data/ratings_test.txt",
-                      vocab_fname="data/elmo-vocab.txt",
-                      options_fname="data/elmo/options.json",
-                      pretrain_model_fname="data/elmo/elmo.model")
-        '''
-
+                          pretrain_model_fname=pretrain_model_fname,
+                          model_save_path=model_save_path)
     elif model_name == "bert":
         model = BERTTuner(train_corpus_fname=train_corpus_fname,
                           test_corpus_fname=test_corpus_fname,
                           vocab_fname=vocab_fname,
                           pretrain_model_fname=pretrain_model_fname,
-                          bertconfig_fname=config_fname)
-        '''
-        model = BERTTuner(train_corpus_fname="data/ratings_train.txt",
-                  test_corpus_fname="data/ratings_test.txt",
-                  vocab_fname="data/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
-                  pretrain_model_fname="data/bert/multi_cased_L-12_H-768_A-12",
-                  bertconfig_fname="data/bert/multi_cased_L-12_H-768_A-12/bert_config.json")
-        '''
+                          bertconfig_fname=config_fname,
+                          model_save_path=model_save_path)
     model.tune()
