@@ -202,7 +202,7 @@ class BertModel(object):
 
         # Run the stacked transformer.
         # `sequence_output` shape = [batch_size, seq_length, hidden_size].
-        self.all_encoder_layers = transformer_model(
+        self.all_encoder_layers, self.attn_probs_for_visualization_list = transformer_model(
             input_tensor=self.embedding_output,
             attention_mask=attention_mask,
             hidden_size=config.hidden_size,
@@ -718,6 +718,7 @@ def attention_layer(from_tensor,
   # Normalize the attention scores to probabilities.
   # `attention_probs` = [B, N, F, T]
   attention_probs = tf.nn.softmax(attention_scores)
+  attn_probs_for_visualization = attention_probs
 
   # This is actually dropping out entire tokens to attend to, which might
   # seem a bit unusual, but is taken from the original Transformer paper.
@@ -748,7 +749,7 @@ def attention_layer(from_tensor,
         context_layer,
         [batch_size, from_seq_length, num_attention_heads * size_per_head])
 
-  return context_layer
+  return context_layer, attn_probs_for_visualization
 
 
 def transformer_model(input_tensor,
@@ -823,6 +824,7 @@ def transformer_model(input_tensor,
   prev_output = reshape_to_matrix(input_tensor)
 
   all_layer_outputs = []
+  attn_probs_for_visualization_list = []
   for layer_idx in range(num_hidden_layers):
     with tf.variable_scope("layer_%d" % layer_idx):
       layer_input = prev_output
@@ -830,7 +832,7 @@ def transformer_model(input_tensor,
       with tf.variable_scope("attention"):
         attention_heads = []
         with tf.variable_scope("self"):
-          attention_head = attention_layer(
+          attention_head, attn_probs_for_visualization = attention_layer(
               from_tensor=layer_input,
               to_tensor=layer_input,
               attention_mask=attention_mask,
@@ -843,6 +845,7 @@ def transformer_model(input_tensor,
               from_seq_length=seq_length,
               to_seq_length=seq_length)
           attention_heads.append(attention_head)
+          attn_probs_for_visualization_list.append(attn_probs_for_visualization)
 
         attention_output = None
         if len(attention_heads) == 1:
@@ -886,10 +889,10 @@ def transformer_model(input_tensor,
     for layer_output in all_layer_outputs:
       final_output = reshape_from_matrix(layer_output, input_shape)
       final_outputs.append(final_output)
-    return final_outputs
+    return final_outputs, attn_probs_for_visualization_list
   else:
     final_output = reshape_from_matrix(prev_output, input_shape)
-    return final_output
+    return final_output, attn_probs_for_visualization_list
 
 
 def get_shape_list(tensor, expected_rank=None, name=None):

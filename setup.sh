@@ -72,6 +72,10 @@ make -f fastprep.mk
 # bokeh
 pip install bokeh
 
+# networkx
+pip install networkx
+pip install selenium
+
 # workstation
 python3.6 -m venv tf120
 pip install tensorflow-gpu==1.12
