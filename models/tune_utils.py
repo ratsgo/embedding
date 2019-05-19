@@ -135,11 +135,6 @@ class ELMoTuner(Tuner):
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  vocab_fname, options_fname, pretrain_model_fname,
                  model_save_path, max_characters_per_token=30, batch_size=32):
-        # configurations
-        self.options_fname = options_fname
-        self.pretrain_model_fname = pretrain_model_fname
-        self.max_characters_per_token = max_characters_per_token
-        self.num_labels = 2 # positive, negative
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".elmo.tokenized",
@@ -147,6 +142,11 @@ class ELMoTuner(Tuner):
                          tokenized_test_corpus_fname=test_corpus_fname + ".elmo.tokenized",
                          model_name="elmo", vocab_fname=vocab_fname,
                          model_save_path=model_save_path, batch_size=batch_size)
+        # configurations
+        self.options_fname = options_fname
+        self.pretrain_model_fname = pretrain_model_fname
+        self.max_characters_per_token = max_characters_per_token
+        self.num_labels = 2 # positive, negative
         self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
         self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
         # Create a Batcher to map text to character ids.
@@ -267,7 +267,13 @@ class BERTTuner(Tuner):
     def __init__(self, train_corpus_fname, test_corpus_fname, vocab_fname,
                  pretrain_model_fname, bertconfig_fname, model_save_path,
                  max_seq_length=32, warmup_proportion=0.1,
-                 batch_size=32, learning_rate=5e-05):
+                 batch_size=32, learning_rate=5e-5):
+        # Load a corpus.
+        super().__init__(train_corpus_fname=train_corpus_fname,
+                         tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
+                         tokenized_test_corpus_fname=test_corpus_fname + ".bert.tokenized",
+                         model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
         # configurations
         self.config = BertConfig.from_json_file(bertconfig_fname)
         self.pretrain_model_fname = pretrain_model_fname
@@ -278,12 +284,6 @@ class BERTTuner(Tuner):
         self.PAD_INDEX = 0
         self.CLS_TOKEN = "[CLS]"
         self.SEP_TOKEN = "[SEP]"
-        # Load a corpus.
-        super().__init__(train_corpus_fname=train_corpus_fname,
-                         tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
-                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
-                         tokenized_test_corpus_fname=test_corpus_fname + ".bert.tokenized",
-                         model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
         self.num_train_steps = (int((len(self.train_data) - 1) / self.batch_size) + 1) * self.num_epochs
         self.num_warmup_steps = int(self.num_train_steps * warmup_proportion)
         self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
