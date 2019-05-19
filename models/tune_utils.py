@@ -15,7 +15,7 @@ class Tuner(object):
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
                  test_corpus_fname=None, tokenized_test_corpus_fname=None,
                  model_name="bert", model_save_path=None, vocab_fname=None, eval_every=1000,
-                 batch_size=64, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
+                 batch_size=64, num_epochs=3, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
         # configurations
         self.model_name = model_name
         self.eval_every = eval_every
@@ -71,17 +71,18 @@ class Tuner(object):
             _, _, _, current_loss = sess.run(output_feed, current_input_feed)
             checkpoint_loss += current_loss
             if global_step.eval(sess) % self.eval_every == 0:
-                tf.logging.info("global step %d loss %.4f" %
+                tf.logging.info("global step %d train loss %.4f" %
                                 (global_step.eval(sess), checkpoint_loss / self.eval_every))
                 checkpoint_loss = 0.0
-                self.validation(sess, saver, global_step, output_feed)
+                self.validation(sess, saver, global_step)
 
-    def validation(self, sess, saver, global_step, output_feed):
+    def validation(self, sess, saver, global_step):
         valid_loss, valid_pred, valid_num_data = 0, 0, 0
+        output_feed = [self.logits, self.loss]
         test_batches = self.get_batch(self.test_data, num_epochs=1, is_training=False)
         for batch in test_batches:
             current_input_feed, current_labels = batch
-            _, _, current_logits, current_loss = sess.run(output_feed, current_input_feed)
+            current_logits, current_loss = sess.run(output_feed, current_input_feed)
             current_preds = np.argmax(current_logits, axis=-1)
             valid_loss += current_loss
             valid_num_data += len(current_labels)
@@ -89,8 +90,8 @@ class Tuner(object):
                 if pred == label:
                     valid_pred += 1
         valid_score = valid_pred / valid_num_data
-        tf.logging.info("step %d valid_loss %.4f valid_score %.4f" %
-                        (global_step.eval(sess), valid_loss, valid_score))
+        tf.logging.info("valid loss %.4f valid score %.4f" %
+                        (valid_loss, valid_score))
         if valid_score > self.best_valid_score:
             self.best_valid_score = valid_score
             path = self.model_save_path + "/" + str(valid_score)
@@ -102,7 +103,8 @@ class Tuner(object):
         else:
             data_size = self.test_data_size
         num_batches_per_epoch = int((data_size - 1) / self.batch_size) + 1
-        tf.logging.info("num_batches_per_epoch : " + str(num_batches_per_epoch))
+        if is_training:
+            tf.logging.info("num_batches_per_epoch : " + str(num_batches_per_epoch))
         for epoch in range(num_epochs):
             idx = random.sample(range(data_size), data_size)
             data = np.array(data)[idx]
@@ -249,6 +251,7 @@ class ELMoTuner(Tuner):
         else:
             input_feed_ = {
                 self.ids_placeholder: current_input,
+                self.labels_placeholder: current_output,
                 self.dropout_keep_prob: 1.0,
                 self.training: False
             }
