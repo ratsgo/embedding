@@ -1,13 +1,15 @@
 import sys
+import tensorflow as tf
 from collections import Counter
 from gensim import corpora
 from gensim.models import Doc2Vec, ldamulticore
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from gensim.models.doc2vec import TaggedDocument
-from bilm.training import dump_weights as dump_elmo_weights
-import tensorflow as tf
-from models.bilm import Batcher, BidirectionalLanguageModel, weight_layers
+
+sys.path.append('models')
+from bilm import Batcher, BidirectionalLanguageModel, weight_layers
+from bilm import dump_weights as dump_elmo_weights
 
 
 def latent_semantic_analysis(corpus_fname, output_fname):
