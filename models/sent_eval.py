@@ -4,6 +4,8 @@ sys.path.append('models')
 import tensorflow as tf
 from bert.modeling import BertModel, BertConfig
 from pytorch_pretrained_bert.tokenization import BertTokenizer
+from bilm import Batcher, BidirectionalLanguageModel, weight_layers
+from preprocess import get_tokenizer, post_processing
 
 import numpy as np
 import pandas as pd
@@ -178,6 +180,108 @@ class BERTEmbeddingEval:
 
 
 
+class ELMoEmbeddingEval:
+
+    def __init__(self, tune_model_fname="data/elmo",
+                 pretrain_model_fname="data/elmo/elmo.model",
+                 options_fname="data/elmo/options.json",
+                 vocab_fname="data/elmo/elmo-vocab.txt",
+                 max_characters_per_token=30, dim=256):
+
+        # configurations
+        self.tokenizer = get_tokenizer("mecab")
+        self.batcher = Batcher(lm_vocab_file=vocab_fname, max_token_length=max_characters_per_token)
+        self.dim = dim
+        # Load pretrained ELMo model.
+        bilm = BidirectionalLanguageModel(options_fname, pretrain_model_fname)
+        # Input placeholders to the biLM.
+        self.ids_placeholder = tf.placeholder(tf.int32, shape=(None, None, max_characters_per_token), name='input')
+        # Get ops to compute the LM embeddings.
+        embeddings_op = bilm(self.ids_placeholder)
+        # the ELMo layer
+        # shape : [batch_size, unroll_steps, dimension]
+        self.elmo_embeddings = weight_layers("elmo_embeddings",
+                                             embeddings_op,
+                                             l2_coef=0.0,
+                                             use_top_only=False,
+                                             do_layer_norm=True)
+        # restore model
+        saver = tf.train.Saver(tf.global_variables())
+        self.sess = tf.Session()
+        checkpoint_path = tf.train.latest_checkpoint(tune_model_fname)
+        saver.restore(self.sess, checkpoint_path)
+
+    """
+    sentence를 입력하면 토크나이즈 결과와 token 벡터 시퀀스를 반환한다
+        - shape :[[# of tokens], [batch size, max seq length, dimension]]
+    """
+    def get_sentence_vector(self, sentence):
+        tokens = self.tokenize(sentence)
+        model_input = self.make_input(tokens)
+        sentence_vector = self.sess.run(self.elmo_embeddings, model_input)["weighted_op"]
+        return [tokens, np.squeeze(sentence_vector, axis=1)]
+
+    def tokenize(self, sentence):
+        tokens = self.tokenizer.morphs(sentence)
+        return post_processing(tokens)
+
+    def make_input(self, tokens):
+        model_input = self.batcher.batch_sentences(' '.join(tokens))
+        input_feed = {self.ids_placeholder: model_input}
+        return input_feed
+
+    """
+    Visualize Multiple Sentences (2d vector space)
+    Inspired by:
+    https://github.com/hengluchang/visualizing_contextual_vectors/blob/master/elmo_vis.py
+    """
+    def visualize_sentences(self, interest_word, sentences, palette="Viridis256"):
+        tokenized_sentences = []
+        vecs = np.zeros((1, self.dim))
+        for sentence in sentences:
+            tokens, vec = self.get_sentence_vector(sentence)
+            tokenized_sentences.append(tokens)
+            vecs = np.concatenate([vecs, vec], axis=0)
+        # process sentences
+        token_list, processed_sentences = [], []
+        for tokens in tokenized_sentences:
+            token_list.extend(tokens)
+            sentence = []
+            for token in tokens:
+                processed_token = token.replace("##", "")
+                if token == interest_word:
+                    processed_token = "\"" + processed_token + "\""
+                sentence.append(processed_token)
+            processed_sentences.append(' '.join(sentence))
+        # dimension reduction
+        tsne = TSNE(n_components=2)
+        tsne_results = tsne.fit_transform(vecs[1:])
+        # only plot the word representation of interest
+        interest_vecs, idx = np.zeros((len(sentences), 2)), 0
+        for word, vec in zip(token_list, tsne_results):
+            if word == interest_word:
+                interest_vecs[idx] = vec
+                idx += 1
+        df = pd.DataFrame(columns=['x', 'y', 'annotation'])
+        df['x'], df['y'], df['annotation'] = interest_vecs[:, 0], interest_vecs[:, 1], processed_sentences
+        source = ColumnDataSource(ColumnDataSource.from_df(df))
+        labels = LabelSet(x="x", y="y", text="annotation", y_offset=8,
+                          text_font_size="8pt", text_color="#555555",
+                          source=source, text_align='center')
+        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
+        plot = figure(plot_width=900, plot_height=900)
+        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None,
+                     fill_alpha=0.8)
+        plot.add_layout(labels)
+        show(plot, notebook_handle=True)
+
+
+
 model = BERTEmbeddingEval()
+model.get_sentence_vector("나는 학교에 간다")
 model.visualize_sentences("배", ["배가 고파서 밥 먹었어", "사과와 배는 맛있어"])
 model.visualize_self_attention_scores("배고파 밥줘")
+
+model = ELMoEmbeddingEval()
+model.get_sentence_vector("나는 학교에 간다")
+model.visualize_sentences("배", ["배가 고파서 밥 먹었어", "사과와 배는 맛있어"])
