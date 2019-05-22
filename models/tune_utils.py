@@ -2,9 +2,10 @@ import sys, os, random
 import numpy as np
 import tensorflow as tf
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from preprocess import get_tokenizer, post_processing
 
 sys.path.append('models')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from preprocess import get_tokenizer, post_processing
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bert.modeling import BertModel, BertConfig
 from bert.optimization import create_optimizer
@@ -15,7 +16,7 @@ class Tuner(object):
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
                  test_corpus_fname=None, tokenized_test_corpus_fname=None,
                  model_name="bert", model_save_path=None, vocab_fname=None, eval_every=1000,
-                 batch_size=32, num_epochs=3, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
+                 batch_size=32, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
         # configurations
         self.model_name = model_name
         self.eval_every = eval_every
@@ -37,14 +38,14 @@ class Tuner(object):
     def load_or_tokenize_corpus(self, corpus_fname, tokenized_corpus_fname):
         data_set = []
         if os.path.exists(tokenized_corpus_fname):
-            print("load tokenized corpus :", tokenized_corpus_fname)
+            tf.logging.info("load tokenized corpus : " + tokenized_corpus_fname)
             with open(tokenized_corpus_fname, 'r') as f1:
                 for line in f1:
                     tokens, label = line.strip().split("\u241E")
                     if len(tokens) > 0:
                         data_set.append([tokens.split(" "), int(label)])
         else:
-            print("tokenize corpus :", corpus_fname, ">", tokenized_corpus_fname)
+            tf.logging.info("tokenize corpus : " + corpus_fname, " > " + tokenized_corpus_fname)
             with open(corpus_fname, 'r') as f2:
                 next(f2)  # skip head line
                 for line in f2:
@@ -54,7 +55,7 @@ class Tuner(object):
                     else:
                         tokens = self.tokenizer.morphs(sentence)
                         tokens = post_processing(tokens)
-                    if int(label) > 2.5:
+                    if int(label) > 0.5:
                         int_label = 1
                     else:
                         int_label = 0

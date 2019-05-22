@@ -1,6 +1,8 @@
 import sys, re, json, glob
 from gensim.corpora import WikiCorpus
 from gensim.utils import to_unicode
+
+sys.path.append('preprocess')
 from supervised_nlputils import get_tokenizer, post_processing
 
 """
