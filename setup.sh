@@ -76,6 +76,9 @@ pip install bokeh
 pip install networkx
 pip install selenium
 
+# lxml
+pip install lxml
+
 # workstation
 python3.6 -m venv tf120
 pip install tensorflow-gpu==1.12

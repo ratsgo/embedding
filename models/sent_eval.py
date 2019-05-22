@@ -1,4 +1,4 @@
-import sys
+import sys, requests, random
 sys.path.append('models')
 
 import tensorflow as tf
@@ -10,6 +10,7 @@ from preprocess import get_tokenizer, post_processing
 import numpy as np
 import pandas as pd
 import networkx as nx
+from lxml import html
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -18,6 +19,33 @@ from bokeh.plotting import figure
 from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, ColumnDataSource, LabelSet, SaveTool, ColorBar, BasicTicker
 from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges, EdgesAndLinkedNodes
 from bokeh.palettes import Spectral8
+
+from gensim.models import Doc2Vec, ldamulticore
+
+
+class Doc2VecEvaluator:
+
+    def __init__(self, model_fname="data/doc2vec.vecs"):
+        self.model = Doc2Vec.load(model_fname)
+
+    def most_similar(self, movie_id, topn=10):
+        similar_movies = self.model.docvecs.most_similar('MOVIE_' + str(movie_id), topn=topn)
+        for movie_id, score in similar_movies:
+            print(self.get_movie_title(movie_id), score)
+
+    def get_titles_in_corpus(self, n_sample=5):
+        movie_ids = random.sample(self.model.docvecs.doctags.keys(), n_sample)
+        print([{movie_id: self.get_movie_title(movie_id)} for movie_id in movie_ids])
+
+    def get_movie_title(self, movie_id):
+        url = 'http://movie.naver.com/movie/point/af/list.nhn?st=mcode&target=after&sword=%s' % movie_id.split("_")[1]
+        resp = requests.get(url)
+        root = html.fromstring(resp.text)
+        try:
+            title = root.xpath('//div[@class="choice_movie_info"]//h5//a/text()')[0]
+        except:
+            title = ""
+        return title
 
 
 class SentenceEmbeddingEvaluator:
@@ -100,7 +128,7 @@ class SentenceEmbeddingEvaluator:
         df['x'], df['y'], df['sentence'] = tsne_results[:, 0], tsne_results[:, 1], sentences
         source = ColumnDataSource(ColumnDataSource.from_df(df))
         labels = LabelSet(x="x", y="y", text="sentence", y_offset=8,
-                          text_font_size="8pt", text_color="#555555",
+                          text_font_size="12pt", text_color="#555555",
                           source=source, text_align='center')
         color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
         plot = figure(plot_width=900, plot_height=900)
@@ -389,12 +417,26 @@ with open("data/kor_pair_train.csv", "r", encoding="utf-8") as f:
         sentences.append(sent2)
 sampled_sentences = random.sample(sentences, 30)
 
+positive_reviews, negative_reviews = [], []
+with open("data/ratings_train.txt", "r", encoding="utf-8") as f:
+    reader = csv.reader(f, delimiter="\t")
+    next(reader) # skip head line
+    for line in reader:
+        _, sentence, label = line
+        if label == '1':
+            positive_reviews.append(sentence)
+        else:
+            negative_reviews.append(sentence)
+sampled_reviews = random.sample(positive_reviews, 5)
+sampled_reviews.extend(random.sample(negative_reviews, 5))
+
 model = BERTEmbeddingEval()
 model.get_sentence_vector("나는 학교에 간다")
 model.get_token_vector_sequence("나는 학교에 간다")
-model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파서 병원에 갔어",  "고기를 많이 먹으면 배가 나온다",
-                                "사과와 배는 맛있어", "갈아만든 배", "감기에 걸렸을 땐 배를 달여 드세요",
-                                "항구에 배가 많다", "배를 타면 멀미가 난다", "배를 건조하는 데 돈이 많이 든다"])
+model.visualize_homonym("배", ["배 고프다", "배 아프다", "배 나온다", "배가 불렀다",
+                                "배는 사과보다 맛있다", "배는 수분이 많은 과일이다", "배를 깎아 먹다",
+                                "배를 바다에 띄웠다", "배 멀미가 난다"])
+
 model.visualize_self_attention_scores("배가 아파서 병원에 갔어")
 model.predict("이 영화 정말 재미 있다")
 model.visualize_between_sentences(sampled_sentences)
@@ -408,4 +450,12 @@ model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파
                                 "항구에 배가 많다", "배를 타면 멀미가 난다", "배를 건조하는 데 돈이 많이 든다"])
 model.predict("이 영화 정말 재미 있다")
 model.visualize_between_sentences(sampled_sentences)
-model.visualize_sentences(sampled_sentences)
+model.visualize_sentences(sampled_reviews)
+
+
+model = Doc2VecEvaluator()
+model.get_titles_in_corpus(n_sample=30)
+model.most_similar("36843") # 러브 액츄얼리
+model.most_similar("19227") # 스파이더맨
+model.most_similar("24479") # 스타워즈: 에피소드 1
+model.most_similar("83893") # 광해 왕이된 남자
