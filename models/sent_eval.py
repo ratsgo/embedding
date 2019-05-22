@@ -35,7 +35,7 @@ class Doc2VecEvaluator:
 
     def get_titles_in_corpus(self, n_sample=5):
         movie_ids = random.sample(self.model.docvecs.doctags.keys(), n_sample)
-        print([{movie_id: self.get_movie_title(movie_id)} for movie_id in movie_ids])
+        return {movie_id: self.get_movie_title(movie_id) for movie_id in movie_ids}
 
     def get_movie_title(self, movie_id):
         url = 'http://movie.naver.com/movie/point/af/list.nhn?st=mcode&target=after&sword=%s' % movie_id.split("_")[1]
@@ -46,6 +46,11 @@ class Doc2VecEvaluator:
         except:
             title = ""
         return title
+
+    def visualize(self):
+        movie_ids = self.get_titles_in_corpus(n_sample=100)
+        movie_vecs = [self.model.docvecs.get_vector(movie_id) for movie_id in movie_ids.keys()]
+        # 이후 시각화
 
 
 class SentenceEmbeddingEvaluator:
