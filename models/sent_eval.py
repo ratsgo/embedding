@@ -11,26 +11,149 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 from sklearn.manifold import TSNE
+from sklearn.metrics.pairwise import cosine_similarity
 
 from bokeh.io import show
 from bokeh.plotting import figure
-from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, ColumnDataSource, LabelSet, SaveTool
+from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, ColumnDataSource, LabelSet, SaveTool, ColorBar, BasicTicker
 from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges, EdgesAndLinkedNodes
 from bokeh.palettes import Spectral8
 
 
+class SentenceEmbeddingEvaluator:
 
-class BERTEmbeddingEval:
+    def __init__(self, model_name, dimension):
+        # reset graphs.
+        tf.reset_default_graph()
+        self.model_name = model_name
+        self.dimension = dimension
+
+    def get_token_vector_sequence(self, sentence):
+        raise NotImplementedError
+
+    def get_sentence_vector(self, sentence):
+        raise NotImplementedError
+
+    def predict(self, sentence):
+        raise NotImplementedError
+
+    def tokenize(self, sentence):
+        raise NotImplementedError
+
+    def make_input(self, tokens):
+        raise NotImplementedError
+
+    def visualize_homonym(self, homonym, sentences, palette="Viridis256"):
+        """
+            Visualize homonyms (2d vector space)
+            Inspired by:
+            https://github.com/hengluchang/visualizing_contextual_vectors/blob/master/elmo_vis.py
+        """
+        tokenized_sentences = []
+        vecs = np.zeros((1, self.dimension))
+        for sentence in sentences:
+            tokens, vec = self.get_token_vector_sequence(sentence)
+            tokenized_sentences.append(tokens)
+            vecs = np.concatenate([vecs, vec], axis=0)
+        # process sentences
+        token_list, processed_sentences = [], []
+        for tokens in tokenized_sentences:
+            token_list.extend(tokens)
+            sentence = []
+            for token in tokens:
+                if self.model_name == "bert":
+                    processed_token = token.replace("##", "")
+                else:
+                    processed_token = token
+                if token == homonym:
+                    processed_token = "\"" + processed_token + "\""
+                sentence.append(processed_token)
+            processed_sentences.append(' '.join(sentence))
+        # dimension reduction
+        tsne = TSNE(n_components=2)
+        tsne_results = tsne.fit_transform(vecs[1:])
+        # only plot the word representation of interest
+        interest_vecs, idx = np.zeros((len(sentences), 2)), 0
+        for word, vec in zip(token_list, tsne_results):
+            if word == homonym:
+                interest_vecs[idx] = vec
+                idx += 1
+        df = pd.DataFrame(columns=['x', 'y', 'annotation'])
+        df['x'], df['y'], df['annotation'] = interest_vecs[:, 0], interest_vecs[:, 1], processed_sentences
+        source = ColumnDataSource(ColumnDataSource.from_df(df))
+        labels = LabelSet(x="x", y="y", text="annotation", y_offset=8,
+                          text_font_size="12pt", text_color="#555555",
+                          source=source, text_align='center')
+        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
+        plot = figure(plot_width=900, plot_height=900)
+        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper},
+                     line_color=None,
+                     fill_alpha=0.8)
+        plot.add_layout(labels)
+        show(plot, notebook_handle=True)
+
+    def visualize_sentences(self, sentences, palette="Viridis256"):
+        vecs = np.array([self.get_sentence_vector(sentence)[1] for sentence in sentences])
+        tsne = TSNE(n_components=2)
+        tsne_results = tsne.fit_transform(vecs)
+        df = pd.DataFrame(columns=['x', 'y', 'sentence'])
+        df['x'], df['y'], df['sentence'] = tsne_results[:, 0], tsne_results[:, 1], sentences
+        source = ColumnDataSource(ColumnDataSource.from_df(df))
+        labels = LabelSet(x="x", y="y", text="sentence", y_offset=8,
+                          text_font_size="8pt", text_color="#555555",
+                          source=source, text_align='center')
+        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
+        plot = figure(plot_width=900, plot_height=900)
+        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None, fill_alpha=0.8)
+        plot.add_layout(labels)
+        show(plot, notebook_handle=True)
+
+    def visualize_between_sentences(self, sentences, palette="Viridis256"):
+        vec_list, df_list, score_list = [], [], []
+        for sentence in sentences:
+            _, vec = self.get_sentence_vector(sentence)
+            vec_list.append(vec)
+        for sent1_idx, sentence1 in enumerate(sentences):
+            for sent2_idx, sentence2 in enumerate(sentences):
+                vec1, vec2 = vec_list[sent1_idx], vec_list[sent2_idx]
+                if np.any(vec1) and np.any(vec2):
+                    score = cosine_similarity(X=[vec1], Y=[vec2])
+                    df_list.append({'x': sentence1, 'y': sentence2, 'similarity': score[0][0]})
+                    score_list.append(score[0][0])
+        df = pd.DataFrame(df_list)
+        color_mapper = LinearColorMapper(palette=palette, low=np.max(score_list), high=np.min(score_list))
+        TOOLS = "hover,save,pan,box_zoom,reset,wheel_zoom"
+        p = figure(x_range=sentences, y_range=list(reversed(sentences)),
+                   x_axis_location="above", plot_width=900, plot_height=900,
+                   toolbar_location='below', tools=TOOLS,
+                   tooltips=[('sentences', '@x @y'), ('similarity', '@similarity')])
+        p.grid.grid_line_color = None
+        p.axis.axis_line_color = None
+        p.axis.major_tick_line_color = None
+        p.axis.major_label_standoff = 0
+        p.xaxis.major_label_orientation = 3.14 / 3
+        p.rect(x="x", y="y", width=1, height=1,
+               source=df,
+               fill_color={'field': 'similarity', 'transform': color_mapper},
+               line_color=None)
+        color_bar = ColorBar(ticker=BasicTicker(desired_num_ticks=5),
+                             color_mapper=color_mapper, major_label_text_font_size="7pt",
+                             label_standoff=6, border_line_color=None, location=(0, 0))
+        p.add_layout(color_bar, 'right')
+        show(p)
+
+
+class BERTEmbeddingEval(SentenceEmbeddingEvaluator):
 
     def __init__(self, model_fname="data/bert",
                  bertconfig_fname="data/bert/multi_cased_L-12_H-768_A-12/bert_config.json",
                  vocab_fname="data/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
-                 max_seq_length=32, dim=768):
+                 max_seq_length=32, dimension=768):
 
+        super().__init__("bert", dimension)
         config = BertConfig.from_json_file(bertconfig_fname)
         self.tokenizer = BertTokenizer(vocab_file=vocab_fname, do_lower_case=False)
         self.max_seq_length = max_seq_length
-        self.dim = dim
         self.input_ids = tf.placeholder(tf.int32, [1, max_seq_length], name='inputs_ids')
         self.input_mask = tf.placeholder(tf.int32, [1, max_seq_length], name='input_mask')
         self.segment_ids = tf.placeholder(tf.int32, [1, max_seq_length], name='segment_ids')
@@ -39,19 +162,40 @@ class BERTEmbeddingEval:
                                input_ids=self.input_ids,
                                input_mask=self.input_mask,
                                token_type_ids=self.segment_ids)
+        logits = tf.contrib.layers.fully_connected(inputs=self.model.pooled_output,
+                                                   num_outputs=2,
+                                                   activation_fn=None,
+                                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                                   biases_initializer=tf.zeros_initializer())
+        self.probs = tf.nn.softmax(logits, axis=-1, name='probs')
         saver = tf.train.Saver(tf.global_variables())
         self.sess = tf.Session()
         checkpoint_path = tf.train.latest_checkpoint(model_fname)
         saver.restore(self.sess, checkpoint_path)
 
+    def predict(self, sentence):
+        tokens = self.tokenize(sentence)
+        model_input = self.make_input(tokens)
+        probs = self.sess.run(self.probs, model_input)
+        return probs
+
     """
     sentence를 입력하면 토크나이즈 결과와 token 벡터 시퀀스를 반환한다
         - shape :[[# of tokens], [batch size, max seq length, dimension]]
     """
-    def get_sentence_vector(self, sentence):
+    def get_token_vector_sequence(self, sentence):
         tokens = self.tokenize(sentence)
         model_input = self.make_input(tokens)
         return [tokens, self.sess.run(self.model.get_sequence_output()[0], model_input)[:len(tokens)]]
+
+    """
+    sentence를 입력하면 토크나이즈 결과와 [CLS] 벡터를 반환한다
+         - shape :[[# of tokens], [batch size, dimension]]
+    """
+    def get_sentence_vector(self, sentence):
+        tokens = self.tokenize(sentence)
+        model_input = self.make_input(tokens)
+        return [tokens, self.sess.run(self.model.pooled_output, model_input)[0]]
 
     """
     sentence를 입력하면 토크나이즈 결과와 self-attention score matrix를 반환한다
@@ -84,51 +228,6 @@ class BERTEmbeddingEval:
             self.input_mask: np.array([[1] * current_length + [0] * padding_length])
         }
         return input_feed
-
-    """
-    Visualize Multiple Sentences (2d vector space)
-    Inspired by:
-    https://github.com/hengluchang/visualizing_contextual_vectors/blob/master/elmo_vis.py
-    """
-    def visualize_sentences(self, interest_word, sentences, palette="Viridis256"):
-        tokenized_sentences = []
-        vecs = np.zeros((1, self.dim))
-        for sentence in sentences:
-            tokens, vec = self.get_sentence_vector(sentence)
-            tokenized_sentences.append(tokens)
-            vecs = np.concatenate([vecs, vec], axis=0)
-        # process sentences
-        token_list, processed_sentences = [], []
-        for tokens in tokenized_sentences:
-            token_list.extend(tokens)
-            sentence = []
-            for token in tokens:
-                processed_token = token.replace("##", "")
-                if token == interest_word:
-                    processed_token = "\"" + processed_token + "\""
-                sentence.append(processed_token)
-            processed_sentences.append(' '.join(sentence))
-        # dimension reduction
-        tsne = TSNE(n_components=2)
-        tsne_results = tsne.fit_transform(vecs[1:])
-        # only plot the word representation of interest
-        interest_vecs, idx = np.zeros((len(sentences), 2)), 0
-        for word, vec in zip(token_list, tsne_results):
-            if word == interest_word:
-                interest_vecs[idx] = vec
-                idx += 1
-        df = pd.DataFrame(columns=['x', 'y', 'annotation'])
-        df['x'], df['y'], df['annotation'] = interest_vecs[:, 0], interest_vecs[:, 1], processed_sentences
-        source = ColumnDataSource(ColumnDataSource.from_df(df))
-        labels = LabelSet(x="x", y="y", text="annotation", y_offset=8,
-                          text_font_size="8pt", text_color="#555555",
-                          source=source, text_align='center')
-        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
-        plot = figure(plot_width=900, plot_height=900)
-        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None,
-                     fill_alpha=0.8)
-        plot.add_layout(labels)
-        show(plot, notebook_handle=True)
 
     def visualize_self_attention_scores(self, sentence, palette="Viridis256"):
         tokens, scores = self.get_self_attention_score(sentence)
@@ -180,18 +279,18 @@ class BERTEmbeddingEval:
 
 
 
-class ELMoEmbeddingEval:
+class ELMoEmbeddingEval(SentenceEmbeddingEvaluator):
 
     def __init__(self, tune_model_fname="data/elmo",
                  pretrain_model_fname="data/elmo/elmo.model",
                  options_fname="data/elmo/options.json",
                  vocab_fname="data/elmo/elmo-vocab.txt",
-                 max_characters_per_token=30, dim=256):
+                 max_characters_per_token=30, dimension=256):
 
         # configurations
+        super().__init__("elmo", dimension)
         self.tokenizer = get_tokenizer("mecab")
         self.batcher = Batcher(lm_vocab_file=vocab_fname, max_token_length=max_characters_per_token)
-        self.dim = dim
         # Load pretrained ELMo model.
         bilm = BidirectionalLanguageModel(options_fname, pretrain_model_fname)
         # Input placeholders to the biLM.
@@ -204,84 +303,109 @@ class ELMoEmbeddingEval:
                                              embeddings_op,
                                              l2_coef=0.0,
                                              use_top_only=False,
-                                             do_layer_norm=True)
+                                             do_layer_norm=True)["weighted_op"]
+        # Bidirectional LSTM with Attention Layer
+        lstm_cell_fw = tf.nn.rnn_cell.LSTMCell(num_units=512,
+                                               cell_clip=5,
+                                               proj_clip=5)
+        lstm_cell_bw = tf.nn.rnn_cell.LSTMCell(num_units=512,
+                                               cell_clip=5,
+                                               proj_clip=5)
+        lstm_output, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=lstm_cell_fw,
+                                                         cell_bw=lstm_cell_bw,
+                                                         inputs=self.elmo_embeddings,
+                                                         sequence_length=embeddings_op['lengths'],
+                                                         dtype=tf.float32)
+        # Attention Layer
+        output_fw, output_bw = lstm_output
+        # (batch_size, seq_len, HIDDEN_SIZE)
+        H = tf.nn.tanh(output_fw + output_bw)
+        # softmax(dot(W, H)) : (batch_size, seq_len, 1)
+        attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+        # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
+        attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
+        layer_output = tf.nn.tanh(attention_output)
+        # Feed-Forward Layer
+        fc = tf.contrib.layers.fully_connected(inputs=layer_output,
+                                               num_outputs=512,
+                                               activation_fn=tf.nn.relu,
+                                               weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                               biases_initializer=tf.zeros_initializer())
+        logits = tf.contrib.layers.fully_connected(inputs=fc,
+                                                   num_outputs=2,
+                                                   activation_fn=None,
+                                                   weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                                   biases_initializer=tf.zeros_initializer())
+        self.probs = tf.nn.softmax(logits, axis=-1, name='probs')
         # restore model
         saver = tf.train.Saver(tf.global_variables())
         self.sess = tf.Session()
         checkpoint_path = tf.train.latest_checkpoint(tune_model_fname)
         saver.restore(self.sess, checkpoint_path)
 
+    def predict(self, sentence):
+        tokens = self.tokenize(sentence)
+        model_input = self.make_input(tokens)
+        probs = self.sess.run(self.probs, model_input)
+        return probs
+
     """
     sentence를 입력하면 토크나이즈 결과와 token 벡터 시퀀스를 반환한다
         - shape :[[# of tokens], [batch size, max seq length, dimension]]
     """
-    def get_sentence_vector(self, sentence):
+    def get_token_vector_sequence(self, sentence):
         tokens = self.tokenize(sentence)
         model_input = self.make_input(tokens)
-        sentence_vector = self.sess.run(self.elmo_embeddings, model_input)["weighted_op"]
-        return [tokens, np.squeeze(sentence_vector, axis=1)]
+        sentence_vector = self.sess.run(self.elmo_embeddings, model_input)
+        return [tokens, sentence_vector[0]]
+
+    """
+    sentence를 입력하면 토크나이즈 결과와 토큰 시퀀스의 마지막 벡터를 반환한다
+    ELMo는 Language Model이기 때문에 토큰 시퀀스 마지막 벡터에 많은 정보가 녹아 있다
+         - shape :[[# of tokens], [batch size, dimension]]
+    """
+    def get_sentence_vector(self, sentence):
+        tokens, vecs = self.get_token_vector_sequence(sentence)
+        return [tokens, vecs[-1]]
 
     def tokenize(self, sentence):
         tokens = self.tokenizer.morphs(sentence)
         return post_processing(tokens)
 
     def make_input(self, tokens):
-        model_input = self.batcher.batch_sentences(' '.join(tokens))
+        model_input = self.batcher.batch_sentences([tokens])
         input_feed = {self.ids_placeholder: model_input}
         return input_feed
 
-    """
-    Visualize Multiple Sentences (2d vector space)
-    Inspired by:
-    https://github.com/hengluchang/visualizing_contextual_vectors/blob/master/elmo_vis.py
-    """
-    def visualize_sentences(self, interest_word, sentences, palette="Viridis256"):
-        tokenized_sentences = []
-        vecs = np.zeros((1, self.dim))
-        for sentence in sentences:
-            tokens, vec = self.get_sentence_vector(sentence)
-            tokenized_sentences.append(tokens)
-            vecs = np.concatenate([vecs, vec], axis=0)
-        # process sentences
-        token_list, processed_sentences = [], []
-        for tokens in tokenized_sentences:
-            token_list.extend(tokens)
-            sentence = []
-            for token in tokens:
-                processed_token = token.replace("##", "")
-                if token == interest_word:
-                    processed_token = "\"" + processed_token + "\""
-                sentence.append(processed_token)
-            processed_sentences.append(' '.join(sentence))
-        # dimension reduction
-        tsne = TSNE(n_components=2)
-        tsne_results = tsne.fit_transform(vecs[1:])
-        # only plot the word representation of interest
-        interest_vecs, idx = np.zeros((len(sentences), 2)), 0
-        for word, vec in zip(token_list, tsne_results):
-            if word == interest_word:
-                interest_vecs[idx] = vec
-                idx += 1
-        df = pd.DataFrame(columns=['x', 'y', 'annotation'])
-        df['x'], df['y'], df['annotation'] = interest_vecs[:, 0], interest_vecs[:, 1], processed_sentences
-        source = ColumnDataSource(ColumnDataSource.from_df(df))
-        labels = LabelSet(x="x", y="y", text="annotation", y_offset=8,
-                          text_font_size="8pt", text_color="#555555",
-                          source=source, text_align='center')
-        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
-        plot = figure(plot_width=900, plot_height=900)
-        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None,
-                     fill_alpha=0.8)
-        plot.add_layout(labels)
-        show(plot, notebook_handle=True)
 
-
+import csv, random
+sentences = []
+with open("data/kor_pair_train.csv", "r", encoding="utf-8") as f:
+    reader = csv.reader(f, delimiter=",")
+    next(reader) # skip head line
+    for line in reader:
+        _, _, _, sent1, sent2, _ = line
+        sentences.append(sent1)
+        sentences.append(sent2)
+sampled_sentences = random.sample(sentences, 30)
 
 model = BERTEmbeddingEval()
 model.get_sentence_vector("나는 학교에 간다")
-model.visualize_sentences("배", ["배가 고파서 밥 먹었어", "사과와 배는 맛있어"])
-model.visualize_self_attention_scores("배고파 밥줘")
+model.get_token_vector_sequence("나는 학교에 간다")
+model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파서 병원에 갔어",  "고기를 많이 먹으면 배가 나온다",
+                                "사과와 배는 맛있어", "갈아만든 배", "감기에 걸렸을 땐 배를 달여 드세요",
+                                "항구에 배가 많다", "배를 타면 멀미가 난다", "배를 건조하는 데 돈이 많이 든다"])
+model.visualize_self_attention_scores("배가 아파서 병원에 갔어")
+model.predict("이 영화 정말 재미 있다")
+model.visualize_between_sentences(sampled_sentences)
+model.visualize_sentences(sampled_sentences)
 
 model = ELMoEmbeddingEval()
 model.get_sentence_vector("나는 학교에 간다")
-model.visualize_sentences("배", ["배가 고파서 밥 먹었어", "사과와 배는 맛있어"])
+model.get_token_vector_sequence("나는 학교에 간다")
+model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파서 병원에 갔어",  "고기를 많이 먹으면 배가 나온다",
+                                "사과와 배는 맛있어", "갈아만든 배", "감기에 걸렸을 땐 배를 달여 드세요",
+                                "항구에 배가 많다", "배를 타면 멀미가 난다", "배를 건조하는 데 돈이 많이 든다"])
+model.predict("이 영화 정말 재미 있다")
+model.visualize_between_sentences(sampled_sentences)
+model.visualize_sentences(sampled_sentences)

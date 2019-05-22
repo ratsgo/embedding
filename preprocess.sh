@@ -16,6 +16,10 @@ case $COMMAND in
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json
         mv KorQuAD_v1* data
+        echo "download similar sentence data..."
+        wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv
+        wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv
+        mv kor_*air* data
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
