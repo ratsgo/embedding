@@ -11,6 +11,121 @@ from bert.modeling import BertModel, BertConfig
 from bert.optimization import create_optimizer
 
 
+def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_token, num_labels, tune=False):
+    """
+        ids_placeholder : ELMo 네트워크의 입력값 (ids)
+            - shape : [batch_size, unroll_steps, max_character_byte_length]
+        elmo_embeddings : fine tuning 네트워크의 입력값 (ELMo 네트워크의 출력값)
+            - shape : [batch_size, unroll_steps, dimension]
+        labels_placeholder : fine tuning 네트워크의 출력값 (예 : 긍정=1/부정=0)
+            - shape : [batch_size]
+        loss : fine tuning 네트워크의 loss
+    """
+    # Build the biLM graph.
+    # Load pretrained ELMo model.
+    bilm = BidirectionalLanguageModel(options_fname, pretrain_model_fname)
+    # Input placeholders to the biLM.
+    ids_placeholder = tf.placeholder(tf.int32, shape=(None, None, max_characters_per_token), name='input')
+    if tune:
+        # Output placeholders to the fine-tuned Net.
+        labels_placeholder = tf.placeholder(tf.int32, shape=(None))
+    else:
+        labels_placeholder = None
+    # Get ops to compute the LM embeddings.
+    embeddings_op = bilm(ids_placeholder)
+    # Get lengths.
+    input_lengths = embeddings_op['lengths']
+    # define dropout
+    if tune:
+        dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+    else:
+        dropout_keep_prob = tf.constant(1.0, dtype=tf.float32)
+    # the ELMo layer
+    # shape : [batch_size, unroll_steps, dimension]
+    elmo_embeddings = weight_layers("elmo_embeddings",
+                                    embeddings_op,
+                                    l2_coef=0.0,
+                                    use_top_only=False,
+                                    do_layer_norm=True)
+    # input of fine tuning network
+    features = tf.nn.dropout(elmo_embeddings['weighted_op'], dropout_keep_prob)
+    # Bidirectional LSTM Layer
+    lstm_cell_fw = tf.nn.rnn_cell.LSTMCell(num_units=512,
+                                           cell_clip=5,
+                                           proj_clip=5)
+    lstm_cell_bw = tf.nn.rnn_cell.LSTMCell(num_units=512,
+                                           cell_clip=5,
+                                           proj_clip=5)
+    lstm_output, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=lstm_cell_fw,
+                                                     cell_bw=lstm_cell_bw,
+                                                     inputs=features,
+                                                     sequence_length=input_lengths,
+                                                     dtype=tf.float32)
+
+    # Attention Layer
+    output_fw, output_bw = lstm_output
+    # (batch_size, seq_len, HIDDEN_SIZE)
+    H = tf.nn.tanh(output_fw + output_bw)
+    # softmax(dot(W, H)) : (batch_size, seq_len, 1)
+    attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+    # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
+    attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
+    layer_output = tf.nn.dropout(tf.nn.tanh(attention_output), dropout_keep_prob)
+
+    # Feed-Forward Layer
+    fc = tf.contrib.layers.fully_connected(inputs=layer_output,
+                                           num_outputs=512,
+                                           activation_fn=tf.nn.relu,
+                                           weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                           biases_initializer=tf.zeros_initializer())
+    features_drop = tf.nn.dropout(fc, dropout_keep_prob)
+    logits = tf.contrib.layers.fully_connected(inputs=features_drop,
+                                               num_outputs=num_labels,
+                                               activation_fn=None,
+                                               weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                               biases_initializer=tf.zeros_initializer())
+    if tune:
+        # Loss Layer
+        CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels_placeholder, logits=logits)
+        loss = tf.reduce_mean(CE)
+        return ids_placeholder, labels_placeholder, dropout_keep_prob, logits, loss
+    else:
+        # prob Layer
+        probs = tf.nn.softmax(logits, axis=-1, name='probs')
+        return ids_placeholder, elmo_embeddings, probs
+
+
+def make_bert_graph(bert_config, max_seq_length, dropout_keep_prob_rate, num_labels, tune=False):
+    input_ids = tf.placeholder(tf.int32, [None, max_seq_length], name='inputs_ids')
+    input_mask = tf.placeholder(tf.int32, [None, max_seq_length], name='input_mask')
+    segment_ids = tf.placeholder(tf.int32, [None, max_seq_length], name='segment_ids')
+    model = BertModel(config=bert_config,
+                      is_training=True,
+                      input_ids=input_ids,
+                      input_mask=input_mask,
+                      token_type_ids=segment_ids)
+    if tune:
+        bert_embeddings_dropout = tf.nn.dropout(model.pooled_output, keep_prob=(1 - dropout_keep_prob_rate))
+        label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
+    else:
+        bert_embeddings_dropout = model.pooled_output
+        label_ids = None
+    logits = tf.contrib.layers.fully_connected(inputs=bert_embeddings_dropout,
+                                               num_outputs=num_labels,
+                                               activation_fn=None,
+                                               weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
+                                               biases_initializer=tf.zeros_initializer())
+    if tune:
+        # loss layer
+        CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label_ids, logits=logits)
+        loss = tf.reduce_mean(CE)
+        return input_ids, input_mask, segment_ids, label_ids, logits, loss
+    else:
+        # prob layer
+        probs = tf.nn.softmax(logits, axis=-1, name='probs')
+        return model, input_ids, input_mask, segment_ids, probs
+
+
 class Tuner(object):
 
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
@@ -135,7 +250,8 @@ class ELMoTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  vocab_fname, options_fname, pretrain_model_fname,
-                 model_save_path, max_characters_per_token=30, batch_size=32):
+                 model_save_path, max_characters_per_token=30,
+                 batch_size=32, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".elmo.tokenized",
@@ -157,79 +273,10 @@ class ELMoTuner(Tuner):
         self.batcher = Batcher(lm_vocab_file=vocab_fname, max_token_length=self.max_characters_per_token)
         self.training = tf.placeholder(tf.bool)
         # build train graph
-        self.ids_placeholder, self.labels_placeholder, self.dropout_keep_prob, self.logits, self.loss = self.buildGraph()
-
-    def buildGraph(self):
-        """
-        ids_placeholder : ELMo 네트워크의 입력값 (ids)
-            - shape : [batch_size, unroll_steps, max_character_byte_length]
-        elmo_embeddings : fine tuning 네트워크의 입력값 (ELMo 네트워크의 출력값)
-            - shape : [batch_size, unroll_steps, dimension]
-        labels_placeholder : fine tuning 네트워크의 출력값 (예 : 긍정=1/부정=0)
-            - shape : [batch_size]
-        loss : fine tuning 네트워크의 loss
-        """
-        # Build the biLM graph.
-        # Load pretrained ELMo model.
-        bilm = BidirectionalLanguageModel(self.options_fname, self.pretrain_model_fname)
-        # Input placeholders to the biLM.
-        ids_placeholder = tf.placeholder(tf.int32, shape=(None, None, self.max_characters_per_token), name='input')
-        # Output placeholders to the fine-tuned Net.
-        labels_placeholder = tf.placeholder(tf.int32, shape=(None))
-        # Get ops to compute the LM embeddings.
-        embeddings_op = bilm(ids_placeholder)
-        # Get lengths.
-        input_lengths = embeddings_op['lengths']
-        # define dropout & train
-        dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
-        # the ELMo layer
-        # shape : [batch_size, unroll_steps, dimension]
-        elmo_embeddings = weight_layers("elmo_embeddings",
-                                        embeddings_op,
-                                        l2_coef=0.0,
-                                        use_top_only=False,
-                                        do_layer_norm=True)
-        # input of fine tuning network
-        features = tf.nn.dropout(elmo_embeddings['weighted_op'], dropout_keep_prob)
-        # Bidirectional LSTM Layer
-        lstm_cell_fw = tf.nn.rnn_cell.LSTMCell(num_units=512,
-                                               cell_clip=5,
-                                               proj_clip=5)
-        lstm_cell_bw = tf.nn.rnn_cell.LSTMCell(num_units=512,
-                                               cell_clip=5,
-                                               proj_clip=5)
-        lstm_output, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=lstm_cell_fw,
-                                                         cell_bw=lstm_cell_bw,
-                                                         inputs=features,
-                                                         sequence_length=input_lengths,
-                                                         dtype=tf.float32)
-
-        # Attention Layer
-        output_fw, output_bw = lstm_output
-        # (batch_size, seq_len, HIDDEN_SIZE)
-        H = tf.nn.tanh(output_fw + output_bw)
-        # softmax(dot(W, H)) : (batch_size, seq_len, 1)
-        attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
-        # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
-        attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
-        layer_output = tf.nn.dropout(tf.nn.tanh(attention_output), dropout_keep_prob)
-
-        # Feed-Forward Layer
-        fc = tf.contrib.layers.fully_connected(inputs=layer_output,
-                                               num_outputs=512,
-                                               activation_fn=tf.nn.relu,
-                                               weights_initializer=tf.contrib.layers.xavier_initializer(),
-                                               biases_initializer=tf.zeros_initializer())
-        features_drop = tf.nn.dropout(fc, dropout_keep_prob)
-        logits = tf.contrib.layers.fully_connected(inputs=features_drop,
-                                                   num_outputs=self.num_labels,
-                                                   activation_fn=None,
-                                                   weights_initializer=tf.contrib.layers.xavier_initializer(),
-                                                   biases_initializer=tf.zeros_initializer())
-        # Loss Layer
-        CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels_placeholder, logits=logits)
-        loss = tf.reduce_mean(CE)
-        return ids_placeholder, labels_placeholder, dropout_keep_prob, logits, loss
+        self.ids_placeholder, self.labels_placeholder, self.dropout_keep_prob, self.logits, self.loss = make_elmo_graph(options_fname,
+                                                                                                                        pretrain_model_fname,
+                                                                                                                        max_characters_per_token,
+                                                                                                                        num_labels, tune=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
@@ -268,7 +315,7 @@ class BERTTuner(Tuner):
     def __init__(self, train_corpus_fname, test_corpus_fname, vocab_fname,
                  pretrain_model_fname, bertconfig_fname, model_save_path,
                  max_seq_length=32, warmup_proportion=0.1,
-                 batch_size=32, learning_rate=5e-5):
+                 batch_size=32, learning_rate=5e-5, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
@@ -276,7 +323,7 @@ class BERTTuner(Tuner):
                          tokenized_test_corpus_fname=test_corpus_fname + ".bert.tokenized",
                          model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
         # configurations
-        self.config = BertConfig.from_json_file(bertconfig_fname)
+        config = BertConfig.from_json_file(bertconfig_fname)
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
         self.batch_size = batch_size
@@ -290,31 +337,10 @@ class BERTTuner(Tuner):
         self.eval_every = int(self.num_train_steps / self.num_epochs)  # epoch마다 평가
         self.training = tf.placeholder(tf.bool)
         # build train graph
-        self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = self.buildGraph()
-
-    def buildGraph(self):
-        # define input placeholders
-        input_ids = tf.placeholder(tf.int32, [None, self.max_seq_length], name='inputs_ids')
-        input_mask = tf.placeholder(tf.int32, [None, self.max_seq_length], name='input_mask')
-        segment_ids = tf.placeholder(tf.int32, [None, self.max_seq_length], name='segment_ids')
-        label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
-        # build BERT model
-        model = BertModel(config=self.config,
-                          is_training=True,
-                          input_ids=input_ids,
-                          input_mask=input_mask,
-                          token_type_ids=segment_ids)
-        # build tune layer
-        bert_embeddings_dropout = tf.nn.dropout(model.pooled_output, keep_prob=(1 - self.dropout_keep_prob_rate))
-        logits = tf.contrib.layers.fully_connected(inputs=bert_embeddings_dropout,
-                                                   num_outputs=self.num_labels,
-                                                   activation_fn=None,
-                                                   weights_initializer=tf.truncated_normal_initializer(stddev=0.02),
-                                                   biases_initializer=tf.zeros_initializer())
-        # loss layer
-        CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label_ids, logits=logits)
-        loss = tf.reduce_mean(CE)
-        return input_ids, input_mask, segment_ids, label_ids, logits, loss
+        self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_bert_graph(config,
+                                                                                                                    max_seq_length,
+                                                                                                                    self.dropout_keep_prob_rate,
+                                                                                                                    num_labels, tune=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
