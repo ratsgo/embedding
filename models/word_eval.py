@@ -1,15 +1,12 @@
+import sys
 import numpy as np
 import scipy.stats as st
 from gensim.models import Word2Vec
-from sklearn.manifold import TSNE
 from sklearn.preprocessing import normalize
-from sklearn.metrics.pairwise import cosine_similarity
 from preprocess import get_tokenizer
 
-import pandas as pd
-from bokeh.io import show
-from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, LabelSet, LinearColorMapper, ColorBar, BasicTicker, PrintfTickFormatter
+sys.path.append('models')
+from visualize_utils import visualize_words, visualize_between_words
 
 
 class WordEmbeddingEval:
@@ -150,55 +147,16 @@ class WordEmbeddingEval:
                 for word in line.strip().split(" "):
                     words.add(word)
         vecs = np.array([self.get_sentence_vector(word) for word in words])
-        tsne = TSNE(n_components=2)
-        tsne_results = tsne.fit_transform(vecs)
-        df = pd.DataFrame(columns=['x', 'y', 'word'])
-        df['x'], df['y'], df['word'] = tsne_results[:, 0], tsne_results[:, 1], list(words)
-        source = ColumnDataSource(ColumnDataSource.from_df(df))
-        labels = LabelSet(x="x", y="y", text="word", y_offset=8,
-                          text_font_size="8pt", text_color="#555555",
-                          source=source, text_align='center')
-        color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
-        plot = figure(plot_width=900, plot_height=900)
-        plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None, fill_alpha=0.8)
-        plot.add_layout(labels)
-        show(plot, notebook_handle=True)
+        visualize_words(words, vecs, palette)
 
-    def visualize_between_words(self, words_fname, rec_length=30, palette="Viridis256"):
+    def visualize_between_words(self, words_fname, palette="Viridis256"):
         words = set()
         for line in open(words_fname, 'r'):
             if not line.startswith("#"):
                 for word in line.strip().split(" "):
                     words.add(word)
-        df_list = []
-        for word1 in words:
-            for word2 in words:
-                vec1 = self.get_sentence_vector(word1)
-                vec2 = self.get_sentence_vector(word2)
-                if np.any(vec1) and np.any(vec2):
-                    score = cosine_similarity(X=[vec1], Y=[vec2])
-                    df_list.append({'x': word1, 'y': word2, 'similarity': score[0][0]})
-        df = pd.DataFrame(df_list)
-        color_mapper = LinearColorMapper(palette=palette, low=1, high=0)
-        TOOLS = "hover,save,pan,box_zoom,reset,wheel_zoom"
-        p = figure(x_range=list(words), y_range=list(reversed(list(words))),
-                   x_axis_location="above", plot_width=900, plot_height=900,
-                   toolbar_location='below', tools=TOOLS,
-                   tooltips=[('words', '@x @y'), ('similarity', '@similarity')])
-        p.grid.grid_line_color = None
-        p.axis.axis_line_color = None
-        p.axis.major_tick_line_color = None
-        p.axis.major_label_standoff = 0
-        p.xaxis.major_label_orientation = 3.14 / 3
-        p.rect(x="x", y="y", width=1, height=1,
-               source=df,
-               fill_color={'field': 'similarity', 'transform': color_mapper},
-               line_color=None)
-        color_bar = ColorBar(ticker=BasicTicker(desired_num_ticks=5),
-                             color_mapper=color_mapper, major_label_text_font_size="7pt",
-                             label_standoff=6, border_line_color=None, location=(0, 0))
-        p.add_layout(color_bar, 'right')
-        show(p)
+        vecs = [self.get_sentence_vector(word) for word in words]
+        visualize_between_words(words, vecs, palette)
 
 
 
