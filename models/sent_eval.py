@@ -9,16 +9,19 @@ from preprocess import get_tokenizer, post_processing
 
 import numpy as np
 from lxml import html
-
-from gensim.models import Doc2Vec, ldamulticore
+from gensim import corpora
+from gensim.models import Doc2Vec, LdaModel
 from visualize_utils import visualize_homonym, visualize_between_sentences, \
-    visualize_self_attention_scores, visualize_sentences
+    visualize_self_attention_scores, visualize_sentences, visualize_words, visualize_between_words
 from tune_utils import make_elmo_graph, make_bert_graph
+from sklearn.preprocessing import normalize
+
 
 class Doc2VecEvaluator:
 
     def __init__(self, model_fname="data/doc2vec.vecs"):
         self.model = Doc2Vec.load(model_fname)
+        self.doc2idx = {el:idx for idx, el in enumerate(self.model.docvecs.doctags.keys())}
 
     def most_similar(self, movie_id, topn=10):
         similar_movies = self.model.docvecs.most_similar('MOVIE_' + str(movie_id), topn=topn)
@@ -39,10 +42,57 @@ class Doc2VecEvaluator:
             title = ""
         return title
 
-    def visualize(self):
-        movie_ids = self.get_titles_in_corpus(n_sample=100)
-        movie_vecs = [self.model.docvecs.get_vector(movie_id) for movie_id in movie_ids.keys()]
-        # 이후 시각화
+    def visualize_movies(self, n_sample=100, palette="Viridis256", type="between"):
+        movie_ids = self.get_titles_in_corpus(n_sample=n_sample)
+        movie_titles = [movie_ids[key] for key in movie_ids.keys()]
+        movie_vecs = [self.model.docvecs[self.doc2idx[movie_id]] for movie_id in movie_ids.keys()]
+        if type == "between":
+            visualize_between_words(movie_titles, movie_vecs, palette)
+        else:
+            visualize_words(movie_titles, movie_vecs, palette)
+
+
+class LDAEvaluator:
+
+    def __init__(self, corpus_fname="data/review_movieid_nouns.txt" ,
+                 model_fname="data/lda.model", n_samples=10000):
+        self.raw_corpus, noun_corpus, self.movie_ids = self.load_corpus(corpus_fname, n_samples)
+        dictionary = corpora.Dictionary(noun_corpus)
+        corpus = [dictionary.doc2bow(text) for text in noun_corpus]
+        self.model = LdaModel.load(model_fname)
+        self.all_topics = self.load_topics(corpus)
+
+    def load_corpus(self, corpus_fname, n_samples):
+        num_sentence = 0
+        raw_corpus, noun_corpus, movie_ids = [], [], []
+        with open(corpus_fname, 'r', encoding='utf-8') as f:
+            for line in f:
+                if num_sentence - 1 < n_samples:
+                    try:
+                        sentence, nouns, movie_id = line.replace('\n', '').strip().split("\u241E")
+                        raw_corpus.append(sentence)
+                        noun_corpus.append(nouns.split(" "))
+                        movie_ids.append(movie_id)
+                        num_sentence += 1
+                    except:
+                        continue
+        return raw_corpus, noun_corpus, movie_ids
+
+    def load_topics(self, corpus):
+        topics = [el[1] for el in self.model.get_document_topics(corpus, per_word_topics=False)]
+        return normalize(topics, axis=0, norm='l2')
+
+    def most_similar(self, doc_id, topn=10):
+        query_doc_vec = self.all_topics[doc_id]
+        query_vec_norm = np.linalg.norm(query_doc_vec)
+        if query_vec_norm != 0:
+            query_unit_vec = query_doc_vec / query_vec_norm
+        else:
+            query_unit_vec = query_doc_vec
+        query_sentence = self.raw_corpus[doc_id]
+        scores = np.dot(self.all_topics, query_unit_vec)
+        return [query_sentence, sorted(zip(self.raw_corpus, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
+
 
 
 class SentenceEmbeddingEvaluator:
@@ -89,7 +139,7 @@ class SentenceEmbeddingEvaluator:
         visualize_between_sentences(sentences, vec_list, palette)
 
 
-class BERTEmbeddingEval(SentenceEmbeddingEvaluator):
+class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
 
     def __init__(self, model_fname="data/bert",
                  bertconfig_fname="data/bert/multi_cased_L-12_H-768_A-12/bert_config.json",
@@ -171,7 +221,7 @@ class BERTEmbeddingEval(SentenceEmbeddingEvaluator):
         visualize_self_attention_scores(tokens, scores, palette)
 
 
-class ELMoEmbeddingEval(SentenceEmbeddingEvaluator):
+class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
 
     def __init__(self, tune_model_fname="data/elmo",
                  pretrain_model_fname="data/elmo/elmo.model",
@@ -252,19 +302,22 @@ with open("data/ratings_train.txt", "r", encoding="utf-8") as f:
 sampled_reviews = random.sample(positive_reviews, 5)
 sampled_reviews.extend(random.sample(negative_reviews, 5))
 
-model = BERTEmbeddingEval()
+
+# BERT
+model = BERTEmbeddingEvaluator()
 model.get_sentence_vector("나는 학교에 간다")
 model.get_token_vector_sequence("나는 학교에 간다")
 model.visualize_homonym("배", ["배 고프다", "배 아프다", "배 나온다", "배가 불렀다",
                                 "배는 사과보다 맛있다", "배는 수분이 많은 과일이다", "배를 깎아 먹다",
                                 "배를 바다에 띄웠다", "배 멀미가 난다"])
-
 model.visualize_self_attention_scores("배가 아파서 병원에 갔어")
 model.predict("이 영화 정말 재미 있다")
 model.visualize_between_sentences(sampled_sentences)
 model.visualize_sentences(sampled_sentences)
 
-model = ELMoEmbeddingEval()
+
+# ELMo
+model = ELMoEmbeddingEvaluator()
 model.get_sentence_vector("나는 학교에 간다")
 model.get_token_vector_sequence("나는 학교에 간다")
 model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파서 병원에 갔어",  "고기를 많이 먹으면 배가 나온다",
@@ -275,9 +328,17 @@ model.visualize_between_sentences(sampled_sentences)
 model.visualize_sentences(sampled_reviews)
 
 
+# Doc2Vec
 model = Doc2VecEvaluator()
 model.get_titles_in_corpus(n_sample=30)
+model.visualize_movies()
+model.visualize_movies(type="between")
 model.most_similar("36843") # 러브 액츄얼리
 model.most_similar("19227") # 스파이더맨
 model.most_similar("24479") # 스타워즈: 에피소드 1
 model.most_similar("83893") # 광해 왕이된 남자
+
+
+# LDA
+model = LDAEvaluator()
+model.most_similar(doc_id=1000)

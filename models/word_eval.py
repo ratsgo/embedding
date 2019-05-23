@@ -51,7 +51,7 @@ class WordEmbeddingEval:
     def most_similar_by_vector(self, query_vec, topn=10):
         query_vec_norm = np.linalg.norm(query_vec)
         if query_vec_norm != 0:
-            query_unit_vec = query_vec / np.linalg.norm(query_vec)
+            query_unit_vec = query_vec / query_vec_norm
         else:
             query_unit_vec = query_vec
         scores = np.dot(self.vecs, query_unit_vec)
