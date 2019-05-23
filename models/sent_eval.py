@@ -69,7 +69,7 @@ class LDAEvaluator:
             for line in f:
                 if num_sentence - 1 < n_samples:
                     try:
-                        sentence, nouns, movie_id = line.replace('\n', '').strip().split("\u241E")
+                        sentence, nouns, movie_id = line.strip().split("\u241E")
                         raw_corpus.append(sentence)
                         noun_corpus.append(nouns.split(" "))
                         movie_ids.append(movie_id)
@@ -93,6 +93,48 @@ class LDAEvaluator:
         scores = np.dot(self.all_topics, query_unit_vec)
         return [query_sentence, sorted(zip(self.raw_corpus, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
 
+
+class LSAEvaluator:
+
+    def __init__(self, corpus_fname="data/review_movieid_nouns.txt",
+                 model_fname="data/lsa-tfidf.vecs"):
+        self.corpus, self.movie_ids = self.load_corpus(corpus_fname)
+        self.vectors = self.load_model(model_fname)
+
+    def most_similar(self, doc_id, topn=10):
+        query_doc_vec = self.vectors[doc_id]
+        query_vec_norm = np.linalg.norm(query_doc_vec)
+        if query_vec_norm != 0:
+            query_unit_vec = query_doc_vec / query_vec_norm
+        else:
+            query_unit_vec = query_doc_vec
+        query_sentence = self.corpus[doc_id]
+        scores = np.dot(self.vectors, query_unit_vec)
+        return [query_sentence, sorted(zip(self.corpus, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
+
+    def load_model(self, model_fname):
+        vectors = []
+        with open(model_fname, 'r', encoding='utf-8') as f:
+            for line in f:
+                try:
+                    splitedLine = line.strip().split(" ")
+                    vector = [float(el) for el in splitedLine[1:]]
+                    vectors.append(vector)
+                except:
+                    continue
+        return normalize(vectors, axis=0, norm='l2')
+
+    def load_corpus(self, corpus_fname):
+        raw_corpus, movie_ids = [], []
+        with open(corpus_fname, 'r', encoding='utf-8') as f:
+            for line in f:
+                try:
+                    sentence, _, movie_id = line.strip().split("\u241E")
+                    raw_corpus.append(sentence)
+                    movie_ids.append(movie_id)
+                except:
+                    continue
+        return raw_corpus, movie_ids
 
 
 class SentenceEmbeddingEvaluator:
@@ -341,4 +383,9 @@ model.most_similar("83893") # 광해 왕이된 남자
 
 # LDA
 model = LDAEvaluator()
+model.most_similar(doc_id=1000)
+
+
+# LSA
+model = LSAEvaluator()
 model.most_similar(doc_id=1000)
