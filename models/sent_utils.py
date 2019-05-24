@@ -25,7 +25,7 @@ def latent_semantic_analysis(corpus_fname, output_fname):
                 continue
     # construct tf-idf matrix
     vectorizer = TfidfVectorizer(
-        min_df=10,
+        min_df=1,
         ngram_range=(1, 1),
         lowercase=True,
         tokenizer=lambda x: x.split())
@@ -36,7 +36,7 @@ def latent_semantic_analysis(corpus_fname, output_fname):
     with open(output_fname, 'w') as f:
         for doc_idx, vec in enumerate(vecs):
             str_vec = [str(el) for el in vec]
-            f.writelines(str(doc_idx) + ' ' + str(movie_ids[doc_idx]) + ' '.join(str_vec) + "\n")
+            f.writelines(str(doc_idx) + ' ' + str(movie_ids[doc_idx]) + ' ' + ' '.join(str_vec) + "\n")
 
 
 class Doc2VecInput:

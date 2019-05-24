@@ -6,6 +6,7 @@ from bert.modeling import BertModel, BertConfig
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from preprocess import get_tokenizer, post_processing
+from collections import defaultdict
 
 import numpy as np
 from lxml import html
@@ -54,44 +55,54 @@ class Doc2VecEvaluator:
 
 class LDAEvaluator:
 
-    def __init__(self, corpus_fname="data/review_movieid_nouns.txt" ,
-                 model_fname="data/lda.model", n_samples=10000):
-        self.raw_corpus, noun_corpus, self.movie_ids = self.load_corpus(corpus_fname, n_samples)
-        dictionary = corpora.Dictionary(noun_corpus)
-        corpus = [dictionary.doc2bow(text) for text in noun_corpus]
+    def __init__(self, corpus_fname="data/review_movieid_nouns.txt",
+                 model_fname="data/lda.model", vis_fname="data/lda.vis"):
+        self.raw_corpus, noun_corpus = self.load_corpus(corpus_fname)
+        self.dictionary = corpora.Dictionary(noun_corpus)
+        self.corpus = [self.dictionary.doc2bow(text) for text in noun_corpus]
         self.model = LdaModel.load(model_fname)
-        self.all_topics = self.load_topics(corpus)
+        self.all_topics = self.load_topics(self.corpus)
+        self.vis_fname = vis_fname
 
-    def load_corpus(self, corpus_fname, n_samples):
+    def load_corpus(self, corpus_fname):
         num_sentence = 0
-        raw_corpus, noun_corpus, movie_ids = [], [], []
+        raw_corpus, noun_corpus = [], []
         with open(corpus_fname, 'r', encoding='utf-8') as f:
             for line in f:
-                if num_sentence - 1 < n_samples:
-                    try:
-                        sentence, nouns, movie_id = line.strip().split("\u241E")
-                        raw_corpus.append(sentence)
-                        noun_corpus.append(nouns.split(" "))
-                        movie_ids.append(movie_id)
-                        num_sentence += 1
-                    except:
-                        continue
-        return raw_corpus, noun_corpus, movie_ids
+                try:
+                    sentence, nouns, _ = line.strip().split("\u241E")
+                    raw_corpus.append(sentence)
+                    noun_corpus.append(nouns.split(" "))
+                    num_sentence += 1
+                except:
+                    continue
+        return raw_corpus, noun_corpus
 
     def load_topics(self, corpus):
-        topics = [el[1] for el in self.model.get_document_topics(corpus, per_word_topics=False)]
-        return normalize(topics, axis=0, norm='l2')
+        topic_dict = defaultdict(list)
+        # 특정 토픽의 확률이 0.5보다 클 경우에만 데이터를 리턴한다
+        # 확률의 합은 1이기 때문에 해당 토픽이 확률값이 큰 토픽이 된다
+        topics = self.model.get_document_topics(corpus, minimum_probability=0.5, per_word_topics=False)
+        for doc_idx, topic in enumerate(topics):
+            if len(topic) == 1:
+                topic_id, prob = topic[0]
+                topic_dict[topic_id].append((self.raw_corpus[doc_idx], prob))
+        for key in topic_dict.keys():
+            topic_dict[key] = sorted(topic_dict[key], key=lambda x: x[1], reverse=True)
+        return topic_dict
 
-    def most_similar(self, doc_id, topn=10):
-        query_doc_vec = self.all_topics[doc_id]
-        query_vec_norm = np.linalg.norm(query_doc_vec)
-        if query_vec_norm != 0:
-            query_unit_vec = query_doc_vec / query_vec_norm
-        else:
-            query_unit_vec = query_doc_vec
-        query_sentence = self.raw_corpus[doc_id]
-        scores = np.dot(self.all_topics, query_unit_vec)
-        return [query_sentence, sorted(zip(self.raw_corpus, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
+    def show_topic_docs(self, topic_id, topn=10):
+        return self.all_topics[topic_id][:topn]
+
+    def show_topic_words(self, topic_id, topn=10):
+        return self.model.show_topic(topic_id, topn=topn)
+
+    def visualize(self):
+        import pyLDAvis
+        import pyLDAvis.gensim as gensimvis
+        prepared_data = gensimvis.prepare(self.model, self.corpus, self.dictionary)
+        pyLDAvis.display(prepared_data)
+        pyLDAvis.save_html(prepared_data, self.vis_fname)
 
 
 class LSAEvaluator:
@@ -118,11 +129,11 @@ class LSAEvaluator:
             for line in f:
                 try:
                     splitedLine = line.strip().split(" ")
-                    vector = [float(el) for el in splitedLine[1:]]
+                    vector = [float(el) for el in splitedLine[2:]]
                     vectors.append(vector)
                 except:
                     continue
-        return normalize(vectors, axis=0, norm='l2')
+        return normalize(vectors, axis=1, norm='l2')
 
     def load_corpus(self, corpus_fname):
         raw_corpus, movie_ids = [], []
@@ -383,9 +394,11 @@ model.most_similar("83893") # 광해 왕이된 남자
 
 # LDA
 model = LDAEvaluator()
-model.most_similar(doc_id=1000)
+model.show_topic_docs(topic_id=0)
+model.show_topic_words(topic_id=0)
+model.visualize()
 
 
 # LSA
 model = LSAEvaluator()
-model.most_similar(doc_id=1000)
+model.most_similar(doc_id=111)

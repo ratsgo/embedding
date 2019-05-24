@@ -79,6 +79,9 @@ pip install selenium
 # lxml
 pip install lxml
 
+# pyLDAvis
+pip install pyldavis
+
 # workstation
 python3.6 -m venv tf120
 pip install tensorflow-gpu==1.12

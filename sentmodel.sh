@@ -13,7 +13,7 @@ case $COMMAND in
         ;;
     lsa-tfidf)
         echo "latent semantic analysis with tf-idf matrix..."
-        python models/sent_utils.py latent_semantic_analysis data/review_movieid_nouns.txt data/lsa-tfidf.vecs
+        python models/sent_utils.py latent_semantic_analysis data/review_movieid.txt data/lsa-tfidf.vecs
         ;;
     doc2vec)
         echo "doc2vec..."
@@ -21,7 +21,7 @@ case $COMMAND in
         ;;
     lda)
         echo "latent_dirichlet_allocation..."
-        python models/sent_utils.py latent_dirichlet_allocation data/review_movieid_nouns.txt data/lda
+        python models/sent_utils.py latent_dirichlet_allocation data/review_movieid.txt data/lda
         ;;
     train-elmo)
         echo "train ELMo..."
