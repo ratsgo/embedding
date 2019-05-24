@@ -1,27 +1,39 @@
 FROM tensorflow/tensorflow:1.12.0-gpu-py3
 MAINTAINER ratsgo <ratsgo@naver.com>
 
+WORKDIR /notebooks
 RUN apt-get update -y
 RUN apt-get install -y wget
 RUN apt-get install -y language-pack-ko
-RUN locale-gen en_US.UTF-8
-RUN update-locale LANG=en_US.UTF-8
 RUN apt-get install -y openjdk-8-jdk
 RUN apt-get install -y curl
+RUN apt-get install -y git-core
+
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
 
 RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh
 RUN mkdir /opt/cmake
 RUN sh cmake-3.14.3-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 
-RUN rm *
-RUN apt-get install -y git-core
+RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-all-3.7.1.tar.gz
+RUN tar -xf protobuf-all-3.7.1.tar.gz
+WORKDIR /notebooks/protobuf-all-3.7.1
+RUN ./configure
+RUN make
+RUN make check
+RUN make install
+RUN ldconfig
 
-RUN pip install cython
+RUN rm -rf /notebooks/*
+
 RUN pip install --upgrade pip
+RUN pip install cython
 RUN pip install konlpy
 RUN ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
 
+WORKDIR /notebooks
 RUN git clone https://github.com/kakao/khaiii.git
 RUN mkdir /notebooks/khaiii/build
 WORKDIR /notebooks/khaiii/build
@@ -41,7 +53,6 @@ RUN pip install networkx
 RUN pip install selenium
 RUN pip install lxml
 RUN pip install pyldavis
-RUN pip install pytorch_pretrained_bert
 
 RUN git clone https://github.com/e9t/nsmc.git
 
@@ -66,7 +77,6 @@ RUN make
 WORKDIR /notebooks
 RUN git clone https://github.com/tensorflow/models.git
 WORKDIR /notebooks/models/research/swivel
-RUN apt-get install -y libprotobuf-dev
 RUN make -f fastprep.mk
 
 CMD ["PATH=$PATH:/notebooks/khaiii/build/lib"]
