@@ -20,7 +20,7 @@ RUN apt-get install -y git-core
 RUN pip install cython
 RUN pip install --upgrade pip
 RUN pip install konlpy
-CMD ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
+RUN ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
 
 RUN git clone https://github.com/kakao/khaiii.git
 RUN mkdir /notebooks/khaiii/build
@@ -33,7 +33,6 @@ WORKDIR /notebooks/khaiii/build/package_python
 RUN rm setup.py
 RUN wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py
 RUN pip install  .
-RUN PATH=$PATH:/notebooks/khaiii/build/lib
 
 RUN pip install gensim
 RUN pip install soynlp
@@ -67,4 +66,7 @@ RUN make
 WORKDIR /notebooks
 RUN git clone https://github.com/tensorflow/models.git
 WORKDIR /notebooks/models/research/swivel
+RUN apt-get install -y libprotobuf-dev
 RUN make -f fastprep.mk
+
+CMD ["PATH=$PATH:/notebooks/khaiii/build/lib"]
