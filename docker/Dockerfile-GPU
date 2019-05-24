@@ -1,0 +1,70 @@
+FROM tensorflow/tensorflow:1.12.0-gpu-py3
+MAINTAINER ratsgo <ratsgo@naver.com>
+
+RUN apt-get update -y
+RUN apt-get install -y wget
+RUN apt-get install -y language-pack-ko
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
+RUN apt-get install -y openjdk-8-jdk
+RUN apt-get install -y curl
+
+RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh
+RUN mkdir /opt/cmake
+RUN sh cmake-3.14.3-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+
+RUN rm *
+RUN apt-get install -y git-core
+
+RUN pip install cython
+RUN pip install --upgrade pip
+RUN pip install konlpy
+CMD ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
+
+RUN git clone https://github.com/kakao/khaiii.git
+RUN mkdir /notebooks/khaiii/build
+WORKDIR /notebooks/khaiii/build
+RUN cmake ..
+RUN make all
+RUN make resource
+RUN make package_python
+WORKDIR /notebooks/khaiii/build/package_python
+RUN rm setup.py
+RUN wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py
+RUN pip install  .
+RUN PATH=$PATH:/notebooks/khaiii/build/lib
+
+RUN pip install gensim
+RUN pip install soynlp
+RUN pip install bokeh
+RUN pip install networkx
+RUN pip install selenium
+RUN pip install lxml
+RUN pip install pyldavis
+RUN pip install pytorch_pretrained_bert
+
+RUN git clone https://github.com/e9t/nsmc.git
+
+WORKDIR /notebooks
+RUN git clone https://github.com/google/sentencepiece.git
+RUN mkdir /notebooks/sentencepiece/build
+WORKDIR /notebooks/sentencepiece/build
+RUN cmake ..
+RUN make -j $(nproc)
+RUN make install
+
+WORKDIR /notebooks
+RUN git clone http://github.com/stanfordnlp/glove
+WORKDIR /notebooks/glove
+RUN make
+
+WORKDIR /notebooks
+RUN git clone https://github.com/facebookresearch/fastText.git
+WORKDIR /notebooks/fastText
+RUN make
+
+WORKDIR /notebooks
+RUN git clone https://github.com/tensorflow/models.git
+WORKDIR /notebooks/models/research/swivel
+RUN make -f fastprep.mk
