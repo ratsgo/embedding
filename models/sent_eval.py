@@ -57,9 +57,9 @@ class LDAEvaluator:
 
     def __init__(self, corpus_fname="data/review_movieid_nouns.txt",
                  model_fname="data/lda.model", vis_fname="data/lda.vis"):
-        self.raw_corpus, noun_corpus = self.load_corpus(corpus_fname)
-        self.dictionary = corpora.Dictionary(noun_corpus)
-        self.corpus = [self.dictionary.doc2bow(text) for text in noun_corpus]
+        self.raw_corpus, self.noun_corpus = self.load_corpus(corpus_fname)
+        self.dictionary = corpora.Dictionary(self.noun_corpus)
+        self.corpus = [self.dictionary.doc2bow(text) for text in self.noun_corpus]
         self.model = LdaModel.load(model_fname)
         self.all_topics = self.load_topics(self.corpus)
         self.vis_fname = vis_fname
@@ -100,16 +100,18 @@ class LDAEvaluator:
     def visualize(self):
         import pyLDAvis
         import pyLDAvis.gensim as gensimvis
-        prepared_data = gensimvis.prepare(self.model, self.corpus, self.dictionary)
+        sampled_noun_corpus = random.sample(self.noun_corpus, 100)
+        corpus = [self.dictionary.doc2bow(text) for text in sampled_noun_corpus]
+        prepared_data = gensimvis.prepare(self.model, corpus, self.dictionary)
         pyLDAvis.display(prepared_data)
         pyLDAvis.save_html(prepared_data, self.vis_fname)
 
 
 class LSAEvaluator:
 
-    def __init__(self, corpus_fname="data/review_movieid_nouns.txt",
+    def __init__(self, corpus_fname="data/review_movieid.txt",
                  model_fname="data/lsa-tfidf.vecs"):
-        self.corpus, self.movie_ids = self.load_corpus(corpus_fname)
+        self.corpus = self.load_corpus(corpus_fname)
         self.vectors = self.load_model(model_fname)
 
     def most_similar(self, doc_id, topn=10):
@@ -136,16 +138,24 @@ class LSAEvaluator:
         return normalize(vectors, axis=1, norm='l2')
 
     def load_corpus(self, corpus_fname):
-        raw_corpus, movie_ids = [], []
+        raw_corpus = []
         with open(corpus_fname, 'r', encoding='utf-8') as f:
             for line in f:
                 try:
                     sentence, _, movie_id = line.strip().split("\u241E")
                     raw_corpus.append(sentence)
-                    movie_ids.append(movie_id)
                 except:
                     continue
-        return raw_corpus, movie_ids
+        return raw_corpus
+
+    def visualize(self, mode="between", num_sents=30, palette="Viridis256"):
+        doc_idxes = random.sample(range(len(self.corpus)), num_sents)
+        sentences = [self.corpus[idx] for idx in doc_idxes]
+        vecs = [self.vectors[idx] for idx in doc_idxes]
+        if mode == "between":
+            visualize_between_sentences(sentences, vecs, palette)
+        else:
+            visualize_sentences(vecs, sentences, palette)
 
 
 class SentenceEmbeddingEvaluator:
@@ -402,3 +412,4 @@ model.visualize()
 # LSA
 model = LSAEvaluator()
 model.most_similar(doc_id=111)
+model.visualize(mode="between", num_sents=10)
