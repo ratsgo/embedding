@@ -160,11 +160,11 @@ class Tuner(object):
                     if len(tokens) > 0:
                         data_set.append([tokens.split(" "), int(label)])
         else:
-            tf.logging.info("tokenize corpus : " + corpus_fname, " > " + tokenized_corpus_fname)
+            tf.logging.info("tokenize corpus : " + corpus_fname + " > " + tokenized_corpus_fname)
             with open(corpus_fname, 'r') as f2:
                 next(f2)  # skip head line
                 for line in f2:
-                    _, sentence, label = line.strip().split("\t")
+                    sentence, label = line.strip().split("\u241E")
                     if self.model_name == "bert":
                         tokens = self.tokenizer.tokenize(convert_to_unicode(sentence))
                     else:

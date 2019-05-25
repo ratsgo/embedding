@@ -47,7 +47,7 @@ def tokenize(content, token_min_len=2, token_max_len=100, lower=True):
     return result
 
 
-def process_nsmc(corpus_path, output_fname, process_json=True):
+def process_nsmc(corpus_path, output_fname, process_json=True, with_label=True):
     if process_json:
         file_paths = glob.glob(corpus_path + "/*")
         with open(output_fname, 'w', encoding='utf-8') as f:
@@ -62,9 +62,12 @@ def process_nsmc(corpus_path, output_fname, process_json=True):
                 open(output_fname, 'w', encoding='utf-8') as f2:
             next(f1)  # skip head line
             for line in f1:
-                sentence = line.replace('\n', '').split('\t')[1]
+                _, sentence, label = line.replace('\n', '').split('\t')
                 if not sentence: continue
-                f2.writelines(sentence + "\n")
+                if with_label:
+                    f2.writelines(sentence + "\u241E" + label + "\n")
+                else:
+                    f2.writelines(sentence + "\n")
 
 
 def process_korsquad(corpus_fname, output_fname):
@@ -91,6 +94,7 @@ if __name__ == '__main__':
     if preprocess_mode == "wiki":
         make_corpus(in_f, out_f)
     elif "nsmc" in preprocess_mode:
-        process_nsmc(in_f, out_f, "json" in preprocess_mode)
+        with_label = sys.argv[4]
+        process_nsmc(in_f, out_f, "json" in preprocess_mode, with_label.lower() == "true")
     elif preprocess_mode == "korsquad":
         process_korsquad(in_f, out_f)

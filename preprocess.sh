@@ -27,7 +27,9 @@ case $COMMAND in
         ;;
     process_navermovie)
         echo "processing naver movie corpus..."
-        python preprocess/dump.py nsmc data/ratings.txt data/processed_ratings.txt
+        python preprocess/dump.py nsmc data/ratings.txt data/processed_ratings.txt False
+        python preprocess/dump.py nsmc data/ratings_train.txt data/processed_ratings_train.txt True
+        python preprocess/dump.py nsmc data/ratings_test.txt data/processed_ratings_test.txt True
         ;;
     process_korsquad)
         echo "processing KorSqaud corpus..."
@@ -47,7 +49,9 @@ case $COMMAND in
     space_correct)
         echo "train & apply space correct..."
         python preprocess/unsupervised_nlputils.py train_space data/processed_ratings.txt data/space.model
-        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings.txt data/space.model data/corrected_ratings_corpus.txt
+        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings.txt data/space.model data/corrected_ratings_corpus.txt False
+        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings_train.txt data/space.model data/corrected_ratings_train.txt True
+        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings_test.txt data/space.model data/corrected_ratings_test.txt True
         ;;
     soy_tokenize)
         echo "soynlp, LTokenizing..."

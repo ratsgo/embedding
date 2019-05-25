@@ -14,16 +14,23 @@ def train_space_model(corpus_fname, model_fname):
     model.save_model(model_fname, json_format=False)
 
 
-def apply_space_correct(corpus_fname, model_fname, output_corpus_fname):
+def apply_space_correct(corpus_fname, model_fname, output_corpus_fname, with_label=False):
     model = CountSpace()
     model.load_model(model_fname, json_format=False)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
         open(output_corpus_fname, 'w', encoding='utf-8') as f2:
         for sentence in f1:
-            sentence = sentence.replace('\n', '').strip()
+            if with_label:
+                sentence, label = sentence.strip().split("\u241E")
+            else:
+                sentence = sentence.strip()
+                label = None
             if not sentence: continue
             sent_corrected, _ = model.correct(sentence)
-            f2.writelines(sent_corrected + "\n")
+            if with_label:
+                f2.writelines(sent_corrected + "\u241E" + label + "\n")
+            else:
+                f2.writelines(sent_corrected + "\n")
 
 
 def compute_soy_word_score(corpus_fname, model_fname):
@@ -88,7 +95,8 @@ if __name__ == '__main__':
         in_f = sys.argv[2]
         model_f = sys.argv[3]
         out_f = sys.argv[4]
-        apply_space_correct(in_f, model_f, out_f)
+        with_label = sys.argv[5]
+        apply_space_correct(in_f, model_f, out_f, with_label.lower() == "true")
     elif preprocess_mode == "compute_soy_word_score":
         in_f = sys.argv[2]
         model_f = sys.argv[3]
