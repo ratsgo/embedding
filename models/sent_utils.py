@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import tensorflow as tf
 from collections import Counter
 from gensim import corpora
@@ -7,20 +7,25 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 from gensim.models.doc2vec import TaggedDocument
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from preprocess import get_tokenizer
+
 sys.path.append('models')
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bilm import dump_weights as dump_elmo_weights
 
 
 def latent_semantic_analysis(corpus_fname, output_fname):
-    corpus = []
-    movie_ids = []
+    tokenizer = get_tokenizer("mecab")
+    titles, raw_corpus, noun_corpus = [], [], []
     with open(corpus_fname, 'r', encoding='utf-8') as f:
         for line in f:
             try:
-                _, tokens, movie_id = line.replace('\n', '').strip().split("\u241E")
-                corpus.append(tokens)
-                movie_ids.append(movie_id)
+                title, document = line.strip().split("\u241E")
+                titles.append(title)
+                raw_corpus.append(document)
+                nouns = tokenizer.nouns(document)
+                noun_corpus.append(' '.join(nouns))
             except:
                 continue
     # construct tf-idf matrix
@@ -29,14 +34,14 @@ def latent_semantic_analysis(corpus_fname, output_fname):
         ngram_range=(1, 1),
         lowercase=True,
         tokenizer=lambda x: x.split())
-    input_matrix = vectorizer.fit_transform(corpus)
+    input_matrix = vectorizer.fit_transform(noun_corpus)
     # compute truncated SVD
     svd = TruncatedSVD(n_components=100)
     vecs = svd.fit_transform(input_matrix)
     with open(output_fname, 'w') as f:
         for doc_idx, vec in enumerate(vecs):
             str_vec = [str(el) for el in vec]
-            f.writelines(str(doc_idx) + ' ' + str(movie_ids[doc_idx]) + ' ' + ' '.join(str_vec) + "\n")
+            f.writelines(titles[doc_idx] + "\u241E" + raw_corpus[doc_idx] + '\u241E' + ' '.join(str_vec) + "\n")
 
 
 class Doc2VecInput:

@@ -13,7 +13,7 @@ case $COMMAND in
         ;;
     lsa-tfidf)
         echo "latent semantic analysis with tf-idf matrix..."
-        python models/sent_utils.py latent_semantic_analysis data/review_movieid.txt data/lsa-tfidf.vecs
+        python models/sent_utils.py latent_semantic_analysis data/blog.txt data/lsa-tfidf.vecs
         ;;
     doc2vec)
         echo "doc2vec..."

@@ -109,10 +109,8 @@ class LDAEvaluator:
 
 class LSAEvaluator:
 
-    def __init__(self, corpus_fname="data/review_movieid.txt",
-                 model_fname="data/lsa-tfidf.vecs"):
-        self.corpus = self.load_corpus(corpus_fname)
-        self.vectors = self.load_model(model_fname)
+    def __init__(self, model_fname="data/lsa-tfidf.vecs"):
+        self.titles, self.vectors = self.load_model(model_fname)
 
     def most_similar(self, doc_id, topn=10):
         query_doc_vec = self.vectors[doc_id]
@@ -121,36 +119,23 @@ class LSAEvaluator:
             query_unit_vec = query_doc_vec / query_vec_norm
         else:
             query_unit_vec = query_doc_vec
-        query_sentence = self.corpus[doc_id]
+        query_sentence = self.titles[doc_id]
         scores = np.dot(self.vectors, query_unit_vec)
-        return [query_sentence, sorted(zip(self.corpus, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
+        return [query_sentence, sorted(zip(self.titles, scores), key=lambda x: x[1], reverse=True)[1:topn + 1]]
 
     def load_model(self, model_fname):
-        vectors = []
+        titles, vectors = [], []
         with open(model_fname, 'r', encoding='utf-8') as f:
             for line in f:
-                try:
-                    splitedLine = line.strip().split(" ")
-                    vector = [float(el) for el in splitedLine[2:]]
-                    vectors.append(vector)
-                except:
-                    continue
-        return normalize(vectors, axis=1, norm='l2')
-
-    def load_corpus(self, corpus_fname):
-        raw_corpus = []
-        with open(corpus_fname, 'r', encoding='utf-8') as f:
-            for line in f:
-                try:
-                    sentence, _, movie_id = line.strip().split("\u241E")
-                    raw_corpus.append(sentence)
-                except:
-                    continue
-        return raw_corpus
+                title, _, str_vec = line.strip().split("\u241E")
+                vector = [float(el) for el in str_vec.split()]
+                titles.append(title)
+                vectors.append(vector)
+        return titles, normalize(vectors, axis=1, norm='l2')
 
     def visualize(self, mode="between", num_sents=30, palette="Viridis256"):
-        doc_idxes = random.sample(range(len(self.corpus)), num_sents)
-        sentences = [self.corpus[idx] for idx in doc_idxes]
+        doc_idxes = random.sample(range(len(self.titles)), num_sents)
+        sentences = [self.titles[idx] for idx in doc_idxes]
         vecs = [self.vectors[idx] for idx in doc_idxes]
         if mode == "between":
             visualize_between_sentences(sentences, vecs, palette)
