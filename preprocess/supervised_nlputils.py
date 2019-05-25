@@ -12,7 +12,7 @@ def get_tokenizer(tokenizer_name):
         tokenizer = Mecab()
     elif tokenizer_name == "hannanum":
         tokenizer = Hannanum()
-    elif tokenizer_name == "khai":
+    elif tokenizer_name == "khaiii":
         tokenizer = KhaiiiApi()
     else:
         tokenizer = Mecab()
@@ -25,7 +25,7 @@ def tokenize(tokenizer_name, corpus_fname, output_fname, pos=False):
             open(output_fname, 'w', encoding='utf-8') as f2:
         for line in f1:
             sentence = line.replace('\n', '').strip()
-            if tokenizer_name == "khai":
+            if tokenizer_name == "khaiii":
                 tokens = []
                 for word in tokenizer.analyze(sentence):
                     if pos:
