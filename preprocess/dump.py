@@ -2,9 +2,6 @@ import sys, re, json, glob
 from gensim.corpora import WikiCorpus
 from gensim.utils import to_unicode
 
-sys.path.append('preprocess')
-from supervised_nlputils import get_tokenizer, post_processing
-
 """
 Creates a corpus from Wikipedia dump file.
 Inspired by:
@@ -50,8 +47,7 @@ def tokenize(content, token_min_len=2, token_max_len=100, lower=True):
     return result
 
 
-def process_nsmc(corpus_path, output_fname, process_json=True, extract_nouns=True):
-    tokenizer = get_tokenizer("mecab")
+def process_nsmc(corpus_path, output_fname, process_json=True):
     if process_json:
         file_paths = glob.glob(corpus_path + "/*")
         with open(output_fname, 'w', encoding='utf-8') as f:
@@ -59,13 +55,8 @@ def process_nsmc(corpus_path, output_fname, process_json=True, extract_nouns=Tru
                 contents = json.load(open(path))
                 for content in contents:
                     sentence = content['review'].replace("\n", " ")
-                    if extract_nouns:
-                        tokens = tokenizer.nouns(sentence)
-                    else:
-                        tokens = tokenizer.morphs(sentence)
-                    if len(tokens) > 0:
-                        tokenized_sent = ' '.join(post_processing(tokens))
-                        f.writelines(sentence + "\u241E" + tokenized_sent + "\u241E" + content['movie_id'] + "\n")
+                    if len(sentence) > 0:
+                        f.writelines(sentence + "\u241E" + content['movie_id'] + "\n")
     else:
         with open(corpus_path, 'r', encoding='utf-8') as f1, \
                 open(output_fname, 'w', encoding='utf-8') as f2:
@@ -100,6 +91,6 @@ if __name__ == '__main__':
     if preprocess_mode == "wiki":
         make_corpus(in_f, out_f)
     elif "nsmc" in preprocess_mode:
-        process_nsmc(in_f, out_f, "json" in preprocess_mode, "nouns" in preprocess_mode)
+        process_nsmc(in_f, out_f, "json" in preprocess_mode)
     elif preprocess_mode == "korsquad":
         process_korsquad(in_f, out_f)
