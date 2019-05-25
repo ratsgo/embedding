@@ -20,11 +20,6 @@ RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh \
 
 RUN rm -rf /notebooks/*
 
-WORKDIR /notebooks
-RUN git clone https://github.com/ratsgo/embedding.git \
- && cd /notebooks/embedding/models/swivel \
- && make -f fastprep.mk
-
 RUN pip install --upgrade pip
 RUN pip install konlpy
 RUN ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
@@ -35,13 +30,11 @@ RUN git clone https://github.com/kakao/khaiii.git \
  && cd /notebooks/khaiii/build \
  && cmake .. && make all && make resource && make package_python \
  && cd /notebooks/khaiii/build/package_python \
- && rm setup.py
- && wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py
+ && rm setup.py \
+ && wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py \
  && pip install  .
 
 RUN pip install gensim soynlp bokeh networkx selenium lxml pyldavis
-
-RUN git clone https://github.com/e9t/nsmc.git
 
 WORKDIR /notebooks
 RUN git clone https://github.com/google/sentencepiece.git \
@@ -52,13 +45,16 @@ RUN git clone https://github.com/google/sentencepiece.git \
  && make install \
 
 WORKDIR /notebooks
-RUN git clone http://github.com/stanfordnlp/glove
-WORKDIR /notebooks/glove
-RUN make
+RUN git clone http://github.com/stanfordnlp/glove \
+ && cd /notebooks/glove && make
 
 WORKDIR /notebooks
-RUN git clone https://github.com/facebookresearch/fastText.git
-WORKDIR /notebooks/fastText
-RUN make
+RUN git clone https://github.com/facebookresearch/fastText.git \
+ && cd /notebooks/fastText && make
+
+WORKDIR /notebooks
+RUN git clone https://github.com/ratsgo/embedding.git \
+ && cd /notebooks/embedding/models/swivel \
+ && make -f fastprep.mk
 
 CMD ["PATH=$PATH:/notebooks/khaiii/build/lib"]
