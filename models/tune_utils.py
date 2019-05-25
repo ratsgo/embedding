@@ -1,7 +1,6 @@
 import sys, os, random
 import numpy as np
 import tensorflow as tf
-from pytorch_pretrained_bert.tokenization import BertTokenizer
 
 sys.path.append('models')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -9,6 +8,7 @@ from preprocess import get_tokenizer, post_processing
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bert.modeling import BertModel, BertConfig
 from bert.optimization import create_optimizer
+from bert.tokenization import FullTokenizer, convert_to_unicode
 
 
 def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_token, num_labels, tune=False):
@@ -143,7 +143,7 @@ class Tuner(object):
         self.best_valid_score = 0.0
         # define tokenizer
         if self.model_name == "bert":
-            self.tokenizer = BertTokenizer(vocab_file=vocab_fname, do_lower_case=False)
+            self.tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
         else:
             self.tokenizer = get_tokenizer("mecab")
         # load or tokenize corpus
@@ -166,7 +166,7 @@ class Tuner(object):
                 for line in f2:
                     _, sentence, label = line.strip().split("\t")
                     if self.model_name == "bert":
-                        tokens = self.tokenizer.tokenize(sentence)
+                        tokens = self.tokenizer.tokenize(convert_to_unicode(sentence))
                     else:
                         tokens = self.tokenizer.morphs(sentence)
                         tokens = post_processing(tokens)

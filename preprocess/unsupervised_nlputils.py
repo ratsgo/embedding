@@ -3,7 +3,9 @@ from soynlp.word import WordExtractor
 from soynlp.tokenizer import LTokenizer
 from soynlp.normalizer import *
 from soyspacing.countbase import CountSpace
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+
+sys.path.append('models')
+from bert.tokenization import FullTokenizer, convert_to_unicode
 
 
 def train_space_model(corpus_fname, model_fname):
@@ -66,12 +68,12 @@ def process_sp_vocab(vocab_fname, output_fname):
 
 
 def sentencepiece_tokenize(vocab_fname, corpus_fname, output_fname):
-    tokenizer = BertTokenizer(vocab_file=vocab_fname, do_lower_case=False)
+    tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
         for line in f1:
             sentence = line.replace('\n', '').strip()
-            tokens = tokenizer.tokenize(sentence)
+            tokens = tokenizer.tokenize(convert_to_unicode(sentence))
             tokenized_sent = ' '.join(tokens)
             f2.writelines(tokenized_sent + '\n')
 

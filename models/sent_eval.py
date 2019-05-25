@@ -3,7 +3,7 @@ sys.path.append('models')
 
 import tensorflow as tf
 from bert.modeling import BertModel, BertConfig
-from pytorch_pretrained_bert.tokenization import BertTokenizer
+from bert.tokenization import FullTokenizer, convert_to_unicode
 from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from preprocess import get_tokenizer, post_processing
 from collections import defaultdict
@@ -212,7 +212,7 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
         super().__init__("bert", dimension)
         config = BertConfig.from_json_file(bertconfig_fname)
         self.max_seq_length = max_seq_length
-        self.tokenizer = BertTokenizer(vocab_file=vocab_fname, do_lower_case=False)
+        self.tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
         self.model, self.input_ids, self.input_mask, self.segment_ids, self.probs = make_bert_graph(config,
                                                                                                     max_seq_length,
                                                                                                     1.0,
@@ -263,7 +263,7 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
         return [tokens, scores]
 
     def tokenize(self, sentence):
-        return self.tokenizer.tokenize(sentence)
+        return self.tokenizer.tokenize(convert_to_unicode(sentence))
 
     def make_input(self, tokens):
         tokens = tokens[:(self.max_seq_length - 2)]
