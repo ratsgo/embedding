@@ -1,68 +1,55 @@
 FROM tensorflow/tensorflow:1.12.0-py3
 MAINTAINER ratsgo <ratsgo@naver.com>
 
-WORKDIR /notebooks
-RUN apt-get update -y
-RUN apt-get install -y wget
-RUN apt-get install -y language-pack-ko
-RUN apt-get install -y openjdk-8-jdk
-RUN apt-get install -y curl
-RUN apt-get install -y git-core
+RUN apt-get update -y \
+ && apt-get install -y wget language-pack-ko openjdk-8-jdk curl git-core
 
-RUN locale-gen en_US.UTF-8
-RUN update-locale LANG=en_US.UTF-8
+RUN locale-gen en_US.UTF-8 \
+ && update-locale LANG=en_US.UTF-8
 
-RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh
-RUN mkdir /opt/cmake
-RUN sh cmake-3.14.3-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
-RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-all-3.7.1.tar.gz \
+ && mkdir /notebooks/protobuf-3.7.1 \
+ && tar -zxf protobuf-all-3.7.1.tar.gz \
+ && cd /notebooks/protobuf-3.7.1 \
+ && ./configure && make && make install && ldconfig
 
-RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/protobuf-all-3.7.1.tar.gz
-RUN tar -xf protobuf-all-3.7.1.tar.gz
-WORKDIR /notebooks/protobuf-all-3.7.1
-RUN ./configure
-RUN make
-RUN make check
-RUN make install
-RUN ldconfig
+RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh \
+ && mkdir /opt/cmake \
+ && sh cmake-3.14.3-Linux-x86_64.sh --prefix=/opt/cmake --skip-license \
+ && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 
 RUN rm -rf /notebooks/*
 
+WORKDIR /notebooks
+RUN git clone https://github.com/ratsgo/embedding.git \
+ && cd /notebooks/embedding/models/swivel \
+ && make -f fastprep.mk
+
 RUN pip install --upgrade pip
-RUN pip install cython
 RUN pip install konlpy
 RUN ["bash < curl -s https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh"]
 
 WORKDIR /notebooks
-RUN git clone https://github.com/kakao/khaiii.git
-RUN mkdir /notebooks/khaiii/build
-WORKDIR /notebooks/khaiii/build
-RUN cmake ..
-RUN make all
-RUN make resource
-RUN make package_python
-WORKDIR /notebooks/khaiii/build/package_python
-RUN rm setup.py
-RUN wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py
-RUN pip install  .
+RUN git clone https://github.com/kakao/khaiii.git \
+ && mkdir /notebooks/khaiii/build \
+ && cd /notebooks/khaiii/build \
+ && cmake .. && make all && make resource && make package_python \
+ && cd /notebooks/khaiii/build/package_python \
+ && rm setup.py
+ && wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py
+ && pip install  .
 
-RUN pip install gensim
-RUN pip install soynlp
-RUN pip install bokeh
-RUN pip install networkx
-RUN pip install selenium
-RUN pip install lxml
-RUN pip install pyldavis
+RUN pip install gensim soynlp bokeh networkx selenium lxml pyldavis
 
 RUN git clone https://github.com/e9t/nsmc.git
 
 WORKDIR /notebooks
-RUN git clone https://github.com/google/sentencepiece.git
-RUN mkdir /notebooks/sentencepiece/build
-WORKDIR /notebooks/sentencepiece/build
-RUN cmake ..
-RUN make -j $(nproc)
-RUN make install
+RUN git clone https://github.com/google/sentencepiece.git \
+ && mkdir /notebooks/sentencepiece/build \
+ && cd /notebooks/sentencepiece/build \
+ && cmake .. \
+ && make -j $(nproc) \
+ && make install \
 
 WORKDIR /notebooks
 RUN git clone http://github.com/stanfordnlp/glove
@@ -73,10 +60,5 @@ WORKDIR /notebooks
 RUN git clone https://github.com/facebookresearch/fastText.git
 WORKDIR /notebooks/fastText
 RUN make
-
-WORKDIR /notebooks
-RUN git clone https://github.com/tensorflow/models.git
-WORKDIR /notebooks/models/research/swivel
-RUN make -f fastprep.mk
 
 CMD ["PATH=$PATH:/notebooks/khaiii/build/lib"]
