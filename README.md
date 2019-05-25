@@ -61,39 +61,45 @@ wget https://github.com/songys/Question_pair/raw/master/kor_pair_test.csv -P /no
 
 
 
-### 데이터 전처리
+### 데이터를 문장 단위 텍스트 파일로 저장하기
 
-- `/notebooks/embedding` 위치에서 다음을 실행하면 각 데이터를 전처리할 수 있습니다.
-- **네이버 영화 말뭉치 전처리** : 영화 리뷰를 읽어들여 은전한닢(mecab)으로 토크나이즈한 뒤 텍스트 파일로 만듭니다.
+- `/notebooks/embedding` 위치에서 다음을 실행하면 각기 다른 형식의 데이터를 한 라인이 한 문서인 형태의 텍스트 파일로 저장합니다. 이 단계에서는 별도로 토크나이즈를 하진 않습니다.
+- **네이버 영화 말뭉치 전처리** : json, text 형태의 영화 리뷰를 처리합니다.
 
 ```bash
 # python preprocess/dump.py nsmc input_file_path output_file_path
 python preprocess/dump.py nsmc /notebooks/embedding/data/ratings.txt /notebooks/embedding/data/processed_ratings.txt
 ```
 
-- **한국어 위키피디아 말뭉치 전처리** : 위키피디아 원문에서 이메일, URL, 여러 형태의 공백 등 불필요 문자를 제거하고 숫자 사이에 공백을 추가하는 등의 전처리를 시행합니다. 이 단계에서는 별도로 토크나이즈를 하진 않습니다.
+- **한국어 위키피디아 말뭉치 전처리** : 위키피디아 원문에서 이메일, URL, 여러 형태의 공백 등 불필요 문자를 제거하고 숫자 사이에 공백을 추가하는 등의 전처리를 시행합니다. 
 
 ```bash
 # python preprocess/dump.py wiki input_file_path output_file_path
 python preprocess/dump.py wiki /notebooks/embedding/data/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/wiki_ko_raw.txt
 ```
 
-- **KorSquad 데이터 전처리** : json 내 context를 문서 하나로 취급해 텍스트 파일 형태로 저장합니다. question, anwers은 두 쌍을 공백으로 묶어서 문서 하나로 취급한 후 텍스트 파일로 떨굽니다. 이 단계에서는 별도로 토크나이즈를 하진 않습니다.
+- **KorSquad 데이터 전처리** : json 내 context를 문서 하나로 취급합니다. question, anwers은 두 쌍을 공백으로 묶어서 문서 하나로 취급합니다.
 
 ```bash
 # python preprocess/dump.py korsquad input_file_path output_file_path
 python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.json /notebooks/embedding/data/processed_korsquad_train.txt
 ```
 
-- **supervised tokenizer** : 은전한닢 등 5개의 한국어 형태소 분석기를 지원합니다. 입력 파일은 한 라인이 한 문서인 형태여야 합니다. 사용법은 다음과 같습니다.
 
-| 형태소 분석기 | 명령                                                         |
-| ------------- | ------------------------------------------------------------ |
-| 은전한닢      | python preprocess/supervised_nlputils.py mecab input_file_path output_file_path |
-| 코모란        | python preprocess/supervised_nlputils.py komoran input_file_path output_file_path |
-| Okt           | python preprocess/supervised_nlputils.py okt input_file_path output_file_path |
-| 한나눔        | python preprocess/supervised_nlputils.py hannanum input_file_path output_file_path |
-| Khaiii        | python preprocess/supervised_nlputils.py khaiii input_file_path output_file_path |
+
+### 형태소 분석
+
+- `/notebooks/embedding` 위치에서 다음을 실행하면 각 데이터를 형태소 분석할 수 있습니다. 입력 파일은 한 라인이 한 문서인 형태여야 합니다. 
+
+- **supervised tokenizer** : 은전한닢 등 5개의 한국어 형태소 분석기를 지원합니다. 사용법은 다음과 같습니다.
+
+  | 형태소 분석기 | 명령                                                         |
+  | ------------- | ------------------------------------------------------------ |
+  | 은전한닢      | python preprocess/supervised_nlputils.py mecab input_file_path output_file_path |
+  | 코모란        | python preprocess/supervised_nlputils.py komoran input_file_path output_file_path |
+  | Okt           | python preprocess/supervised_nlputils.py okt input_file_path output_file_path |
+  | 한나눔        | python preprocess/supervised_nlputils.py hannanum input_file_path output_file_path |
+  | Khaiii        | python preprocess/supervised_nlputils.py khaiii input_file_path output_file_path |
 
 - **unsupervised tokenizer** : soynlp와 구글 SentencePiece 두 가지 분석기를 지원합니다. supervised tokenizer들과 달리 말뭉치의 통계량을 확인한 뒤 토크나이즈를 하기 때문에 토크나이즈 적용 전 모델 학습이 필요합니다.
 
@@ -119,7 +125,7 @@ python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.
   python preprocess/unsupervised_nlputils.py sentencepiece_tokenize /notebooks/embedding/data/processd_sentpiece.vocab /notebooks/embedding/data/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized_corpus_sentpiece.txt
   ```
 
-- **띄어쓰기 교정** : supervised tokenizer이든, unsupervised tokenizer이든 띄어쓰기가 잘 되어 있을 수록 형태소 분석 품질이 좋아집니다. soynlp의 띄어쓰기 교정 모델을 학습하고 말뭉치에 모델을 적용하는 과정은 다음과 같습니다.
+- **띄어쓰기 교정** : `supervised tokenizer`이든, `unsupervised tokenizer`이든 띄어쓰기가 잘 되어 있을 수록 형태소 분석 품질이 좋아집니다. soynlp의 띄어쓰기 교정 모델을 학습하고 말뭉치에 모델을 적용하는 과정은 다음과 같습니다.
 
   ```bash
   # train : python preprocess/unsupervised_nlputils.py train_space input_corpus_path model_save_path
@@ -129,3 +135,44 @@ python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.
   ```
 
   
+
+### 단어 임베딩 모델 학습
+
+- `/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다. 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
+
+- **Latent Semantic Analysis** : Word-Context Matrix에 Singular Value Decomposition을 시행합니다.
+
+  ```bash
+  python models/word_utils.py latent_semantic_analysis input_tokenized_corpus_path model_save_path
+  ```
+
+- **Word2Vec**
+
+  ```bash
+  python models/word_utils.py train_word2vec input_tokenized_corpus_path model_save_path
+  ```
+
+- **GloVe**
+
+  ```bash
+  models/glove/build/vocab_count -min-count 5 -verbose 2 < input_tokenized_corpus_path > vocab_save_path
+  models/glove/build/cooccur -memory 10.0 -vocab-file vocab_save_path -verbose 2 -window-size 15 < input_tokenized_corpus_path > cooccur_matrix_save_path
+  models/glove/build/shuffle -memory 10.0 -verbose 2 < cooccur_matrix_save_path > shuffled_matrix_save_path
+  models/glove/build/glove -save-file vector_save_path -threads 4 -input-file shuffled_matrix_save_path -x-max 10 -iter 15 -vector-size 100 -binary 2 -vocab-file vocab_save_path -verbose 2
+  ```
+
+- **FastText**
+
+  ```bash
+  models/fastText/fasttext skipgram -input input_tokenized_corpus_path -output vector_save_path
+  ```
+
+- **Swivel** : `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
+
+  ```bash
+  models/swivel/fastprep --input input_tokenized_corpus_path --output_dir swivel_train_data_save_path
+  python models/swivel/swivel.py --input_base_path swivel_train_data_save_path --output_base_path vector_save_path --dim 100
+  ```
+
+  
+
