@@ -81,7 +81,7 @@
 
   ```bash
   # python preprocess/dump.py wiki input_file_path output_file_path
-python preprocess/dump.py wiki /notebooks/embedding/data/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/wiki_ko_raw.txt
+  python preprocess/dump.py wiki /notebooks/embedding/data/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/wiki_ko_raw.txt
   ```
 
 - **KorSquad 데이터 전처리**
@@ -324,7 +324,7 @@ model.visualize_sentences(sampled_sentences)
 
 - 아래는 위의 코드 실행으로 시각화한 결과물의 예시입니다.
 
-<img src='http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW' widh=500 />
+<img src='http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW' widh=300 />
 
-<img src='http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV' widh=500 />
+<img src='http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV' widh=300 />
 
