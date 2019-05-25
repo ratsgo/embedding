@@ -12,12 +12,12 @@
 - nvidia GPU가 있을 때
 ```bash
 docker build -t embedding -f docker/Dockerfile-CPU .
-docker run -it --rm embedding bash
+docker run -it --rm embedding-cpu bash
 ```
 
 - nvidia GPU가 없을 때
 
 ```bash
 docker build -t embedding -f docker/Dockerfile-GPU .
-docker run -it --rm --runtime=nvidia embedding bash
+docker run -it --rm --runtime=nvidia embedding-gpu bash
 ```
