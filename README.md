@@ -91,7 +91,9 @@ python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.
 
 - `/notebooks/embedding` 위치에서 다음을 실행하면 각 데이터를 형태소 분석할 수 있습니다. 입력 파일은 한 라인이 한 문서인 형태여야 합니다. 
 
-- **supervised tokenizer** : 은전한닢 등 5개의 한국어 형태소 분석기를 지원합니다. 사용법은 다음과 같습니다.
+- **supervised tokenizer**
+
+  은전한닢 등 5개의 한국어 형태소 분석기를 지원합니다. 사용법은 다음과 같습니다.
 
   | 형태소 분석기 | 명령                                                         |
   | ------------- | ------------------------------------------------------------ |
@@ -101,7 +103,9 @@ python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.
   | 한나눔        | python preprocess/supervised_nlputils.py hannanum input_file_path output_file_path |
   | Khaiii        | python preprocess/supervised_nlputils.py khaiii input_file_path output_file_path |
 
-- **unsupervised tokenizer** : soynlp와 구글 SentencePiece 두 가지 분석기를 지원합니다. supervised tokenizer들과 달리 말뭉치의 통계량을 확인한 뒤 토크나이즈를 하기 때문에 토크나이즈 적용 전 모델 학습이 필요합니다.
+- **unsupervised tokenizer**
+
+  soynlp와 구글 SentencePiece 두 가지 분석기를 지원합니다. supervised tokenizer들과 달리 말뭉치의 통계량을 확인한 뒤 토크나이즈를 하기 때문에 토크나이즈 적용 전 모델 학습이 필요합니다.
 
   (1) soynlp : 사용법은 다음과 같습니다.
 
@@ -176,3 +180,6 @@ python preprocess/dump.py korsquad /notebooks/embedding/data/KorQuAD_v1.0_train.
 
   
 
+### 문장 임베딩 모델 학습
+
+- 
