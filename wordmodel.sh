@@ -5,14 +5,19 @@
 COMMAND=$1
 
 case $COMMAND in
+    merge)
+        echo "merge datasets.."
+        cat /notebooks/embedding/data/tokenized/wiki_ko_mecab.txt /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/corpus_mecab.txt
+        cat /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/for-lsa-mecab.txt
+        ;;
     lsa)
         echo "latent semantic analysis..."
-        python models/word_utils.py latent_semantic_analysis data/for-lsa-mecab.txt data/lsa
+        python models/word_utils.py latent_semantic_analysis /notebooks/embedding/data/tokenized/for-lsa-mecab.txt data/lsa
         ;;
     word2vec)
         echo "word2vec word embedding..."
-        python models/word_utils.py train_word2vec data/corpus_mecab.txt data/word2vec.vecs
-        python models/word_utils.py train_word2vec data/for-lsa-mecab.txt data/word2vec-lsa.vecs
+        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/corpus_mecab.txt data/word2vec.vecs
+        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/for-lsa-mecab.txt data/word2vec-lsa.vecs
         ;;
     glove)
         echo "glove word embedding..."

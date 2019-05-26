@@ -34,7 +34,7 @@ def apply_space_correct(corpus_fname, model_fname, output_corpus_fname, with_lab
 
 
 def compute_soy_word_score(corpus_fname, model_fname):
-    sentences = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
+    sentences = [sent.strip() for sent in open(corpus_fname, 'r').readlines()]
     word_extractor = WordExtractor(min_frequency=100,
                                    min_cohesion_forward=0.05,
                                    min_right_branching_entropy=0.0

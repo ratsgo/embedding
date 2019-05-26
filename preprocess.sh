@@ -17,14 +17,14 @@ case $COMMAND in
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
         wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
         echo "download blog data.."
-        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -P /notebooks/embedding/data/processed
-        mv /notebooks/embedding/data/processed/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/blog.txt
+        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -O /notebooks/embedding/data/processed/processed_blog.txt
         echo "make directories..."
         mkdir /notebooks/embedding/data/tokenized
+        mkdir /notebooks/embedding/data/trained-models
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
-        python preprocess/dump.py wiki /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/processed/wiki_ko_raw.txt
+        python preprocess/dump.py wiki /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/processed/processed_wiki_ko.txt
         ;;
     process_navermovie)
         echo "processing naver movie corpus..."
@@ -41,23 +41,21 @@ case $COMMAND in
         ;;
     mecab_tokenize)
         echo "mecab, tokenizing..."
-        python preprocess/supervised_nlputils.py mecab data/wiki_ko_raw.txt data/wiki_ko_mecab.txt
-        python preprocess/supervised_nlputils.py mecab data/processed_ratings.txt data/ratings_mecab.txt
-        python preprocess/supervised_nlputils.py mecab data/processed_korsquad.txt data/korsquad_mecab.txt
-        cat data/wiki_ko_mecab.txt data/ratings_mecab.txt data/korsquad_mecab.txt > data/corpus_mecab.txt
-        cat data/ratings_mecab.txt data/korsquad_mecab.txt > data/for-lsa-mecab.txt
+        python preprocess/supervised_nlputils.py mecab /notebooks/embedding/data/processed/processed_wiki_ko.txt data/tokenized/wiki_ko_mecab.txt
+        python preprocess/supervised_nlputils.py mecab /notebooks/embedding/data/processed/processed_ratings.txt data/tokenized/ratings_mecab.txt
+        python preprocess/supervised_nlputils.py mecab /notebooks/embedding/data/processed/processed_korsquad.txt data/tokenized/korsquad_mecab.txt
         ;;
     space_correct)
         echo "train & apply space correct..."
-        python preprocess/unsupervised_nlputils.py train_space data/processed_ratings.txt data/space.model
-        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings.txt data/space.model data/corrected_ratings_corpus.txt False
-        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings_train.txt data/space.model data/corrected_ratings_train.txt True
-        python preprocess/unsupervised_nlputils.py apply_space_correct data/processed_ratings_test.txt data/space.model data/corrected_ratings_test.txt True
+        python preprocess/unsupervised_nlputils.py train_space /notebooks/embedding/data/processed/data/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_corpus.txt False
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings_train.txt /notebooks/embedding/data/trained-models/space-correct.modell /notebooks/embedding/data/processed/corrected_ratings_train.txt True
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings_test.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_test.txt True
         ;;
     soy_tokenize)
         echo "soynlp, LTokenizing..."
-        python preprocess/unsupervised_nlputils.py compute_soy_word_score data/corrected_ratings_corpus.txt data/soyword.model
-        python preprocess/unsupervised_nlputils.py soy_tokenize data/corrected_ratings_corpus.txt data/soyword.model data/tokenized_corpus_soynlp.txt
+        python preprocess/unsupervised_nlputils.py compute_soy_word_score /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/trained-models/soyword.model
+        python preprocess/unsupervised_nlputils.py soy_tokenize /notebooks/embedding/data/processed/corrected_ratings_corpus.txt data/soyword.model data/tokenized_corpus_soynlp.txt
         ;;
     komoran_tokenize)
         echo "komoran, tokenizing..."
