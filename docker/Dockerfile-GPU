@@ -66,3 +66,4 @@ RUN mv /notebooks/fastText /notebooks/embedding/models \
 
 WORKDIR /notebooks/embedding
 CMD git pull origin master
+# export LC_CTYPE=C.UTF-8

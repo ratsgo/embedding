@@ -47,38 +47,38 @@ case $COMMAND in
         ;;
     space_correct)
         echo "train & apply space correct..."
-        python preprocess/unsupervised_nlputils.py train_space /notebooks/embedding/data/processed/data/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model
-        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_corpus.txt False
-        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings_train.txt /notebooks/embedding/data/trained-models/space-correct.modell /notebooks/embedding/data/processed/corrected_ratings_train.txt True
-        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/data/processed_ratings_test.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_test.txt True
+        python preprocess/unsupervised_nlputils.py train_space /notebooks/embedding/data/processed/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/processed_ratings.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_corpus.txt False
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/processed_ratings_train.txt /notebooks/embedding/data/trained-models/space-correct.modell /notebooks/embedding/data/processed/corrected_ratings_train.txt True
+        python preprocess/unsupervised_nlputils.py apply_space_correct /notebooks/embedding/data/processed/processed_ratings_test.txt /notebooks/embedding/data/trained-models/space-correct.model /notebooks/embedding/data/processed/corrected_ratings_test.txt True
         ;;
     soy_tokenize)
         echo "soynlp, LTokenizing..."
         python preprocess/unsupervised_nlputils.py compute_soy_word_score /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/trained-models/soyword.model
-        python preprocess/unsupervised_nlputils.py soy_tokenize /notebooks/embedding/data/processed/corrected_ratings_corpus.txt data/soyword.model data/tokenized_corpus_soynlp.txt
+        python preprocess/unsupervised_nlputils.py soy_tokenize /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/trained-models/soyword.model /notebooks/embedding/data/tokenized/ratings_soynlp.txt
         ;;
     komoran_tokenize)
         echo "komoran, tokenizing..."
-        python preprocess/supervised_nlputils.py komoran data/corpus.txt data/tokenized_corpus_komoran.txt
+        python preprocess/supervised_nlputils.py komoran /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_komoran.txt
         ;;
     okt_tokenize)
         echo "okt, tokenizing..."
-        python preprocess/supervised_nlputils.py okt data/corpus.txt data/tokenized_corpus_okt.txt
+        python preprocess/supervised_nlputils.py okt /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_okt.txt
         ;;
     hannanum_tokenize)
         echo "hannanum, tokenizing..."
-        python preprocess/supervised_nlputils.py hannanum data/corpus.txt data/tokenized_corpus_hannanum.txt
+        python preprocess/supervised_nlputils.py hannanum /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_hannanum.txt
         ;;
-    khai_tokenize)
-        echo "khai, tokenizing..."
-        python preprocess/supervised_nlputils.py khai data/corpus.txt data/tokenized_corpus_khai.txt
+    khaiii_tokenize)
+        echo "khaiii, tokenizing..."
+        python preprocess/supervised_nlputils.py khaiii /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_khaiii.txt
         ;;
     sentencepiece)
         echo "processing sentencepiece..."
-        spm_train --input=data/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=10000
-        mv sentpiece.model data
-        mv sentpiece.vocab data
-        python preprocess/unsupervised_nlputils.py process_sp_vocab data/sentpiece.vocab data/processd_sentpiece.vocab
-        python preprocess/unsupervised_nlputils.py sentencepiece_tokenize data/processd_sentpiece.vocab data/corrected_ratings_corpus.txt data/tokenized_corpus_sentpiece.txt
+        cd /notebooks/embedding/data/trained-models
+        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=10000
+        cd /notebooks/embedding
+        python preprocess/unsupervised_nlputils.py process_sp_vocab /notebooks/embedding/data/trained-models/sentpiece.vocab /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
+        python preprocess/unsupervised_nlputils.py sentencepiece_tokenize /notebooks/embedding/data/trained-models/processd_sentpiece.vocab /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;
 esac
