@@ -10,7 +10,6 @@ from collections import defaultdict
 
 import numpy as np
 from lxml import html
-from gensim import corpora
 from gensim.models import Doc2Vec, LdaModel
 from visualize_utils import visualize_homonym, visualize_between_sentences, \
     visualize_self_attention_scores, visualize_sentences, visualize_words, visualize_between_words
@@ -55,38 +54,20 @@ class Doc2VecEvaluator:
 
 class LDAEvaluator:
 
-    def __init__(self, corpus_fname="data/review_movieid_nouns.txt",
-                 model_fname="data/lda.model", vis_fname="data/lda.vis"):
-        self.raw_corpus, self.noun_corpus = self.load_corpus(corpus_fname)
-        self.dictionary = corpora.Dictionary(self.noun_corpus)
-        self.corpus = [self.dictionary.doc2bow(text) for text in self.noun_corpus]
+    def __init__(self, results_fname="data/lda.results",
+                 model_fname="data/lda.model", tokenizer_name="mecab",
+                 vis_fname="data/lda.vis"):
+        self.all_topics = self.load_results(results_fname)
+        self.tokenizer = get_tokenizer(tokenizer_name)
         self.model = LdaModel.load(model_fname)
-        self.all_topics = self.load_topics(self.corpus)
         self.vis_fname = vis_fname
 
-    def load_corpus(self, corpus_fname):
-        num_sentence = 0
-        raw_corpus, noun_corpus = [], []
-        with open(corpus_fname, 'r', encoding='utf-8') as f:
-            for line in f:
-                try:
-                    sentence, nouns, _ = line.strip().split("\u241E")
-                    raw_corpus.append(sentence)
-                    noun_corpus.append(nouns.split(" "))
-                    num_sentence += 1
-                except:
-                    continue
-        return raw_corpus, noun_corpus
-
-    def load_topics(self, corpus):
+    def load_results(self, results_fname):
         topic_dict = defaultdict(list)
-        # 특정 토픽의 확률이 0.5보다 클 경우에만 데이터를 리턴한다
-        # 확률의 합은 1이기 때문에 해당 토픽이 확률값이 큰 토픽이 된다
-        topics = self.model.get_document_topics(corpus, minimum_probability=0.5, per_word_topics=False)
-        for doc_idx, topic in enumerate(topics):
-            if len(topic) == 1:
-                topic_id, prob = topic[0]
-                topic_dict[topic_id].append((self.raw_corpus[doc_idx], prob))
+        with open(results_fname, 'r', encoding='utf-8') as f:
+            for line in f:
+                sentence, _, topic_id, prob = line.strip().split("\u241E")
+                topic_dict[int(topic_id)].append((sentence, float(prob)))
         for key in topic_dict.keys():
             topic_dict[key] = sorted(topic_dict[key], key=lambda x: x[1], reverse=True)
         return topic_dict
@@ -97,12 +78,29 @@ class LDAEvaluator:
     def show_topic_words(self, topic_id, topn=10):
         return self.model.show_topic(topic_id, topn=topn)
 
-    def visualize(self):
+    def show_new_document_topic(self, documents):
+        tokenized_documents = [self.tokenizer.morphs(document) for document in documents]
+        curr_corpus = [self.model.id2word.doc2bow(tokenized_document) for tokenized_document in tokenized_documents]
+        topics = self.model.get_document_topics(curr_corpus, minimum_probability=0.5, per_word_topics=False)
+        for doc_idx, topic in enumerate(topics):
+            if len(topic) == 1:
+                topic_id, prob = topic[0]
+                print(documents[doc_idx], ", topic id:", str(topic_id), ", prob:", str(prob))
+            else:
+                print(documents[doc_idx], ", there is no dominant topic")
+
+    def visualize(self, n_samples=30):
         import pyLDAvis
         import pyLDAvis.gensim as gensimvis
-        sampled_noun_corpus = random.sample(self.noun_corpus, 100)
-        corpus = [self.dictionary.doc2bow(text) for text in sampled_noun_corpus]
-        prepared_data = gensimvis.prepare(self.model, corpus, self.dictionary)
+        train_documents = []
+        for key in self.all_topics.keys():
+            for data in self.all_topics[key]:
+                document, _ = data
+                train_documents.append(document)
+        sampled_corpus = random.sample(train_documents, n_samples)
+        sampled_tokenized_corpus = [self.tokenizer.morphs(document) for document in sampled_corpus]
+        sampled_data = [self.model.id2word.doc2bow(tokens) for tokens in sampled_tokenized_corpus]
+        prepared_data = gensimvis.prepare(self.model, sampled_data, self.model.id2word)
         pyLDAvis.display(prepared_data)
         pyLDAvis.save_html(prepared_data, self.vis_fname)
 
@@ -389,8 +387,9 @@ model.most_similar("83893") # 광해 왕이된 남자
 
 # LDA
 model = LDAEvaluator()
-model.show_topic_docs(topic_id=0)
+model.show_topic_docs(topic_id=1)
 model.show_topic_words(topic_id=0)
+model.show_new_document_topic(["너무 사랑스러운 영화", "인생을 말하는 영화"])
 model.visualize()
 
 

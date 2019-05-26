@@ -5,11 +5,7 @@ COMMAND=$1
 case $COMMAND in
     process-nsmc)
         echo "process nsmc raw json.."
-        python preprocess/dump.py nsmc-json /Users/david/works/nsmc/raw data/review_movieid.txt
-        ;;
-    process-nsmc-nouns)
-        echo "process nsmc raw json, extract nouns.."
-        python preprocess/dump.py nsmc-json-nouns /Users/david/works/nsmc/raw data/review_movieid_nouns.txt
+        python preprocess/dump.py nsmc-json /Users/david/works/nsmc/raw data/review_movieid.txt True
         ;;
     lsa-tfidf)
         echo "latent semantic analysis with tf-idf matrix..."
@@ -21,7 +17,7 @@ case $COMMAND in
         ;;
     lda)
         echo "latent_dirichlet_allocation..."
-        python models/sent_utils.py latent_dirichlet_allocation data/review_movieid.txt data/lda
+        python models/sent_utils.py latent_dirichlet_allocation data/corrected_ratings_corpus.txt data/lda
         ;;
     train-elmo)
         echo "train ELMo..."

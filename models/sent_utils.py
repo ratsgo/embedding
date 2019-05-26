@@ -15,8 +15,8 @@ from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bilm import dump_weights as dump_elmo_weights
 
 
-def latent_semantic_analysis(corpus_fname, output_fname):
-    tokenizer = get_tokenizer("mecab")
+def latent_semantic_analysis(corpus_fname, output_fname, tokenizer_name="mecab"):
+    tokenizer = get_tokenizer(tokenizer_name)
     titles, raw_corpus, noun_corpus = [], [], []
     with open(corpus_fname, 'r', encoding='utf-8') as f:
         for line in f:
@@ -46,15 +46,17 @@ def latent_semantic_analysis(corpus_fname, output_fname):
 
 class Doc2VecInput:
 
-    def __init__(self, fname):
+    def __init__(self, fname, tokenizer_name="mecab"):
         self.fname = fname
+        self.tokenizer = get_tokenizer(tokenizer_name)
 
     def __iter__(self):
         with open(self.fname, encoding='utf-8') as f:
             for line in f:
                 try:
-                    _, tokens, movie_id = line.replace('\n', '').strip().split("\u241E")
-                    tagged_doc = TaggedDocument(words=tokens.split(), tags=['MOVIE_%s' % movie_id])
+                    sentence, movie_id = line.strip().split("\u241E")
+                    tokens = self.tokenizer.morphs(sentence)
+                    tagged_doc = TaggedDocument(words=tokens, tags=['MOVIE_%s' % movie_id])
                     yield tagged_doc
                 except:
                     continue
@@ -66,33 +68,28 @@ def doc2vec(corpus_fname, output_fname):
     model.save(output_fname)
 
 
-def latent_dirichlet_allocation(corpus_fname, output_fname):
-    raw_corpus = []
-    movie_ids = []
+def latent_dirichlet_allocation(corpus_fname, output_fname, tokenizer_name="mecab"):
+    documents, tokenized_corpus = [], []
+    tokenizer = get_tokenizer(tokenizer_name)
     with open(corpus_fname, 'r', encoding='utf-8') as f:
-        for line in f:
-            try:
-                _, tokens, movie_id = line.replace('\n', '').strip().split("\u241E")
-                raw_corpus.append(tokens.split(" "))
-                movie_ids.append(movie_id)
-            except:
-                continue
-    dictionary = corpora.Dictionary(raw_corpus)  # token : idx
-    corpus = [dictionary.doc2bow(text) for text in raw_corpus]  # construct DTM, (token_id, freq)
+        for document in f:
+            tokens = list(set(tokenizer.morphs(document.strip())))
+            documents.append(document)
+            tokenized_corpus.append(tokens)
+    dictionary = corpora.Dictionary(tokenized_corpus)
+    corpus = [dictionary.doc2bow(text) for text in tokenized_corpus]
     LDA = ldamulticore.LdaMulticore(corpus, id2word=dictionary,
                                     num_topics=30,
                                     minimum_probability=0.0,
                                     workers=4)
-    # top 20 words for each topic
-    # top_words = [(topic_num, [word for word, _ in LDA.show_topic(topic_num, topn=20)]) for topic_num in
-    #               range(LDA.num_topics)]
-    # get topic distribution of a document
-    all_topics = LDA.get_document_topics(corpus, per_word_topics=False)
-    with open(output_fname + ".vecs", 'w') as f:
-        for doc_idx, doc_dist in enumerate(all_topics):
-            # TODO : topic dist가 모두 uniform하게 나오는 현상 해결
-            doc_topic_distribution = [str(el[1]) for el in doc_dist]
-            f.writelines(str(doc_idx) + ' ' + str(movie_ids[doc_idx]) + ' ' + ' '.join(doc_topic_distribution) + "\n")
+    # 특정 토픽의 확률이 0.5보다 클 경우에만 데이터를 리턴한다
+    # 확률의 합은 1이기 때문에 해당 토픽이 해당 문서에서 확률값이 가장 큰 토픽이 된다
+    all_topics = LDA.get_document_topics(corpus, minimum_probability=0.5, per_word_topics=False)
+    with open(output_fname + ".results", 'w') as f:
+        for doc_idx, topic in enumerate(all_topics):
+            if len(topic) == 1:
+                topic_id, prob = topic[0]
+                f.writelines(documents[doc_idx].strip() + "\u241E" + ' '.join(tokenized_corpus[doc_idx]) + "\u241E" + str(topic_id) + "\u241E" + str(prob) + "\n")
     LDA.save(output_fname + ".model")
 
 
@@ -111,46 +108,6 @@ def construct_elmo_vocab(corpus_fname, output_fname):
             f2.writelines(word + "\n")
 
 
-def extract_elmo_embeddings(sentence_fname, model_fname,
-                            options_fname,
-                            vocab_fname, output_fname,
-                            tune=False,
-                            max_char_length=30):
-    # Create a Batcher to map text to character ids.
-    batcher = Batcher(vocab_fname, max_char_length)
-    # Input placeholders to the biLM.
-    character_ids = tf.placeholder('int32', shape=(None, None, max_char_length))
-    # Build the biLM graph.
-    bilm = BidirectionalLanguageModel(options_fname, model_fname)
-    # Get ops to compute the LM embeddings.
-    embeddings_op = bilm(character_ids)
-    # Get ELMo embeddings
-    # 정석대로라면 특정 task 수행을 위한 튜닝 과정에서 구축되는,
-    # BiLM의 모든 벡터들의 weighted sum이 ELMo embeddings임
-    # 하지만 컴퓨팅 리소스가 부족하고 BiLM 자체의 품질을 확인하고 싶을 때
-    # BiLM의 벡터들을 그대로 뽑아 본다
-    if tune:
-        elmo_embeddings = weight_layers('elmo_embeddings', embeddings_op, l2_coef=0.0)
-    # load corpus
-    # 학습 데이터와 같은 토크나이저를 사용한 tokenized corpus여야 한다
-    corpus = [line.strip().split(" ") for line in open(sentence_fname, 'r')]
-    # extract ELMo embeddings
-    with tf.Session() as sess:
-        # It is necessary to initialize variables once before running inference.
-        sess.run(tf.global_variables_initializer())
-        with open(output_fname, 'w') as f:
-            for tokenized_sent in corpus:
-                # Create batches of data.
-                ids = batcher.batch_sentences([tokenized_sent])
-                # Compute ELMo representations
-                if tune:
-                    vector = sess.run(elmo_embeddings['weighted_op'], feed_dict={character_ids: ids})
-                else:
-                    vector = sess.run(embeddings_op, feed_dict={character_ids: ids})
-                str_vector = [str(el) for el in vector]
-                f.writelines(' '.join(str_vector) + "\n")
-
-
 if __name__ == '__main__':
     util_mode = sys.argv[1]
     in_f = sys.argv[2]
@@ -165,5 +122,3 @@ if __name__ == '__main__':
         construct_elmo_vocab(in_f, out_f)
     elif util_mode == "dump_elmo_weights":
         dump_elmo_weights(in_f, out_f)
-    elif util_mode == "extract_elmo_embeddings":
-        extract_elmo_embeddings()
