@@ -8,18 +8,14 @@ case $COMMAND in
         wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data
         wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data
         wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data
-        mv rating* data
         echo "download ko-wikipedia..."
         wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data
-        mv kowiki-latest-pages-articles.xml.bz2 data -P /notebooks/embedding/data
         echo "download KorSquad data..."
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data
-        mv KorQuAD_v1* data
         echo "download similar sentence data..."
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data
         wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data
-        mv kor_*air* data
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
