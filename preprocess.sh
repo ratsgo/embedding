@@ -3,39 +3,41 @@
 COMMAND=$1
 
 case $COMMAND in
-    data_dump)
+    dump)
         echo "download naver movie corpus..."
-        wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw-data
-        wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw-data
-        wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw-data
+        wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw
+        wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw
+        wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw
         echo "download ko-wikipedia..."
-        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw-data
+        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw
         echo "download KorSquad data..."
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw-data
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw-data
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw
         echo "download similar sentence data..."
-        wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw-data
-        wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw-data
+        wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
+        wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
         echo "download blog data.."
-        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -P /notebooks/embedding/data/raw-data
-        mv /notebooks/embedding/data/raw-data/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/raw-data/blog.txt
+        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -P /notebooks/embedding/data/processed
+        mv /notebooks/embedding/data/processed/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/blog.txt
+        echo "make directories..."
+        mkdir /notebooks/embedding/data/tokenized
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
-        python preprocess/dump.py wiki data/raw-data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
+        python preprocess/dump.py wiki /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 /notebooks/embedding/data/processed/wiki_ko_raw.txt
         ;;
     process_navermovie)
         echo "processing naver movie corpus..."
-        python preprocess/dump.py nsmc data/ratings.txt data/processed_ratings.txt False
-        python preprocess/dump.py nsmc data/ratings_train.txt data/processed_ratings_train.txt True
-        python preprocess/dump.py nsmc data/ratings_test.txt data/processed_ratings_test.txt True
+        python preprocess/dump.py nsmc /notebooks/embedding/data/raw/ratings.txt /notebooks/embedding/data/processed/processed_ratings.txt False
+        python preprocess/dump.py nsmc /notebooks/embedding/data/raw/ratings_train.txt /notebooks/embedding/data/processed/processed_ratings_train.txt True
+        python preprocess/dump.py nsmc /notebooks/embedding/data/raw/ratings_test.txt /notebooks/embedding/data/processed/processed_ratings_test.txt True
         ;;
     process_korsquad)
         echo "processing KorSqaud corpus..."
-        python preprocess/dump.py korsquad data/KorQuAD_v1.0_train.json data/processed_korsquad_train.txt
-        python preprocess/dump.py korsquad data/KorQuAD_v1.0_dev.json data/processed_korsquad_dev.txt
-        cat data/processed_korsquad_train.txt data/processed_korsquad_dev.txt > data/processed_korsquad.txt
-        rm data/processed_korsquad_*.txt
+        python preprocess/dump.py korsquad /notebooks/embedding/data/raw/KorQuAD_v1.0_train.json /notebooks/embedding/data/processed/processed_korsquad_train.txt
+        python preprocess/dump.py korsquad /notebooks/embedding/data/raw/KorQuAD_v1.0_dev.json data/processed/processed_korsquad_dev.txt
+        cat /notebooks/embedding/data/processed/processed_korsquad_train.txt /notebooks/embedding/data/processed/processed_korsquad_dev.txt > /notebooks/embedding/data/processed/processed_korsquad.txt
+        rm /notebooks/embedding/data/processed/processed_korsquad_*.txt
         ;;
     mecab_tokenize)
         echo "mecab, tokenizing..."
