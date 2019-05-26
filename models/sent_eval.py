@@ -89,21 +89,6 @@ class LDAEvaluator:
             else:
                 print(documents[doc_idx], ", there is no dominant topic")
 
-    def visualize(self, n_samples=30):
-        import pyLDAvis
-        import pyLDAvis.gensim as gensimvis
-        train_documents = []
-        for key in self.all_topics.keys():
-            for data in self.all_topics[key]:
-                document, _ = data
-                train_documents.append(document)
-        sampled_corpus = random.sample(train_documents, n_samples)
-        sampled_tokenized_corpus = [self.tokenizer.morphs(document) for document in sampled_corpus]
-        sampled_data = [self.model.id2word.doc2bow(tokens) for tokens in sampled_tokenized_corpus]
-        prepared_data = gensimvis.prepare(self.model, sampled_data, self.model.id2word)
-        pyLDAvis.display(prepared_data)
-        pyLDAvis.save_html(prepared_data, self.vis_fname)
-
 
 class LSAEvaluator:
 
@@ -390,7 +375,6 @@ model = LDAEvaluator()
 model.show_topic_docs(topic_id=1)
 model.show_topic_words(topic_id=0)
 model.show_new_document_topic(["너무 사랑스러운 영화", "인생을 말하는 영화"])
-model.visualize()
 
 
 # LSA
