@@ -314,8 +314,8 @@ class BERTTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname, vocab_fname,
                  pretrain_model_fname, bertconfig_fname, model_save_path,
-                 max_seq_length=32, warmup_proportion=0.1,
-                 batch_size=32, learning_rate=5e-5, num_labels=2):
+                 max_seq_length=128, warmup_proportion=0.1,
+                 batch_size=32, learning_rate=2e-5, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".bert.tokenized",
