@@ -5,21 +5,24 @@ COMMAND=$1
 case $COMMAND in
     data_dump)
         echo "download naver movie corpus..."
-        wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data
-        wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data
-        wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data
+        wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw-data
+        wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw-data
+        wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw-data
         echo "download ko-wikipedia..."
-        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data
+        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw-data
         echo "download KorSquad data..."
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw-data
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw-data
         echo "download similar sentence data..."
-        wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data
-        wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data
+        wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw-data
+        wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw-data
+        echo "download blog data.."
+        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -P /notebooks/embedding/data/raw-data
+        mv /notebooks/embedding/data/raw-data/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/raw-data/blog.txt
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
-        python preprocess/dump.py wiki data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
+        python preprocess/dump.py wiki data/raw-data/kowiki-latest-pages-articles.xml.bz2 data/wiki_ko_raw.txt
         ;;
     process_navermovie)
         echo "processing naver movie corpus..."

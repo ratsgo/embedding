@@ -15,8 +15,10 @@ def make_corpus(in_f, out_f):
     for text in wiki.get_texts():
         output.write(bytes(' '.join(text), 'utf-8').decode('utf-8') + '\n')
         i = i + 1
-        if (i % 10000 == 0):
-            print('Processed ' + str(i) + ' articles')
+        if i == 100:
+            break
+        #if (i % 10000 == 0):
+        #    print('Processed ' + str(i) + ' articles')
     output.close()
     print('Processing complete!')
 
