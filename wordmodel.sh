@@ -12,29 +12,34 @@ case $COMMAND in
         ;;
     lsa)
         echo "latent semantic analysis..."
-        python models/word_utils.py latent_semantic_analysis /notebooks/embedding/data/tokenized/for-lsa-mecab.txt data/lsa
+        mkdir -p /notebooks/embedding/data/word-embeddings/lsa
+        python models/word_utils.py latent_semantic_analysis /notebooks/embedding/data/tokenized/for-lsa-mecab.txt /notebooks/embedding/data/word-embeddings/lsa/lsa
         ;;
     word2vec)
         echo "word2vec word embedding..."
-        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/corpus_mecab.txt data/word2vec.vecs
-        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/for-lsa-mecab.txt data/word2vec-lsa.vecs
+        mkdir -p /notebooks/embedding/data/word-embeddings/word2vec
+        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/corpus_mecab.txt /notebooks/embedding/data/word-embeddings/word2vec/word2vec
+        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/for-lsa-mecab.txt /notebooks/embedding/data/word-embeddings/word2vec/word2vec-lsa
         ;;
     glove)
         echo "glove word embedding..."
         # 각 파일 역할
         # https://github.com/stanfordnlp/GloVe/tree/master/src
-        ../glove/build/vocab_count -min-count 5 -verbose 2 < data/corpus_mecab.txt > data/glove.vocab
-        ../glove/build/cooccur -memory 10.0 -vocab-file data/glove.vocab -verbose 2 -window-size 15 < data/corpus_mecab.txt > data/glove.cooc
-        ../glove/build/shuffle -memory 10.0 -verbose 2 < data/glove.cooc > data/glove.shuf
-        ../glove/build/glove -save-file data/glove.vecs -threads 4 -input-file data/glove.shuf -x-max 10 -iter 15 -vector-size 100 -binary 2 -vocab-file data/glove.vocab -verbose 2
+        mkdir -p /notebooks/embedding/data/word-embeddings/glove
+        /notebooks/embedding/models/glove/build/vocab_count -min-count 5 -verbose 2 < /notebooks/embedding/data/tokenized/corpus_mecab.txt > /notebooks/embedding/data/word-embeddings/glove/glove.vocab
+        /notebooks/embedding/models/glove/build/cooccur -memory 10.0 -vocab-file /notebooks/embedding/data/word-embeddings/glove/glove.vocab -verbose 2 -window-size 15 < /notebooks/embedding/data/tokenized/corpus_mecab.txt > /notebooks/embedding/data/word-embeddings/glove/glove.cooc
+        /notebooks/embedding/models/glove/build/shuffle -memory 10.0 -verbose 2 < /notebooks/embedding/data/word-embeddings/glove/glove.cooc > /notebooks/embedding/data/word-embeddings/glove/glove.shuf
+        /notebooks/embedding/models/glove/build/glove -save-file /notebooks/embedding/data/word-embeddings/glove/glove.vecs -threads 4 -input-file /notebooks/embedding/data/word-embeddings/glove/glove.shuf -x-max 10 -iter 15 -vector-size 100 -binary 2 -vocab-file /notebooks/embedding/data/word-embeddings/glove/glove.vocab -verbose 2
         ;;
     fasttext)
         echo "fasttext word embedding..."
-        ../fastText/fasttext skipgram -input data/corpus_mecab.txt -output data/fasttext.vecs
+        mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
+        /notebooks/embedding/models/fastText/fasttext skipgram -input /notebooks/embedding/data/tokenized/corpus_mecab.txt -output /notebooks/embedding/data/word-embeddings/fasttext/fasttext
         ;;
     swivel)
         echo "swivel word embedding..."
-        ../models/research/swivel/fastprep --input data/corpus_mecab.txt --output_dir data/swivel.data
-        python ../models/research/swivel/swivel.py --input_base_path data/swivel.data --output_base_path data/swivel.vecs --dim 100
+        mkdir -p /notebooks/embedding/data/word-embeddings/swivel
+        /notebooks/embedding/models/swivel/fastprep --input /notebooks/embedding/data/tokenized/corpus_mecab.txt --output_dir /notebooks/embedding/data/word-embeddings/swivel/swivel.data
+        python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks/embedding/data/word-embeddings/swivel/swivel.data --output_base_path /notebooks/embedding/data/word-embeddings/swivel --dim 100
         ;;
 esac
