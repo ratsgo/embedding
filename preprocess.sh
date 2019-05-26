@@ -79,6 +79,6 @@ case $COMMAND in
         spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=50000
         cd /notebooks/embedding
         python preprocess/unsupervised_nlputils.py process_sp_vocab /notebooks/embedding/data/trained-models/sentpiece.vocab /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
-        python preprocess/unsupervised_nlputils.py sentencepiece_tokenize /notebooks/embedding/data/trained-models/processed_sentpiece.vocab /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_wordpiece.txt
+        python preprocess/unsupervised_nlputils.py sentencepiece_tokenize /notebooks/embedding/data/trained-models/processed_sentpiece.vocab /notebooks/embedding/data/processed/corrected_ratings_corpus.txt /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;
 esac
