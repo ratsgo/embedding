@@ -33,7 +33,7 @@ case $COMMAND in
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
         gdrive_download 1hscU5_f_1vXfbhHabNpqfnp8DU2ZWmcT /notebooks/embedding/data/processed.zip
-        gdrive_download 1_Yy53w6EfUC_7w-R85tuasnqkWvuvN2p /notebooks/embedding/data/sentence-embeddings.zip
+        gdrive_download 1u80kFwKlkN8ds0JvQtn6an2dl9QY1rE1 /notebooks/embedding/data/sentence-embeddings.zip
         gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
         gdrive_download 1yDUcFNlDT8KYaLLpo26aDboTILMcNAp6 /notebooks/embedding/data/trained-models.zip
         gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word-embeddings.zip
