@@ -72,6 +72,17 @@ case $COMMAND in
         unzip multi_cased_L-12_H-768_A-12.zip
         rm multi_cased_L-12_H-768_A-12.zip
         ;;
+    pretrain-bert)
+        # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
+        # 띄어쓰기 교정은 이미 되어 있다고 가정
+        echo "construct vocab..."
+        mkdir -p /notebooks/embedding/data/bert/vocab
+        cd  /notebooks/embedding/data/bert/vocab
+        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=32000
+        python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
+            --input_path /notebooks/embedding/data/trained-models/sentpiece.vocab \
+            --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
+        ;;
     tune-bert)
         echo "tune BERT..."
         export LC_CTYPE=C.UTF-8

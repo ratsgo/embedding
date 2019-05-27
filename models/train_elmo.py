@@ -28,7 +28,7 @@ def main(args):
                                  [6, 512],
                                  [7, 1024]],
                      'max_characters_per_token': 30,
-                     'n_characters': 262,
+                     'n_characters': 261,
                      'n_highway': 2},
 
         'dropout': 0.1,
