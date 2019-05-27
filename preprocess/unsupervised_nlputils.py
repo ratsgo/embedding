@@ -71,7 +71,7 @@ def process_sp_vocab(vocab_fname, output_fname):
         f2.writelines("[PAD]\n[UNK]\n[CLS]\n[MASK]\n")
         for line in f1:
             word = line.replace('\n', '').split('\t')[0].replace('▁', '##')
-            if not word or word == "##": continue
+            if not word or word in ["##", "<unk>", "<s>", "</s>"]: continue
             f2.writelines(word + "\n")
 
 
