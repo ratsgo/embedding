@@ -2,8 +2,14 @@
 
 COMMAND=$1
 
+function gdrive_download () {
+  CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')
+  wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2
+  rm -rf /tmp/cookies.txt
+}
+
 case $COMMAND in
-    dump)
+    dump-raw)
         echo "download naver movie corpus..."
         wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw
         wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw
@@ -17,10 +23,22 @@ case $COMMAND in
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
         wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
         echo "download blog data.."
-        wget https://drive.google.com/uc?id=1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS -O /notebooks/embedding/data/processed/processed_blog.txt
+        gdrive_download 1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/processed_blog.txt
         echo "make directories..."
         mkdir /notebooks/embedding/data/tokenized
         mkdir /notebooks/embedding/data/trained-models
+        ;;
+    dump-processed)
+        echo "download processed data and models..."
+        mkdir -p /notebooks/embedding/data
+        cd /notebooks/embedding/data
+        gdrive_download 1hscU5_f_1vXfbhHabNpqfnp8DU2ZWmcT /notebooks/embedding/data/processed.zip
+        gdrive_download 1_Yy53w6EfUC_7w-R85tuasnqkWvuvN2p /notebooks/embedding/data/sentence-embeddings.zip
+        gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
+        gdrive_download 1yDUcFNlDT8KYaLLpo26aDboTILMcNAp6 /notebooks/embedding/data/trained-models.zip
+        gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word-embeddings.zip
+        ls /notebooks/embedding/data/*.zip | xargs -n1 unzip
+        rm /notebooks/embedding/data/*.zip
         ;;
     process_wiki)
         echo "processing ko-wikipedia..."
