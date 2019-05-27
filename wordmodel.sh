@@ -21,8 +21,8 @@ case $COMMAND in
         echo "word2vec word embedding..."
         mkdir -p /notebooks/embedding/data/word-embeddings/word2vec
         python models/word_utils.py --method train_word2vec \
-            /notebooks/embedding/data/tokenized/corpus_mecab.txt \
-            /notebooks/embedding/data/word-embeddings/word2vec/word2vec
+            --input_path /notebooks/embedding/data/tokenized/corpus_mecab.txt \
+            --input_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec
         python models/word_utils.py --method train_word2vec \
             --input_path /notebooks/embedding/data/tokenized/for-lsa-mecab.txt \
             --output_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec-lsa
