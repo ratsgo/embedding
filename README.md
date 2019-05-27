@@ -194,15 +194,15 @@
 
   ```bash
   # train
-  python preprocess/unsupervised_nlputils.py --preprocess_mode soy_tokenize \
-  	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-  	--model_path /notebooks/embedding/data/trained-models/soyword.model \
-  	--output_path /notebooks/embedding/data/tokenized/ratings_soynlp.txt
+  python preprocess/unsupervised_nlputils.py --preprocess_mode train_space \
+  	--input_path /notebooks/embedding/data/processed/processed_ratings.txt \
+  	--model_path /notebooks/embedding/data/trained-models/space-correct.model
   # correct
-  python preprocess/unsupervised_nlputils.py --preprocess_mode soy_tokenize \
-  	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-  	--model_path /notebooks/embedding/data/trained-models/soyword.model \
-  	--output_path /notebooks/embedding/data/tokenized/ratings_soynlp.txt
+  python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct \
+  	--input_path /notebooks/embedding/data/processed/processed_ratings.txt \
+  	--model_path /notebooks/embedding/data/trained-models/space-correct.model \
+  	--output_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+  	--with_label False
   ```
 
 
