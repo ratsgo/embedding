@@ -103,16 +103,16 @@ case $COMMAND in
             --dupe_factor=5
         echo "pretrain fresh BERT..."
         gdrive_download 1MAfK-GLVUdlje-Twp6hFEOXYk3LjeIak /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
-        python models/bert/run_pretraining.py \
-            --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
-            --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
-            --do_train=True \
-            --do_eval=True \
-            --bert_config_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
-            --train_batch_size=32 \
-            --max_seq_length=128 \
-            --max_predictions_per_seq=20 \
-            --learning_rate=2e-5
+        nohup sh -c "python models/bert/run_pretraining.py \
+                      --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
+                      --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
+                      --do_train=True \
+                      --do_eval=True \
+                      --bert_config_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
+                      --train_batch_size=32 \
+                      --max_seq_length=128 \
+                      --max_predictions_per_seq=20 \
+                      --learning_rate=2e-5" > bert-pretrain.log &
         ;;
     tune-bert)
         echo "tune BERT..."
@@ -123,6 +123,6 @@ case $COMMAND in
                       --vocab_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/vocab.txt \
                       --pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_model.ckpt \
                       --config_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json \
-                      --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert.log &
+                      --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
         ;;
 esac
