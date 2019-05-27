@@ -1,4 +1,4 @@
-import sys
+import sys, argparse
 from gensim.models import Word2Vec
 from sklearn.decomposition import TruncatedSVD
 from soynlp.word import pmi
@@ -54,12 +54,15 @@ def construct_weighted_embedding(corpus_fname, embedding_fname, output_fname):
 
 
 if __name__ == '__main__':
-    util_mode = sys.argv[1]
-    in_f = sys.argv[2]
-    out_f = sys.argv[3]
-    if util_mode == "train_word2vec":
-        train_word2vec(in_f, out_f)
-    elif util_mode == "latent_semantic_analysis":
-        latent_semantic_analysis(in_f, out_f)
-    elif util_mode == "construct_weighted_embedding":
-        construct_weighted_embedding(in_f, out_f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--method', type=str, help='method')
+    parser.add_argument('--input_path', type=str, help='Location of input files')
+    parser.add_argument('--output_path', type=str, help='Location of output files')
+    args = parser.parse_args()
+
+    if args.method == "train_word2vec":
+        train_word2vec(args.input_path, args.output_path)
+    elif args.method == "latent_semantic_analysis":
+        args.latent_semantic_analysis(args.input_path, args.output_path)
+    elif args.method == "construct_weighted_embedding":
+        construct_weighted_embedding(args.input_path, args.output_path)

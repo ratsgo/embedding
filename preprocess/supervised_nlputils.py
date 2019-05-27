@@ -1,4 +1,4 @@
-import sys, re
+import sys, re, argparse
 from khaiii import KhaiiiApi
 from konlpy.tag import Okt, Komoran, Mecab, Hannanum
 
@@ -52,7 +52,9 @@ def post_processing(tokens):
 
 
 if __name__ == '__main__':
-    tokenizer_name = sys.argv[1]
-    in_f = sys.argv[2]
-    out_f = sys.argv[3]
-    tokenize(tokenizer_name, in_f, out_f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--tokenizer', type=str, help='tokenizer name')
+    parser.add_argument('--input_path', type=str, help='Location of input files')
+    parser.add_argument('--output_path', type=str, help='Location of output files')
+    args = parser.parse_args()
+    tokenize(args.tokenizer, args.input_path, args.output_path)

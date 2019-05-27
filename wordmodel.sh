@@ -13,13 +13,19 @@ case $COMMAND in
     lsa)
         echo "latent semantic analysis..."
         mkdir -p /notebooks/embedding/data/word-embeddings/lsa
-        python models/word_utils.py latent_semantic_analysis /notebooks/embedding/data/tokenized/for-lsa-mecab.txt /notebooks/embedding/data/word-embeddings/lsa/lsa
+        python models/word_utils.py --method latent_semantic_analysis \
+            --input_path /notebooks/embedding/data/tokenized/for-lsa-mecab.txt \
+            --output_path /notebooks/embedding/data/word-embeddings/lsa/lsa
         ;;
     word2vec)
         echo "word2vec word embedding..."
         mkdir -p /notebooks/embedding/data/word-embeddings/word2vec
-        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/corpus_mecab.txt /notebooks/embedding/data/word-embeddings/word2vec/word2vec
-        python models/word_utils.py train_word2vec /notebooks/embedding/data/tokenized/for-lsa-mecab.txt /notebooks/embedding/data/word-embeddings/word2vec/word2vec-lsa
+        python models/word_utils.py --method train_word2vec \
+            /notebooks/embedding/data/tokenized/corpus_mecab.txt \
+            /notebooks/embedding/data/word-embeddings/word2vec/word2vec
+        python models/word_utils.py --method train_word2vec \
+            --input_path /notebooks/embedding/data/tokenized/for-lsa-mecab.txt \
+            --output_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec-lsa
         ;;
     glove)
         echo "glove word embedding..."

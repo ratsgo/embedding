@@ -1,4 +1,4 @@
-import sys, re, json, glob
+import sys, re, json, glob, argparse
 from gensim.corpora import WikiCorpus
 from gensim.utils import to_unicode
 
@@ -88,13 +88,16 @@ def process_korsquad(corpus_fname, output_fname):
 
 
 if __name__ == '__main__':
-    preprocess_mode = sys.argv[1]
-    in_f = sys.argv[2]
-    out_f = sys.argv[3]
-    if preprocess_mode == "wiki":
-        make_corpus(in_f, out_f)
-    elif "nsmc" in preprocess_mode:
-        with_label = sys.argv[4]
-        process_nsmc(in_f, out_f, "json" in preprocess_mode, with_label.lower() == "true")
-    elif preprocess_mode == "korsquad":
-        process_korsquad(in_f, out_f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--preprocess_mode', type=str, help='preprocess mode')
+    parser.add_argument('--input_path', type=str, help='Location of input files')
+    parser.add_argument('--output_path', type=str, help='Location of output files')
+    parser.add_argument('--with_label', help='with label', type=str, default="False")
+    args = parser.parse_args()
+
+    if args.preprocess_mode == "wiki":
+        make_corpus(args.input_path, args.output_path)
+    elif "nsmc" in args.preprocess_mode:
+        process_nsmc(args.input_path, args.output_path, "json" in args.preprocess_mode, args.with_label.lower() == "true")
+    elif args.preprocess_mode == "korsquad":
+        process_korsquad(args.input_path, args.output_path)

@@ -1,5 +1,4 @@
-import sys, os
-import tensorflow as tf
+import sys, os, argparse
 from collections import Counter
 from gensim import corpora
 from gensim.models import Doc2Vec, ldamulticore
@@ -11,7 +10,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from preprocess import get_tokenizer
 
 sys.path.append('models')
-from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bilm import dump_weights as dump_elmo_weights
 
 
@@ -109,16 +107,19 @@ def construct_elmo_vocab(corpus_fname, output_fname):
 
 
 if __name__ == '__main__':
-    util_mode = sys.argv[1]
-    in_f = sys.argv[2]
-    out_f = sys.argv[3]
-    if util_mode == "latent_semantic_analysis":
-        latent_semantic_analysis(in_f, out_f)
-    elif util_mode == "doc2vec":
-        doc2vec(in_f, out_f)
-    elif util_mode == "latent_dirichlet_allocation":
-        latent_dirichlet_allocation(in_f, out_f)
-    elif util_mode == "construct_elmo_vocab":
-        construct_elmo_vocab(in_f, out_f)
-    elif util_mode == "dump_elmo_weights":
-        dump_elmo_weights(in_f, out_f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--method', type=str, help='method')
+    parser.add_argument('--input_path', type=str, help='Location of input files')
+    parser.add_argument('--output_path', type=str, help='Location of output files')
+    args = parser.parse_args()
+
+    if args.method == "latent_semantic_analysis":
+        latent_semantic_analysis(args.input_path, args.output_path)
+    elif args.method == "doc2vec":
+        doc2vec(args.input_path, args.output_path)
+    elif args.method == "latent_dirichlet_allocation":
+        latent_dirichlet_allocation(args.input_path, args.output_path)
+    elif args.method == "construct_elmo_vocab":
+        construct_elmo_vocab(args.input_path, args.output_path)
+    elif args.method == "dump_elmo_weights":
+        dump_elmo_weights(args.input_path, args.output_path)

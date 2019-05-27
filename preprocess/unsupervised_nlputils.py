@@ -1,4 +1,4 @@
-import sys, math
+import sys, math, argparse
 from soynlp.word import WordExtractor
 from soynlp.tokenizer import LTokenizer
 from soynlp.normalizer import *
@@ -86,32 +86,24 @@ def sentencepiece_tokenize(vocab_fname, corpus_fname, output_fname):
 
 
 if __name__ == '__main__':
-    preprocess_mode = sys.argv[1]
-    if preprocess_mode == "train_space":
-        in_f = sys.argv[2]
-        out_f = sys.argv[3]
-        train_space_model(in_f, out_f)
-    elif preprocess_mode == "apply_space_correct":
-        in_f = sys.argv[2]
-        model_f = sys.argv[3]
-        out_f = sys.argv[4]
-        with_label = sys.argv[5]
-        apply_space_correct(in_f, model_f, out_f, with_label.lower() == "true")
-    elif preprocess_mode == "compute_soy_word_score":
-        in_f = sys.argv[2]
-        model_f = sys.argv[3]
-        compute_soy_word_score(in_f, model_f)
-    elif preprocess_mode == "soy_tokenize":
-        in_f = sys.argv[2]
-        model_f = sys.argv[3]
-        out_f = sys.argv[4]
-        soy_tokenize(in_f, model_f, out_f)
-    elif preprocess_mode == "process_sp_vocab":
-        in_f = sys.argv[2]
-        out_f = sys.argv[3]
-        process_sp_vocab(in_f, out_f)
-    elif preprocess_mode == "sentencepiece_tokenize":
-        voca_f = sys.argv[2]
-        in_f = sys.argv[3]
-        out_f = sys.argv[4]
-        sentencepiece_tokenize(voca_f, in_f, out_f)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--preprocess_mode', type=str, help='preprocess mode')
+    parser.add_argument('--input_path', type=str, help='Location of input files')
+    parser.add_argument('--output_path', type=str, help='Location of output files')
+    parser.add_argument('--model_path', type=str, help='Location of model files')
+    parser.add_argument('--vocab_path', type=str, help='Location of vocab files')
+    parser.add_argument('--with_label', help='with label', type=str, default="False")
+    args = parser.parse_args()
+
+    if args.preprocess_mode == "train_space":
+        train_space_model(args.input_path, args.model_path)
+    elif args.preprocess_mode == "apply_space_correct":
+        apply_space_correct(args.input_path, args.model_path, args.output_path, args.with_label.lower() == "true")
+    elif args.preprocess_mode == "compute_soy_word_score":
+        compute_soy_word_score(args.input_path, args.model_path)
+    elif args.preprocess_mode == "soy_tokenize":
+        soy_tokenize(args.input_path, args.model_path, args.output_path)
+    elif args.preprocess_mode == "process_sp_vocab":
+        process_sp_vocab(args.input_path, args.output_path)
+    elif args.preprocess_mode == "sentencepiece_tokenize":
+        sentencepiece_tokenize(args.vocab_path, args.input_path, args.output_path)

@@ -1,4 +1,4 @@
-import sys, os, random
+import sys, os, random, argparse
 import numpy as np
 import tensorflow as tf
 
@@ -388,25 +388,28 @@ class BERTTuner(Tuner):
 
 
 if __name__ == '__main__':
-    model_name = sys.argv[1]
-    train_corpus_fname = sys.argv[2]
-    test_corpus_fname = sys.argv[3]
-    vocab_fname = sys.argv[4]
-    pretrain_model_fname = sys.argv[5]
-    config_fname = sys.argv[6]
-    model_save_path = sys.argv[7]
-    if model_name == "elmo":
-        model = ELMoTuner(train_corpus_fname=train_corpus_fname,
-                          test_corpus_fname=test_corpus_fname,
-                          vocab_fname=vocab_fname,
-                          options_fname=config_fname,
-                          pretrain_model_fname=pretrain_model_fname,
-                          model_save_path=model_save_path)
-    elif model_name == "bert":
-        model = BERTTuner(train_corpus_fname=train_corpus_fname,
-                          test_corpus_fname=test_corpus_fname,
-                          vocab_fname=vocab_fname,
-                          pretrain_model_fname=pretrain_model_fname,
-                          bertconfig_fname=config_fname,
-                          model_save_path=model_save_path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_name', type=str, help='model name')
+    parser.add_argument('--train_corpus_fname', type=str, help='train corpus file name')
+    parser.add_argument('--test_corpus_fname', type=str, help='test corpus file name')
+    parser.add_argument('--vocab_fname', type=str, help='vocab file name')
+    parser.add_argument('--pretrain_model_fname', type=str, help='pretrained model file name')
+    parser.add_argument('--config_fname', type=str, help='config file name')
+    parser.add_argument('--model_save_path', type=str, help='model save path')
+    args = parser.parse_args()
+
+    if args.model_name == "elmo":
+        model = ELMoTuner(train_corpus_fname=args.train_corpus_fname,
+                          test_corpus_fname=args.test_corpus_fname,
+                          vocab_fname=args.vocab_fname,
+                          options_fname=args.config_fname,
+                          pretrain_model_fname=args.pretrain_model_fname,
+                          model_save_path=args.model_save_path)
+    elif args.model_name == "bert":
+        model = BERTTuner(train_corpus_fname=args.train_corpus_fname,
+                          test_corpus_fname=args.test_corpus_fname,
+                          vocab_fname=args.vocab_fname,
+                          pretrain_model_fname=args.pretrain_model_fname,
+                          bertconfig_fname=args.config_fname,
+                          model_save_path=args.model_save_path)
     model.tune()
