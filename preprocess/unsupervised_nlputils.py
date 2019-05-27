@@ -68,7 +68,7 @@ def soy_tokenize(corpus_fname, model_fname, output_fname):
 def process_sp_vocab(vocab_fname, output_fname):
     with open(vocab_fname, 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
-        f2.writelines("[PAD]\n[UNK]\n[CLS]\n[MASK]\n[SEP]")
+        f2.writelines("[PAD]\n[UNK]\n[CLS]\n[MASK]\n[SEP]\n")
         for line in f1:
             word = line.replace('\n', '').split('\t')[0].replace('▁', '##')
             if not word or word in ["##", "<unk>", "<s>", "</s>"]: continue
