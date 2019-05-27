@@ -18,9 +18,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
-import models.bert.modeling as modeling
-import models.bert.optimization as optimization
+import os, sys
+sys.path.append('models/bert')
+import modeling as modeling
+import optimization as optimization
 import tensorflow as tf
 
 flags = tf.flags

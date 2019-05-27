@@ -96,7 +96,7 @@ case $COMMAND in
             --random_seed=7 \
             --dupe_factor=5
         echo "pretrain fresh BERT..."
-        python run_pretraining.py \
+        python models/bert/run_pretraining.py \
             --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
             --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
             --do_train=True \
