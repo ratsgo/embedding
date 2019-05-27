@@ -84,7 +84,7 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab/sentpiece.vocab \
             --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
         echo "preprocess corpus..."
-        python create_pretraining_data.py \
+        python models/bert/create_pretraining_data.py \
             --input_file=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord \
             --vocab_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
