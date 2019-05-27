@@ -31,10 +31,10 @@ case $COMMAND in
         export LC_CTYPE=C.UTF-8
         python models/sent_utils.py construct_elmo_vocab /notebooks/embedding/data/tokenized/corpus_mecab.txt /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt
         split -l 100000 /notebooks/embedding/data/tokenized/corpus_mecab.txt /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata/data_
-        python train_elmo.py \
+        nohup sh -c "python models/train_elmo.py \
             --train_prefix='/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata/*' \
             --vocab_file /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt \
-            --save_dir /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt
+            --save_dir /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt" > elmo-pretrain.log
         ;;
     dump-pretrained-elmo)
         echo "dump pretrained ELMo weights..."
@@ -43,7 +43,13 @@ case $COMMAND in
     tune-elmo)
         echo "tune ELMo..."
         export LC_CTYPE=C.UTF-8
-        nohup sh -c "python models/tune_utils.py elmo /notebooks/embedding/data/processed/processed_ratings_train.txt /notebooks/embedding/data/processed/processed_ratings_test.txt /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo.log &
+        nohup sh -c "python models/tune_utils.py elmo \
+                      /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt \
+                      /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model \
+                      /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json \
+                      /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
         ;;
     dump-pretrained-bert)
         echo "dump pretrained BERT weights..."
