@@ -76,12 +76,35 @@ case $COMMAND in
         # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
         # 띄어쓰기 교정은 이미 되어 있다고 가정
         echo "construct vocab..."
-        mkdir -p /notebooks/embedding/data/bert/vocab
-        cd  /notebooks/embedding/data/bert/vocab
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
+        cd  /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
         spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=32000
+        cd  /notebooks/embedding
         python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
-            --input_path /notebooks/embedding/data/trained-models/sentpiece.vocab \
-            --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
+            --input_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab/sentpiece.vocab \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
+        echo "preprocess corpus..."
+        python create_pretraining_data.py \
+            --input_file=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --output_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord \
+            --vocab_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
+            --do_lower_case=False \
+            --max_seq_length=128 \
+            --max_predictions_per_seq=20 \
+            --masked_lm_prob=0.15 \
+            --random_seed=7 \
+            --dupe_factor=5
+        echo "pretrain fresh BERT..."
+        python run_pretraining.py \
+            --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
+            --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
+            --do_train=True \
+            --do_eval=True \
+            --bert_config_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
+            --train_batch_size=32 \
+            --max_seq_length=128 \
+            --max_predictions_per_seq=20 \
+            --learning_rate=2e-5
         ;;
     tune-bert)
         echo "tune BERT..."

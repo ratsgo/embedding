@@ -104,6 +104,6 @@ if __name__ == '__main__':
     elif args.preprocess_mode == "soy_tokenize":
         soy_tokenize(args.input_path, args.model_path, args.output_path)
     elif args.preprocess_mode == "process_sp_vocab":
-        process_sp_vocab(args.input_path, args.output_path)
+        process_sp_vocab(args.input_path, args.vocab_path)
     elif args.preprocess_mode == "sentencepiece_tokenize":
         sentencepiece_tokenize(args.vocab_path, args.input_path, args.output_path)
