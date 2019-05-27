@@ -34,7 +34,7 @@ case $COMMAND in
         nohup sh -c "python models/train_elmo.py \
             --train_prefix='/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata/*' \
             --vocab_file /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt \
-            --save_dir /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt" > elmo-pretrain.log
+            --save_dir /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt" > elmo-pretrain.log &
         ;;
     dump-pretrained-elmo)
         echo "dump pretrained ELMo weights..."
