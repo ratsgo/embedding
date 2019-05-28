@@ -126,6 +126,67 @@ def make_bert_graph(bert_config, max_seq_length, dropout_keep_prob_rate, num_lab
         return model, input_ids, input_mask, segment_ids, probs
 
 
+def make_word_embedding_graph(sequence_length, num_labels, vocab_size, embedding_size, train=False):
+    ids_placeholder = tf.placeholder(tf.int32, [None, sequence_length], name="input_ids")
+    input_lengths = tf.placeholder(tf.int32, [None], name="input_lengths")
+    labels_placeholder = tf.placeholder(tf.int32, [None, num_labels], name="label_ids")
+    if train:
+        dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+    else:
+        dropout_keep_prob = tf.constant(1.0, dtype=tf.float32)
+    We = tf.Variable(tf.constant(0.0, shape=[vocab_size, embedding_size]), trainable=True)
+    embedding_placeholder = tf.placeholder(tf.float32, shape=[vocab_size, embedding_size])
+    embed_init = We.assign(embedding_placeholder)
+    # shape : [batch_size, unroll_steps, dimension]
+    embedded_words = tf.nn.embedding_lookup(We, ids_placeholder)
+    # input of fine tuning network
+    features = tf.nn.dropout(embedded_words, dropout_keep_prob)
+    # Bidirectional LSTM Layer
+    lstm_cell_fw = tf.nn.rnn_cell.LSTMCell(num_units=embedding_size,
+                                           cell_clip=5,
+                                           proj_clip=5)
+    lstm_cell_bw = tf.nn.rnn_cell.LSTMCell(num_units=embedding_size,
+                                           cell_clip=5,
+                                           proj_clip=5)
+    lstm_output, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw=lstm_cell_fw,
+                                                     cell_bw=lstm_cell_bw,
+                                                     inputs=features,
+                                                     sequence_length=input_lengths,
+                                                     dtype=tf.float32)
+
+    # Attention Layer
+    output_fw, output_bw = lstm_output
+    # (batch_size, seq_len, HIDDEN_SIZE)
+    H = tf.nn.tanh(output_fw + output_bw)
+    # softmax(dot(W, H)) : (batch_size, seq_len, 1)
+    attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+    # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
+    attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
+    layer_output = tf.nn.dropout(tf.nn.tanh(attention_output), dropout_keep_prob)
+
+    # Feed-Forward Layer
+    fc = tf.contrib.layers.fully_connected(inputs=layer_output,
+                                           num_outputs=512,
+                                           activation_fn=tf.nn.relu,
+                                           weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                           biases_initializer=tf.zeros_initializer())
+    features_drop = tf.nn.dropout(fc, dropout_keep_prob)
+    logits = tf.contrib.layers.fully_connected(inputs=features_drop,
+                                               num_outputs=num_labels,
+                                               activation_fn=None,
+                                               weights_initializer=tf.contrib.layers.xavier_initializer(),
+                                               biases_initializer=tf.zeros_initializer())
+    if train:
+        # Loss Layer
+        CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels_placeholder, logits=logits)
+        loss = tf.reduce_mean(CE)
+        return ids_placeholder, input_lengths, labels_placeholder, dropout_keep_prob, embedding_placeholder, embed_init, logits, loss
+    else:
+        # prob Layer
+        probs = tf.nn.softmax(logits, axis=-1, name='probs')
+        return ids_placeholder, input_lengths, labels_placeholder, probs
+
+
 class Tuner(object):
 
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
@@ -235,9 +296,6 @@ class Tuner(object):
                     batch_sentences.append(sentence)
                     batch_labels.append(int(label))
                 yield self.make_input(batch_sentences, batch_labels, is_training)
-
-    def buildGraph(self):
-        raise NotImplementedError
 
     def make_input(self, sentences, labels, is_training):
         raise NotImplementedError
@@ -385,6 +443,49 @@ class BERTTuner(Tuner):
             }
             input_feed = [input_feed_, labels]
         return input_feed
+
+
+class WordEmbeddingTuner(Tuner):
+
+    def __init__(self, train_corpus_fname, test_corpus_fname,
+                 embedding_name, embedding_fname,
+                 model_save_path, max_seq_length=128, embedding_size=100,
+                 batch_size=128, learning_rate=0.0001, num_labels=2):
+        # Load a corpus.
+        super().__init__(train_corpus_fname=train_corpus_fname,
+                         tokenized_train_corpus_fname=train_corpus_fname + ".random.tokenized",
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
+                         tokenized_test_corpus_fname=test_corpus_fname + ".random.tokenized",
+                         model_name=embedding_name, model_save_path=model_save_path)
+        self.lr = learning_rate
+        # Load Pretrained Word Embeddings.
+        self.embeddings, vocab_size = self.load_embeddings(embedding_name, embedding_fname)
+        # build train graph.
+        self.ids_placeholder, self.input_lengths, self.labels_placeholder, \
+        self.dropout_keep_prob, self.embedding_placeholder, self.embed_init, \
+        self.logits, self.loss = make_word_embedding_graph(max_seq_length, num_labels, vocab_size, embedding_size, train=True)
+
+    def load_embeddings(self, embedding_name, embedding_fname):
+        if embedding_name == "random":
+            # TODO: 구현
+        else:
+            # TODO: 구현
+        return embeddings, vocab_size
+
+    def tune(self):
+        global_step = tf.train.get_or_create_global_step()
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        grads_and_vars = optimizer.compute_gradients(self.loss)
+        train_op = optimizer.apply_gradients(grads_and_vars, global_step=global_step)
+        output_feed = [train_op, global_step, self.logits, self.loss]
+        saver = tf.train.Saver(max_to_keep=1)
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        sess.run(self.embed_init, feed_dict={self.embedding_placeholder: self.embeddings})
+        self.train(sess, saver, global_step, output_feed)
+
+    def make_input(self, sentences, labels, is_training):
+        return NotImplementedError
 
 
 if __name__ == '__main__':
