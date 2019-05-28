@@ -19,7 +19,7 @@ RUN wget https://cmake.org/files/v3.14/cmake-3.14.3-Linux-x86_64.sh \
  && ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 
 RUN pip install --upgrade pip
-RUN pip install konlpy
+RUN pip install konlpy cmake
 
 WORKDIR /notebooks
 RUN wget https://raw.githubusercontent.com/konlpy/konlpy/master/scripts/mecab.sh \
