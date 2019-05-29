@@ -129,8 +129,8 @@ def make_bert_graph(bert_config, max_seq_length, dropout_keep_prob_rate, num_lab
         return model, input_ids, input_mask, segment_ids, probs
 
 
-def make_word_embedding_graph(sequence_length, num_labels, vocab_size, embedding_size, train=False):
-    ids_placeholder = tf.placeholder(tf.int32, [None, sequence_length], name="input_ids")
+def make_word_embedding_graph(num_labels, vocab_size, embedding_size, train=False):
+    ids_placeholder = tf.placeholder(tf.int32, [None, None], name="input_ids")
     input_lengths = tf.placeholder(tf.int32, [None], name="input_lengths")
     labels_placeholder = tf.placeholder(tf.int32, [None], name="label_ids")
     if train:
@@ -466,7 +466,7 @@ class WordEmbeddingTuner(Tuner):
         # build train graph.
         self.ids_placeholder, self.input_lengths, self.labels_placeholder, \
         self.dropout_keep_prob, self.embedding_placeholder, self.embed_init, \
-        self.logits, self.loss = make_word_embedding_graph(max_seq_length, num_labels, len(self.vocab), self.embedding_size, train=True)
+        self.logits, self.loss = make_word_embedding_graph(num_labels, len(self.vocab) + 1, self.embedding_size, train=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
@@ -491,13 +491,20 @@ class WordEmbeddingTuner(Tuner):
                     token_ids.append(len(self.vocab))
             input_ids.append(token_ids)
             lengths.append(len(token_ids))
-
-        input_feed = {
-            self.training: is_training,
-            self.ids_placeholder: input_ids,
-            self.input_lengths: lengths,
-            self.labels_placeholder: labels
-        }
+        if is_training:
+            input_feed = {
+                self.ids_placeholder: np.array(input_ids),
+                self.input_lengths: np.array(lengths),
+                self.labels_placeholder: np.array(labels),
+                self.dropout_keep_prob: 0.9
+            }
+        else:
+            input_feed = {
+                self.ids_placeholder: np.array(input_ids),
+                self.input_lengths: np.array(lengths),
+                self.labels_placeholder: np.array(labels),
+                self.dropout_keep_prob: 1.0
+            }
         return input_feed
 
     def get_truncated_normal(self, mean=0, sd=1, low=-1, upp=1):
@@ -531,7 +538,7 @@ class WordEmbeddingTuner(Tuner):
             for tokens, _ in self.train_data:
                 for token in tokens:
                     words_count[token] += 1
-            sorted_words = sorted(words_count.items(), key=lambda x: x[1], reverse=True)[:100000]
+            sorted_words = sorted(words_count.items(), key=lambda x: x[1], reverse=True)[:50000]
             words = [word for word, _ in sorted_words]
             vocab = {word:idx for idx, word in enumerate(words)}
             random_embeddings = random_generator.rvs(len(vocab) * self.embedding_size)
