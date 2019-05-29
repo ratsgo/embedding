@@ -17,7 +17,7 @@
 
 - 튜토리얼을 위한 도커 컨테이너를 실행하려면 자신의 환경에 따라 다음 네 가지 중 하나의 작업을 실시하여야 합니다.
 
-  (1) 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들기
+  (1) 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
 
   ```bash
   git clone https://github.com/ratsgo/embedding.git
@@ -26,14 +26,14 @@
   docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.0 bash
   ```
 
-  (2) 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 불러오기
+  (2) 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
 
   ```bash
   docker pull ratsgo/embedding-gpu:1.0
   docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.0 bash
   ```
 
-  (3) 로컬에 nvidia GPU가 없고 Dockerfile로부터 도커이미지를 처음부터 만들기
+  (3) 로컬에 nvidia GPU가 없고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
 
   ```bash
   git clone https://github.com/ratsgo/embedding.git
@@ -42,7 +42,7 @@
   docker run -it --rm ratsgo/embedding-cpu:1.0 bash
   ```
 
-  (4) 로컬에 nvidia GPU가 없고 이미 만들어진 도커이미지를 불러오기
+  (4) 로컬에 nvidia GPU가 없고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
 
   ```bash
   docker pull ratsgo/embedding-cpu:1.0
