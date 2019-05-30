@@ -41,22 +41,52 @@ case $COMMAND in
         ;;
     tune-random)
         echo "tune random init with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/random-tune
+        mkdir -p /notebooks/embedding/data/word-embeddings/random-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
                       --embedding_name random \
-                      --model_save_path /notebooks/embedding/data/sentence-embeddings/random-tune" > tune-random.log &
+                      --model_save_path /notebooks/embedding/data/word-embeddings/random-tune" > tune-random.log &
+        ;;
+    tune-word2vec)
+        echo "tune word2vec with Bi-LSTM attention model..."
+        mkdir -p /notebooks/embedding/data/word-embeddings/word2vec-tune
+        nohup sh -c "python models/tune_utils.py --model_name word \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --embedding_name word2vec \
+                      --embedding_fname /notebooks/embedding/data/word-embeddings/word2vec/word2vec \
+                      --model_save_path /notebooks/embedding/data/word-embeddings/word2vec-tune" > tune-word2vec.log &
+        ;;
+    tune-glove)
+        echo "tune glove with Bi-LSTM attention model..."
+        mkdir -p /notebooks/embedding/data/word-embeddings/glove-tune
+        nohup sh -c "python models/tune_utils.py --model_name word \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --embedding_name glove \
+                      --embedding_fname /notebooks/embedding/data/word-embeddings/glove/glove.txt \
+                      --model_save_path /notebooks/embedding/data/word-embeddings/glove-tune" > tune-glove.log &
         ;;
     tune-ft)
         echo "tune fasttext with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/fasttext-tune
+        mkdir -p /notebooks/embedding/data/word-embeddings/fasttext-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
                       --embedding_name fasttext \
                       --embedding_fname /notebooks/embedding/data/word-embeddings/fasttext/fasttext.vec \
-                      --model_save_path /notebooks/embedding/data/sentence-embeddings/fasttext-tune" > tune-ft.log &
+                      --model_save_path /notebooks/embedding/data/word-embeddings/fasttext-tune" > tune-ft.log &
+        ;;
+    tune-swivel)
+        echo "tune swivel with Bi-LSTM attention model..."
+        mkdir -p /notebooks/embedding/data/word-embeddings/swivel-tune
+        nohup sh -c "python models/tune_utils.py --model_name word \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --embedding_name swivel \
+                      --embedding_fname /notebooks/embedding/data/word-embeddings/swivel/row_embedding.tsv \
+                      --model_save_path /notebooks/embedding/data/word-embeddings/swivel-tune" > tune-swivel.log &
         ;;
     pretrain-elmo)
         echo "pretrain ELMo..."

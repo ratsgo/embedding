@@ -260,8 +260,7 @@ class Tuner(object):
         valid_loss, valid_pred, valid_num_data = 0, 0, 0
         output_feed = [self.logits, self.loss]
         test_batches = self.get_batch(self.test_data, num_epochs=1, is_training=False)
-        for batch in test_batches:
-            current_input_feed, current_labels = batch
+        for current_input_feed, current_labels in test_batches:
             current_logits, current_loss = sess.run(output_feed, current_input_feed)
             current_preds = np.argmax(current_logits, axis=-1)
             valid_loss += current_loss
@@ -436,6 +435,7 @@ class BERTTuner(Tuner):
                 self.input_mask: np.array(collated_batch['masks']),
                 self.label_ids: np.array(labels)
             }
+            return input_feed
         else:
             input_feed_ = {
                 self.training: is_training,
@@ -445,7 +445,7 @@ class BERTTuner(Tuner):
                 self.label_ids: np.array(labels)
             }
             input_feed = [input_feed_, labels]
-        return input_feed
+            return input_feed, labels
 
 
 class WordEmbeddingTuner(Tuner):
