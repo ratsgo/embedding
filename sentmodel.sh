@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 COMMAND=$1
-
+export LC_CTYPE=C.UTF-8
 function gdrive_download () {
   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')
   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2
@@ -39,11 +39,29 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/sentence-embeddings/lda/lda
         ;;
+    tune-random)
+        echo "tune random init with Bi-LSTM attention model..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/random-tune
+        nohup sh -c "python models/tune_utils.py --model_name word \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --embedding_name random \
+                      --model_save_path /notebooks/embedding/data/sentence-embeddings/random-tune" > tune-random.log &
+        ;;
+    tune-ft)
+        echo "tune fasttext with Bi-LSTM attention model..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/fasttext-tune
+        nohup sh -c "python models/tune_utils.py --model_name word \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --embedding_name fasttext \
+                      --embedding_fname /notebooks/embedding/data/word-embeddings/fasttext/fasttext.vec \
+                      --model_save_path /notebooks/embedding/data/sentence-embeddings/fasttext-tune" > tune-ft.log &
+        ;;
     pretrain-elmo)
         echo "pretrain ELMo..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata
         cat /notebooks/embedding/data/tokenized/wiki_ko_mecab.txt /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/corpus_mecab.txt
-        export LC_CTYPE=C.UTF-8
         python models/sent_utils.py --method construct_elmo_vocab \
             --input_path /notebooks/embedding/data/tokenized/corpus_mecab.txt \
             --output_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt
@@ -62,7 +80,6 @@ case $COMMAND in
         ;;
     tune-elmo)
         echo "tune ELMo..."
-        export LC_CTYPE=C.UTF-8
         nohup sh -c "python models/tune_utils.py --model_name elmo \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
@@ -116,7 +133,6 @@ case $COMMAND in
         ;;
     tune-bert)
         echo "tune BERT..."
-        export LC_CTYPE=C.UTF-8
         nohup sh -c "python models/tune_utils.py --model_name bert \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \

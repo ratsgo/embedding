@@ -466,7 +466,7 @@ class WordEmbeddingTuner(Tuner):
         # build train graph.
         self.ids_placeholder, self.input_lengths, self.labels_placeholder, \
         self.dropout_keep_prob, self.embedding_placeholder, self.embed_init, \
-        self.logits, self.loss = make_word_embedding_graph(num_labels, len(self.vocab) + 1, self.embedding_size, train=True)
+        self.logits, self.loss = make_word_embedding_graph(num_labels, len(self.vocab) + 2, self.embedding_size, train=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
@@ -482,6 +482,7 @@ class WordEmbeddingTuner(Tuner):
 
     def make_input(self, sentences, labels, is_training):
         input_ids, lengths = [], []
+        max_token_length = self.get_max_token_length_this_batch(sentences)
         for tokens in sentences:
             token_ids = []
             for token in tokens:
@@ -489,6 +490,8 @@ class WordEmbeddingTuner(Tuner):
                     token_ids.append(self.vocab[token])
                 else:
                     token_ids.append(len(self.vocab))
+            if len(tokens) < max_token_length:
+                token_ids.append([len(self.vocab) - 1] * (max_token_length - len(tokens)))
             input_ids.append(token_ids)
             lengths.append(len(token_ids))
         if is_training:
@@ -506,6 +509,9 @@ class WordEmbeddingTuner(Tuner):
                 self.dropout_keep_prob: 1.0
             }
         return input_feed
+
+    def get_max_token_length_this_batch(self, sentences):
+        return max(len(sentence) for sentence in sentences)
 
     def get_truncated_normal(self, mean=0, sd=1, low=-1, upp=1):
         return truncnorm(
@@ -543,8 +549,9 @@ class WordEmbeddingTuner(Tuner):
             vocab = {word:idx for idx, word in enumerate(words)}
             random_embeddings = random_generator.rvs(len(vocab) * self.embedding_size)
             embeddings = random_embeddings.reshape(len(vocab), self.embedding_size)
-        # for UNK token
-        embeddings = np.append(embeddings, [random_generator.rvs(self.embedding_size)], axis=0)
+        # for PAD, UNK token
+        added_embeddings = random_generator.rvs(self.embedding_size * 2)
+        embeddings = np.append(embeddings, added_embeddings.reshape(2, self.embedding_size), axis=0)
         return embeddings, vocab
 
 

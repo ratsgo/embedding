@@ -3,7 +3,7 @@
 #!/usr/bin/env bash
 
 COMMAND=$1
-
+export LC_CTYPE=C.UTF-8
 case $COMMAND in
     merge)
         echo "merge datasets.."
