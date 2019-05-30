@@ -557,6 +557,8 @@ if __name__ == '__main__':
     parser.add_argument('--pretrain_model_fname', type=str, help='pretrained model file name')
     parser.add_argument('--config_fname', type=str, help='config file name')
     parser.add_argument('--model_save_path', type=str, help='model save path')
+    parser.add_argument('--embedding_name', type=str, help='embedding name')
+    parser.add_argument('--embedding_fname', type=str, help='embedding file path')
     args = parser.parse_args()
 
     if args.model_name == "elmo":
