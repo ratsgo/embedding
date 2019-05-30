@@ -435,7 +435,6 @@ class BERTTuner(Tuner):
                 self.input_mask: np.array(collated_batch['masks']),
                 self.label_ids: np.array(labels)
             }
-            return input_feed
         else:
             input_feed_ = {
                 self.training: is_training,
@@ -445,7 +444,7 @@ class BERTTuner(Tuner):
                 self.label_ids: np.array(labels)
             }
             input_feed = [input_feed_, labels]
-            return input_feed, labels
+        return input_feed
 
 
 class WordEmbeddingTuner(Tuner):
@@ -508,6 +507,7 @@ class WordEmbeddingTuner(Tuner):
                 self.labels_placeholder: np.array(labels),
                 self.dropout_keep_prob: 1.0
             }
+            input_feed = [input_feed, labels]
         return input_feed
 
     def get_max_token_length_this_batch(self, sentences):
