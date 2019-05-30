@@ -491,7 +491,7 @@ class WordEmbeddingTuner(Tuner):
                 else:
                     token_ids.append(len(self.vocab))
             if len(tokens) < max_token_length:
-                token_ids.append([len(self.vocab) - 1] * (max_token_length - len(tokens)))
+                token_ids.extend([len(self.vocab) - 1] * (max_token_length - len(tokens)))
             input_ids.append(token_ids)
             lengths.append(len(token_ids))
         if is_training:
