@@ -87,7 +87,7 @@ def sentencepiece_tokenize(vocab_fname, corpus_fname, output_fname):
             f2.writelines(tokenized_sent + '\n')
 
 """
-Process Hangul Jamo Senctence.
+Process Hangul Jamo Sentence.
 Inspired By:
 https://lovit.github.io/nlp/representation/2018/10/22/fasttext_subword
 """

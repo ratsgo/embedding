@@ -160,9 +160,9 @@ class WordEmbeddingEval:
 
 
 
-model = WordEmbeddingEval("data/word2vec.vecs", "word2vec", dim=100, tokenize=True)
+model = WordEmbeddingEval("data/word-embeddings/word2vec/word2vec", "word2vec", dim=100, tokenize=True)
 model.word_sim_test("data/kor_ws353.csv") # 0.5770993871014621 0.5956751142850295 0
-model.word_analogy_test("data/kor_analogy_semantic.txt") # 158 420 0
+model.word_analogy_test("data/data-old/kor_analogy_semantic.txt", verbose=True) # 158 420 0
 model.word_analogy_test("data/kor_analogy_syntactic.txt")
 model.most_similar("문재인") # [('박근혜', 0.9221434), ('이명박', 0.9151239), ('노무현', 0.90462077), ('김대중', 0.8763489), ('노태우', 0.8345808), ('김영삼', 0.8336141), ('이회창', 0.8229812), ('박원순', 0.81067884), ('전두환', 0.8074833), ('안철수', 0.8040389)]
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Viridis256")
@@ -176,7 +176,7 @@ model.most_similar("문재인") # ('이명박', 0.845631133898592), ('박근혜'
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Inferno256")
 model.visualize_words("data/kor_analogy_syntactic.txt", palette="Magma256")
 
-model = WordEmbeddingEval("data/fasttext.vecs.vec", "fasttext", dim=100, tokenize=True)
+model = WordEmbeddingEval("data//word-embeddings/fasttext/fasttext.vec", "fasttext", dim=100, tokenize=True)
 model.word_sim_test("data/kor_ws353.csv") # 0.636179558597476 0.6386177571595193 0
 model.word_analogy_test("data/kor_analogy_semantic.txt") # 81 420 0
 model.most_similar("문재인") # [('박근혜', 0.9239191680881065), ('이명박', 0.9129016338164864), ('노무현', 0.8974644850690527), ('문재', 0.8477265842739639), ('노태우', 0.8271708135634908), ('김대중', 0.8241289233466147), ('청와대', 0.808890823843111), ('이회창', 0.8088008847778916), ('박원순', 0.8075874801817806), ('홍준표', 0.7973925010954298)]
