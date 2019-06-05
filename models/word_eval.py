@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import scipy.stats as st
 from gensim.models import Word2Vec
+from fastText import load_model as load_ft_model
 from sklearn.preprocessing import normalize
 from preprocess import get_tokenizer
 
@@ -11,14 +12,17 @@ from visualize_utils import visualize_words, visualize_between_words
 
 class WordEmbeddingEval:
 
-    def __init__(self, vecs_fname, method="word2vec", dim=100, tokenize=True):
+    def __init__(self, vecs_txt_fname, vecs_bin_fname=None, method="word2vec", dim=100, tokenize=True):
         if tokenize:
             self.tokenizer = get_tokenizer("mecab")
         else:
             self.tokenizer = None
         self.tokenize = tokenize
         self.dim = dim
-        self.dictionary, self.words, self.vecs = self.load_vectors(vecs_fname, method)
+        self.method = method
+        self.dictionary, self.words, self.vecs = self.load_vectors(vecs_txt_fname, method)
+        if method == "fasttext":
+            self.model = load_ft_model(vecs_bin_fname)
 
     def load_vectors(self, vecs_fname, method):
         if method == "word2vec":
@@ -43,6 +47,30 @@ class WordEmbeddingEval:
         for word, vec in zip(words, unit_vecs):
             dictionary[word] = vec
         return dictionary, words, unit_vecs
+
+    def get_word_vector(self, word):
+        if self.method == "fasttext":
+            vector = self.model.get_word_vector(word)
+        else:
+            if self._is_in_vocabulary(word):
+                vector = self.dictionary[word]
+            else:
+                vector = np.zeros(self.dim)
+        return vector
+
+    # token vector들을 lookup한 뒤 평균을 취한다
+    def get_sentence_vector(self, sentence):
+        if self.tokenize:
+            tokens = self.tokenizer.morphs(sentence)
+        else:
+            tokens = sentence.split(" ")
+        token_vecs = []
+        for token in tokens:
+            token_vecs.append(self.get_word_vector(token))
+        return np.mean(token_vecs, axis=0)
+
+    def _is_in_vocabulary(self, word):
+        return word in self.dictionary.keys()
 
     def most_similar(self, query, topn=10):
         query_vec = self.get_sentence_vector(query)
@@ -118,22 +146,6 @@ class WordEmbeddingEval:
             result = np.zeros(self.dim)
         return result
 
-    # token vector들을 lookup한 뒤 평균을 취한다
-    def get_sentence_vector(self, sentence):
-        if self.tokenize:
-            tokens = self.tokenizer.morphs(sentence)
-        else:
-            tokens = sentence.split(" ")
-        token_vecs = []
-        for token in tokens:
-            if token in self.dictionary.keys():
-                token_vecs.append(self.dictionary[token])
-        if len(token_vecs) > 0:
-            result = np.mean(token_vecs, axis=0)
-        else:
-            result = np.zeros(self.dim)
-        return result
-
     """
     Visualize word representions with T-SNE, Bokeh
     Inspired by:
@@ -176,9 +188,15 @@ model.most_similar("문재인") # ('이명박', 0.845631133898592), ('박근혜'
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Inferno256")
 model.visualize_words("data/kor_analogy_syntactic.txt", palette="Magma256")
 
-model = WordEmbeddingEval("data//word-embeddings/fasttext/fasttext.vec", "fasttext", dim=100, tokenize=True)
-model.word_sim_test("data/kor_ws353.csv") # 0.636179558597476 0.6386177571595193 0
-model.word_analogy_test("data/kor_analogy_semantic.txt") # 81 420 0
+model = WordEmbeddingEval(vecs_txt_fname="data/word-embeddings/fasttext/fasttext.vec",
+                          vecs_bin_fname="data/word-embeddings/fasttext/fasttext.bin",
+                          method="fasttext", dim=100, tokenize=True)
+model.get_word_vector("학교")
+model._is_in_vocabulary("학굥")
+model.get_word_vector("학굥")
+model.most_similar("학굥")
+model.word_sim_test("data/data-old/kor_ws353.csv") # 0.636179558597476 0.6386177571595193 0
+model.word_analogy_test("data/data-old/kor_analogy_semantic.txt") # 81 420 0
 model.most_similar("문재인") # [('박근혜', 0.9239191680881065), ('이명박', 0.9129016338164864), ('노무현', 0.8974644850690527), ('문재', 0.8477265842739639), ('노태우', 0.8271708135634908), ('김대중', 0.8241289233466147), ('청와대', 0.808890823843111), ('이회창', 0.8088008847778916), ('박원순', 0.8075874801817806), ('홍준표', 0.7973925010954298)]
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Plasma256")
 model.visualize_words("data/kor_analogy_syntactic.txt", palette="Cividis256")
