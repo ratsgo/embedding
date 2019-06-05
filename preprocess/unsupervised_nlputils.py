@@ -99,7 +99,7 @@ def jamo_sentence(sent):
         if char == ' ':
             return char
         cjj = decompose(char)
-        if len(cjj) == 1:
+        if cjj is None or len(cjj) == 1:
             return cjj
         cjj_ = ''.join(c if c != ' ' else '-' for c in cjj)
         return cjj_
