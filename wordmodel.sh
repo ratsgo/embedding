@@ -45,7 +45,7 @@ case $COMMAND in
     fasttext-jamo)
         echo "fasttext jamo embedding..."
         mkdir -p /notebooks/embedding/data/word-embeddings/fasttext-jamo
-        /notebooks/embedding/models/fastText/fasttext skipgram -input notebooks/embedding/data/tokenized/corpus_mecab_jamo.txt -output /notebooks/embedding/data/word-embeddings/fasttext-jamo/fasttext-jamo
+        /notebooks/embedding/models/fastText/fasttext skipgram -input /notebooks/embedding/data/tokenized/corpus_mecab_jamo.txt -output /notebooks/embedding/data/word-embeddings/fasttext-jamo/fasttext-jamo
         ;;
     swivel)
         echo "swivel word embedding..."
