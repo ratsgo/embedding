@@ -99,7 +99,7 @@ def jamo_sentence(sent):
         if char == ' ':
             return char
         cjj = decompose(char)
-        if cjj is None or len(cjj) == 1:
+        if len(cjj) == 1:
             return cjj
         cjj_ = ''.join(c if c != ' ' else '-' for c in cjj)
         return cjj_
@@ -114,8 +114,9 @@ def process_jamo(tokenized_corpus_fname, output_fname):
             open(output_fname, 'w', encoding='utf-8') as f2:
         for line in f1:
             sentence = line.replace('\n', '').strip()
-            processed_sentence = jamo_sentence(sentence)
-            f2.writelines(processed_sentence + '\n')
+            if sentence:
+                processed_sentence = jamo_sentence(sentence)
+                f2.writelines(processed_sentence + '\n')
 
 
 if __name__ == '__main__':
