@@ -84,6 +84,12 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/processed_korsquad.txt \
             --output_path data/tokenized/korsquad_mecab.txt
         ;;
+    process-jamo)
+        echo "processing jamo sentences..."
+        python preprocess/unsupervised_nlputils.py --preprocess_mode jamo \
+            --input_path /notebooks/embedding/data/tokenized/corpus_mecab.txt \
+            --output_path /notebooks/embedding/data/tokenized/corpus_mecab_jamo.txt
+        ;;
     space_correct)
         echo "train & apply space correct..."
         python preprocess/unsupervised_nlputils.py --preprocess_mode train_space \
