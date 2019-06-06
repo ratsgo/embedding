@@ -54,7 +54,7 @@ def process_nsmc(corpus_path, output_fname, process_json=True, with_label=True):
             for path in file_paths:
                 contents = json.load(open(path))
                 for content in contents:
-                    sentence = content['review'].replace("\n", " ")
+                    sentence = content['review'].strip()
                     if len(sentence) > 0:
                         f.writelines(sentence + "\u241E" + content['movie_id'] + "\n")
     else:
@@ -62,7 +62,7 @@ def process_nsmc(corpus_path, output_fname, process_json=True, with_label=True):
                 open(output_fname, 'w', encoding='utf-8') as f2:
             next(f1)  # skip head line
             for line in f1:
-                _, sentence, label = line.replace('\n', '').split('\t')
+                _, sentence, label = line.strip().split('\t')
                 if not sentence: continue
                 if with_label:
                     f2.writelines(sentence + "\u241E" + label + "\n")
@@ -70,7 +70,7 @@ def process_nsmc(corpus_path, output_fname, process_json=True, with_label=True):
                     f2.writelines(sentence + "\n")
 
 
-def process_korsquad(corpus_fname, output_fname):
+def process_korQuAD(corpus_fname, output_fname):
     with open(corpus_fname) as f1, open(output_fname, 'w', encoding='utf-8') as f2:
         dataset_json = json.load(f1)
         dataset = dataset_json['data']
@@ -99,5 +99,5 @@ if __name__ == '__main__':
         make_corpus(args.input_path, args.output_path)
     elif "nsmc" in args.preprocess_mode:
         process_nsmc(args.input_path, args.output_path, "json" in args.preprocess_mode, args.with_label.lower() == "true")
-    elif args.preprocess_mode == "korsquad":
-        process_korsquad(args.input_path, args.output_path)
+    elif args.preprocess_mode == "korquad":
+        process_korQuAD(args.input_path, args.output_path)
