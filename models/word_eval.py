@@ -4,11 +4,12 @@ import scipy.stats as st
 from gensim.models import Word2Vec
 from fastText import load_model as load_ft_model
 from sklearn.preprocessing import normalize
-from preprocess import get_tokenizer
+
+from soynlp.hangle import compose, character_is_korean
+from preprocess import get_tokenizer, jamo_sentence
 
 sys.path.append('models')
 from visualize_utils import visualize_words, visualize_between_words
-
 
 class WordEmbeddingEvaluator:
 
@@ -18,7 +19,7 @@ class WordEmbeddingEvaluator:
         self.dim = dim
         self.method = method
         self.dictionary, self.words, self.vecs = self.load_vectors(vecs_txt_fname, method)
-        if method == "fasttext":
+        if "fasttext" in method:
             self.model = load_ft_model(vecs_bin_fname)
 
     def load_vectors(self, vecs_fname, method):
@@ -29,7 +30,7 @@ class WordEmbeddingEvaluator:
         else:
             words, vecs = [], []
             with open(vecs_fname, 'r', encoding='utf-8') as f:
-                if method == "fasttext":
+                if "fasttext" in method:
                     next(f)  # skip head line
                 for line in f:
                     if method == "swivel":
@@ -46,10 +47,12 @@ class WordEmbeddingEvaluator:
         return dictionary, words, unit_vecs
 
     def get_word_vector(self, word):
+        if self.method == "fasttext-jamo":
+            word = jamo_sentence(word)
         if self._is_in_vocabulary(word):
             vector = self.dictionary[word]
         else:
-            if self.method == "fasttext":
+            if "fasttext" in self.method:
                 vector = self.model.get_word_vector(word)
             else:
                 vector = np.zeros(self.dim)
@@ -69,6 +72,8 @@ class WordEmbeddingEvaluator:
         return np.mean(token_vecs, axis=0)
 
     def _is_in_vocabulary(self, word):
+        if self.method == "fasttext-jamo":
+            word = jamo_sentence(word)
         return word in self.dictionary.keys()
 
     def most_similar(self, query, topn=10):
@@ -82,8 +87,30 @@ class WordEmbeddingEvaluator:
         else:
             query_unit_vec = query_vec
         scores = np.dot(self.vecs, query_unit_vec)
-        return sorted(zip(self.words, scores), key=lambda x: x[1], reverse=True)[1:topn+1]
+        topn_candidates = sorted(zip(self.words, scores), key=lambda x: x[1], reverse=True)[1:topn+1]
+        if self.method == "fasttext-jamo":
+            return [(self.jamo_to_word(word), score) for word, score in topn_candidates]
+        else:
+            return topn_candidates
 
+    def jamo_to_word(self, jamo):
+        jamo_list, idx = [], 0
+        while idx < len(jamo):
+            if not character_is_korean(jamo[idx]):
+                jamo_list.append(jamo[idx])
+                idx += 1
+            else:
+                jamo_list.append(jamo[idx:idx + 3])
+                idx += 3
+        word = ""
+        for jamo_char in jamo_list:
+            if len(jamo_char) == 1:
+                word += jamo_char
+            elif jamo_char[2] == "-":
+                word += compose(jamo_char[0], jamo_char[1], " ")
+            else:
+                word += compose(jamo_char[0], jamo_char[1], jamo_char[2])
+        return word
     """
     Word similarity test
     Inspired by:
@@ -199,6 +226,11 @@ model.word_analogy_test("data/data-old/kor_analogy_semantic.txt") # 81 420 0
 model.most_similar("문재인") # [('박근혜', 0.9239191680881065), ('이명박', 0.9129016338164864), ('노무현', 0.8974644850690527), ('문재', 0.8477265842739639), ('노태우', 0.8271708135634908), ('김대중', 0.8241289233466147), ('청와대', 0.808890823843111), ('이회창', 0.8088008847778916), ('박원순', 0.8075874801817806), ('홍준표', 0.7973925010954298)]
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Plasma256")
 model.visualize_words("data/kor_analogy_syntactic.txt", palette="Cividis256")
+
+model = WordEmbeddingEvaluator(vecs_txt_fname="data/word-embeddings/fasttext-jamo/fasttext-jamo.vec",
+                          vecs_bin_fname="data/word-embeddings/fasttext-jamo/fasttext-jamo.bin",
+                          method="fasttext-jamo", dim=100, tokenizer_name="mecab")
+model.most_similar("희망")
 
 model = WordEmbeddingEval("data/swivel.vecs/row_embedding.tsv", "swivel", dim=100, tokenize_name="mecab")
 model.word_sim_test("data/kor_ws353.csv") # 0.549541215508716 0.5727286333920304 0
