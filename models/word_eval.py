@@ -46,11 +46,11 @@ class WordEmbeddingEvaluator:
         return dictionary, words, unit_vecs
 
     def get_word_vector(self, word):
-        if self.method == "fasttext":
-            vector = self.model.get_word_vector(word)
+        if self._is_in_vocabulary(word):
+            vector = self.dictionary[word]
         else:
-            if self._is_in_vocabulary(word):
-                vector = self.dictionary[word]
+            if self.method == "fasttext":
+                vector = self.model.get_word_vector(word)
             else:
                 vector = np.zeros(self.dim)
         return vector
@@ -187,9 +187,9 @@ model.most_similar("문재인") # ('이명박', 0.845631133898592), ('박근혜'
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Inferno256")
 model.visualize_words("data/kor_analogy_syntactic.txt", palette="Magma256")
 
-model = WordEmbeddingEval(vecs_txt_fname="data/word-embeddings/fasttext/fasttext.vec",
+model = WordEmbeddingEvaluator(vecs_txt_fname="data/word-embeddings/fasttext/fasttext.vec",
                           vecs_bin_fname="data/word-embeddings/fasttext/fasttext.bin",
-                          method="fasttext", dim=100, tokenize_name="mecab")
+                          method="fasttext", dim=100, tokenizer_name="mecab")
 model.get_word_vector("학교")
 model._is_in_vocabulary("학굥")
 model.get_word_vector("학굥")
