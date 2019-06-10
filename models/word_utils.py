@@ -1,4 +1,4 @@
-import sys, argparse
+import argparse, os
 from gensim.models import Word2Vec
 from sklearn.decomposition import TruncatedSVD
 from soynlp.word import pmi
@@ -6,6 +6,7 @@ from soynlp.vectorizer import sent_to_word_contexts_matrix
 
 
 def train_word2vec(corpus_fname, model_fname):
+    make_save_path(model_fname)
     corpus = [sent.replace('\n', '').strip().split(" ") for sent in open(corpus_fname, 'r').readlines()]
     model = Word2Vec(corpus, size=100, workers=4, sg=1)
     model.save(model_fname)
@@ -17,6 +18,7 @@ https://lovit.github.io/nlp/2018/04/22/context_vector_for_word_similarity
 https://lovit.github.io/nlp/2018/04/22/implementing_pmi_numpy_practice
 """
 def latent_semantic_analysis(corpus_fname, output_fname):
+    make_save_path(output_fname)
     corpus = [sent.replace('\n', '').strip() for sent in open(corpus_fname, 'r').readlines()]
     # construct co-occurrence matrix (=word_context)
     # dynamic weight if True. co-occurrence weight = [1, (w-1)/w, (w-2)/w, ... 1/w]
@@ -51,6 +53,12 @@ def construct_weighted_embedding(corpus_fname, embedding_fname, output_fname):
     # compute word frequency
     # compute weighted vectors
     return None
+
+
+def make_save_path(full_path):
+    model_path = '/'.join(full_path.split("/")[:-1])
+    if not os.path.exists(model_path):
+       os.mkdir(model_path)
 
 
 if __name__ == '__main__':
