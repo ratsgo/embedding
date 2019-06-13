@@ -72,8 +72,8 @@ class AveragingNetwork(object):
             print("loading weighted embeddings, complete!")
         else:
             # ready for original embeddings
-            vectors, words = self.load_word_embeddings(embedding_fname, embedding_method)
-            self.embeddings = {}
+            words, vectors = self.load_word_embeddings(embedding_fname, embedding_method)
+            self.embeddings = defaultdict(list)
             for word, vector in zip(words, vectors):
                 self.embeddings[word] = vector
             print("loading original embeddings, complete!")
@@ -86,27 +86,48 @@ class AveragingNetwork(object):
             print("load Deep Averaging Network")
             self.model = self.load_deep_averaging_network(model_full_fname)
 
-    def evaluate(self, test_data_fname, verbose=False):
+    def evaluate(self, test_data_fname, batch_size=10000, verbose=False):
         print("evaluation start!")
         test_data = self.load_or_tokenize_corpus(test_data_fname)
+        data_size = len(test_data)
+        num_batches = int((data_size - 1) / batch_size) + 1
         eval_score = 0
-        for sentence, tokens, label in test_data:
-            pred = self.predict_by_tokens(tokens)
-            if pred == label:
-                eval_score += 1
-            if verbose:
+        for batch_num in range(num_batches):
+            batch_sentences = []
+            batch_tokenized_sentences = []
+            batch_labels = []
+            start_index = batch_num * batch_size
+            end_index = min((batch_num + 1) * batch_size, data_size)
+            features = test_data[start_index:end_index]
+            for feature in features:
+                sentence, tokens, label = feature
+                batch_sentences.append(sentence)
+                batch_tokenized_sentences.append(tokens)
+                batch_labels.append(int(label))
+            preds, curr_eval_score = self.predict_by_batch(batch_tokenized_sentences, batch_labels)
+            eval_score += curr_eval_score
+        if verbose:
+            for sentence, pred, label in zip(batch_sentences, preds, batch_labels):
                 print(sentence, ", pred:", pred, ", label:", label)
         print("# of correct:", str(eval_score), ", total:", str(len(test_data)), ", score:", str(eval_score / len(test_data)))
 
     def predict(self, sentence):
         tokens = self.tokenizer.morphs(sentence)
-        return self.predict_by_tokens(tokens)
-
-    def predict_by_tokens(self, tokens):
         sentence_vector = self.get_sentence_vector(tokens)
         scores = np.dot(self.model["vectors"], sentence_vector)
         pred = self.model["labels"][np.argmax(scores)]
         return pred
+
+    def predict_by_batch(self, tokenized_sentences, labels):
+        sentence_vectors, eval_score = [], 0
+        for tokens in tokenized_sentences:
+            sentence_vectors.append(self.get_sentence_vector(tokens))
+        scores = np.dot(self.model["vectors"], np.array(sentence_vectors).T)
+        preds = np.argmax(scores, axis=0)
+        for pred, label in zip(preds, labels):
+            if pred == label:
+                eval_score += 1
+        return preds, eval_score
 
     def get_sentence_vector(self, tokens):
         vector = np.zeros(self.dim)
@@ -231,11 +252,14 @@ if __name__ == '__main__':
     parser.add_argument('--input_path', type=str, help='Location of input files')
     parser.add_argument('--output_path', type=str, help='Location of output files')
     parser.add_argument('--embedding_path', type=str, help='Location of embedding model')
-    parser.add_argument('--is_weighted', type=bool, help='Use weighted method or not')
+    parser.add_argument('--is_weighted', type=str, help='Use weighted method or not')
     parser.add_argument('--train_corpus_path', type=str, help='Location of train corpus')
     parser.add_argument('--test_corpus_path', type=str, help='Location of test corpus')
     parser.add_argument('--embedding_name', type=str, help='embedding name')
     args = parser.parse_args()
+
+    def str2bool(str):
+        return str.lower() in ["true", "t"]
 
     if args.method == "train_word2vec":
         train_word2vec(args.input_path, args.output_path)
@@ -243,5 +267,5 @@ if __name__ == '__main__':
         args.latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "average":
         model = AveragingNetwork(args.train_corpus_path, args.embedding_path,
-                                 args.output_path, args.embedding_name, args.is_weighted)
+                                 args.output_path, args.embedding_name, str2bool(args.is_weighted))
         model.evaluate(args.test_corpus_path)
