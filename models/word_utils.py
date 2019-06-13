@@ -61,12 +61,13 @@ class AveragingModel(object):
         # configurations
         make_save_path(model_fname)
         self.dim = dim
-        if is_weighted:
+        self.is_weighted = is_weighted
+        if self.is_weighted:
             model_full_fname = model_fname + "-weighted"
         else:
             model_full_fname = model_fname + "-original"
         self.tokenizer = get_tokenizer(tokenizer_name)
-        if is_weighted:
+        if self.is_weighted:
             # ready for weighted embeddings
             self.embeddings = self.load_or_construct_weighted_embedding(embedding_fname, embedding_method, train_fname)
             print("loading weighted embeddings, complete!")
@@ -132,7 +133,8 @@ class AveragingModel(object):
         for token in tokens:
             if token in self.embeddings.keys():
                 vector += self.embeddings[token]
-        vector /= len(tokens)
+        if not self.is_weighted:
+            vector /= len(tokens)
         vector_norm = np.linalg.norm(vector)
         if vector_norm != 0:
             unit_vector = vector / vector_norm
