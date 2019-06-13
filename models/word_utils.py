@@ -54,20 +54,20 @@ def latent_semantic_analysis(corpus_fname, output_fname):
             f2.writelines(word + ' ' + ' '.join(str_vec) + "\n")
 
 
-class AveragingModel(object):
+class CBoWModel(object):
 
     def __init__(self, train_fname, embedding_fname, model_fname, embedding_corpus_fname,
-                 embedding_method="fasttext", is_weighted=True, dim=100, tokenizer_name="mecab"):
+                 embedding_method="fasttext", is_weighted=True, average=False, dim=100, tokenizer_name="mecab"):
         # configurations
         make_save_path(model_fname)
         self.dim = dim
-        self.is_weighted = is_weighted
-        if self.is_weighted:
+        self.average = average
+        if is_weighted:
             model_full_fname = model_fname + "-weighted"
         else:
             model_full_fname = model_fname + "-original"
         self.tokenizer = get_tokenizer(tokenizer_name)
-        if self.is_weighted:
+        if is_weighted:
             # ready for weighted embeddings
             self.embeddings = self.load_or_construct_weighted_embedding(embedding_fname, embedding_method, embedding_corpus_fname)
             print("loading weighted embeddings, complete!")
@@ -79,10 +79,10 @@ class AveragingModel(object):
                 self.embeddings[word] = vector
             print("loading original embeddings, complete!")
         if not os.path.exists(model_full_fname):
-            print("train model")
+            print("train Continuous Bag of Words model")
             self.model = self.train_model(train_fname, model_full_fname)
         else:
-            print("load model")
+            print("load Continuous Bag of Words model")
             self.model = self.load_model(model_full_fname)
 
     def evaluate(self, test_data_fname, batch_size=3000, verbose=False):
@@ -133,7 +133,7 @@ class AveragingModel(object):
         for token in tokens:
             if token in self.embeddings.keys():
                 vector += self.embeddings[token]
-        if not self.is_weighted:
+        if not self.average:
             vector /= len(tokens)
         vector_norm = np.linalg.norm(vector)
         if vector_norm != 0:
@@ -267,8 +267,8 @@ if __name__ == '__main__':
         train_word2vec(args.input_path, args.output_path)
     elif args.method == "latent_semantic_analysis":
         args.latent_semantic_analysis(args.input_path, args.output_path)
-    elif args.method == "average":
-        model = AveragingModel(args.train_corpus_path, args.embedding_path,
-                               args.output_path, args.embedding_corpus_path,
-                               args.embedding_name, str2bool(args.is_weighted))
+    elif args.method == "cbow":
+        model = CBoWModel(args.train_corpus_path, args.embedding_path,
+                          args.output_path, args.embedding_corpus_path,
+                          args.embedding_name, str2bool(args.is_weighted))
         model.evaluate(args.test_corpus_path)
