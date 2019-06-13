@@ -54,7 +54,7 @@ def latent_semantic_analysis(corpus_fname, output_fname):
             f2.writelines(word + ' ' + ' '.join(str_vec) + "\n")
 
 
-class AveragingNetwork(object):
+class AveragingModel(object):
 
     def __init__(self, train_fname, embedding_fname, model_fname, embedding_method="fasttext",
                  is_weighted=True, dim=100, tokenizer_name="mecab"):
@@ -78,15 +78,13 @@ class AveragingNetwork(object):
                 self.embeddings[word] = vector
             print("loading original embeddings, complete!")
         if not os.path.exists(model_full_fname):
-            # train DAN
-            print("train Deep Averaging Network")
-            self.model = self.train_deep_averaging_network(train_fname, model_full_fname)
+            print("train model")
+            self.model = self.train_model(train_fname, model_full_fname)
         else:
-            # load DAN
-            print("load Deep Averaging Network")
-            self.model = self.load_deep_averaging_network(model_full_fname)
+            print("load model")
+            self.model = self.load_model(model_full_fname)
 
-    def evaluate(self, test_data_fname, batch_size=10000, verbose=False):
+    def evaluate(self, test_data_fname, batch_size=3000, verbose=False):
         print("evaluation start!")
         test_data = self.load_or_tokenize_corpus(test_data_fname)
         data_size = len(test_data)
@@ -103,7 +101,7 @@ class AveragingNetwork(object):
                 sentence, tokens, label = feature
                 batch_sentences.append(sentence)
                 batch_tokenized_sentences.append(tokens)
-                batch_labels.append(int(label))
+                batch_labels.append(label)
             preds, curr_eval_score = self.predict_by_batch(batch_tokenized_sentences, batch_labels)
             eval_score += curr_eval_score
         if verbose:
@@ -125,7 +123,7 @@ class AveragingNetwork(object):
         scores = np.dot(self.model["vectors"], np.array(sentence_vectors).T)
         preds = np.argmax(scores, axis=0)
         for pred, label in zip(preds, labels):
-            if pred == label:
+            if self.model["labels"][pred] == label:
                 eval_score += 1
         return preds, eval_score
 
@@ -214,7 +212,7 @@ class AveragingNetwork(object):
                     f3.writelines(word + "\u241E" + " ".join([str(el) for el in weighted_vector]) + "\n")
         return dictionary
 
-    def train_deep_averaging_network(self, train_data_fname, model_fname):
+    def train_model(self, train_data_fname, model_fname):
         model = {"vectors": [], "labels": [], "sentences": []}
         train_data = self.load_or_tokenize_corpus(train_data_fname)
         with open(model_fname, "w") as f:
@@ -228,7 +226,7 @@ class AveragingNetwork(object):
                 f.writelines(sentence + "\u241E" + " ".join(tokens) + "\u241E" + str_vector + "\u241E" + label + "\n")
         return model
 
-    def load_deep_averaging_network(self, model_fname):
+    def load_model(self, model_fname):
         model = {"vectors": [], "labels": [], "sentences": []}
         with open(model_fname, "r") as f:
             for line in f:
@@ -266,6 +264,6 @@ if __name__ == '__main__':
     elif args.method == "latent_semantic_analysis":
         args.latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "average":
-        model = AveragingNetwork(args.train_corpus_path, args.embedding_path,
-                                 args.output_path, args.embedding_name, str2bool(args.is_weighted))
+        model = AveragingModel(args.train_corpus_path, args.embedding_path,
+                               args.output_path, args.embedding_name, str2bool(args.is_weighted))
         model.evaluate(args.test_corpus_path)
