@@ -1,8 +1,13 @@
-import argparse, os
+import argparse, os, sys
+import numpy as np
 from gensim.models import Word2Vec
 from sklearn.decomposition import TruncatedSVD
 from soynlp.word import pmi
 from soynlp.vectorizer import sent_to_word_contexts_matrix
+from collections import defaultdict
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from preprocess import get_tokenizer
 
 
 def train_word2vec(corpus_fname, model_fname):
@@ -49,10 +54,169 @@ def latent_semantic_analysis(corpus_fname, output_fname):
             f2.writelines(word + ' ' + ' '.join(str_vec) + "\n")
 
 
-def construct_weighted_embedding(corpus_fname, embedding_fname, output_fname):
-    # compute word frequency
-    # compute weighted vectors
-    return None
+class AveragingNetwork(object):
+
+    def __init__(self, train_fname, embedding_fname, model_fname, embedding_method="fasttext",
+                 is_weighted=True, dim=100, tokenizer_name="mecab"):
+        # configurations
+        make_save_path(model_fname)
+        self.dim = dim
+        if is_weighted:
+            model_full_fname = model_fname + "-weighted"
+        else:
+            model_full_fname = model_fname + "-original"
+        self.tokenizer = get_tokenizer(tokenizer_name)
+        if is_weighted:
+            # ready for weighted embeddings
+            self.embeddings = self.load_or_construct_weighted_embedding(embedding_fname, embedding_method, train_fname)
+            print("loading weighted embeddings, complete!")
+        else:
+            # ready for original embeddings
+            vectors, words = self.load_word_embeddings(embedding_fname, embedding_method)
+            self.embeddings = {}
+            for word, vector in zip(words, vectors):
+                self.embeddings[word] = vector
+            print("loading original embeddings, complete!")
+        if not os.path.exists(model_full_fname):
+            # train DAN
+            print("train Deep Averaging Network")
+            self.model = self.train_deep_averaging_network(train_fname, model_full_fname)
+        else:
+            # load DAN
+            print("load Deep Averaging Network")
+            self.model = self.load_deep_averaging_network(model_full_fname)
+
+    def evaluate(self, test_data_fname, verbose=False):
+        print("evaluation start!")
+        test_data = self.load_or_tokenize_corpus(test_data_fname)
+        eval_score = 0
+        for sentence, tokens, label in test_data:
+            pred = self.predict_by_tokens(tokens)
+            if pred == label:
+                eval_score += 1
+            if verbose:
+                print(sentence, ", pred:", pred, ", label:", label)
+        print("# of correct:", str(eval_score), ", total:", str(len(test_data)), ", score:", str(eval_score / len(test_data)))
+
+    def predict(self, sentence):
+        tokens = self.tokenizer.morphs(sentence)
+        return self.predict_by_tokens(tokens)
+
+    def predict_by_tokens(self, tokens):
+        sentence_vector = self.get_sentence_vector(tokens)
+        scores = np.dot(self.model["vectors"], sentence_vector)
+        pred = self.model["labels"][np.argmax(scores)]
+        return pred
+
+    def get_sentence_vector(self, tokens):
+        vector = np.zeros(self.dim)
+        for token in tokens:
+            if token in self.embeddings.keys():
+                vector += self.embeddings[token]
+        vector /= len(tokens)
+        vector_norm = np.linalg.norm(vector)
+        if vector_norm != 0:
+            unit_vector = vector / vector_norm
+        else:
+            unit_vector = np.zeros(self.dim)
+        return unit_vector
+
+    def load_or_tokenize_corpus(self, fname):
+        data = []
+        if os.path.exists(fname + "-tokenized"):
+            with open(fname + "-tokenized", "r") as f1:
+                for line in f1:
+                    sentence, tokens, label = line.strip().split("\u241E")
+                    data.append([sentence, tokens.split(), label])
+        else:
+            with open(fname, "r") as f2, open(fname + "-tokenized", "w") as f3:
+                for line in f2:
+                    sentence, label = line.strip().split("\u241E")
+                    tokens = self.tokenizer.morphs(sentence)
+                    data.append([sentence, tokens, label])
+                    f3.writelines(sentence + "\u241E" + ' '.join(tokens) + "\u241E" + label + "\n")
+        return data
+
+    def compute_word_frequency(self, data):
+        total_count = 0
+        words_count = defaultdict(int)
+        for _, tokens, _ in data:
+            for token in tokens:
+                words_count[token] += 1
+                total_count += 1
+        return words_count, total_count
+
+    def load_word_embeddings(self, vecs_fname, method):
+        if method == "word2vec":
+            model = Word2Vec.load(vecs_fname)
+            words = model.wv.index2word
+            vecs = model.wv.vectors
+        else:
+            words, vecs = [], []
+            with open(vecs_fname, 'r', encoding='utf-8') as f1:
+                if "fasttext" in method:
+                    next(f1)  # skip head line
+                for line in f1:
+                    if method == "swivel":
+                        splited_line = line.replace("\n", "").strip().split("\t")
+                    else:
+                        splited_line = line.replace("\n", "").strip().split(" ")
+                    words.append(splited_line[0])
+                    vec = [float(el) for el in splited_line[1:]]
+                    vecs.append(vec)
+        return words, vecs
+
+    def load_or_construct_weighted_embedding(self, embedding_fname, embedding_method, train_data_fname, a=0.0001):
+        dictionary = {}
+        if os.path.exists(embedding_fname + "-weighted"):
+            # load weighted word embeddings
+            with open(embedding_fname + "-weighted", "r") as f2:
+                for line in f2:
+                    word, weighted_vector = line.strip().split("\u241E")
+                    weighted_vector = [float(el) for el in weighted_vector.split()]
+                    dictionary[word] = weighted_vector
+        else:
+            # load pretrained word embeddings
+            words, vecs = self.load_word_embeddings(embedding_fname, embedding_method)
+            # compute word frequency
+            train_data = self.load_or_tokenize_corpus(train_data_fname)
+            words_count, total_word_count = self.compute_word_frequency(train_data)
+            # construct weighted word embeddings
+            with open(embedding_fname + "-weighted", "w") as f3:
+                for word, vec in zip(words, vecs):
+                    if word in words_count.keys():
+                        word_prob = words_count[word] / total_word_count
+                    else:
+                        word_prob = 0.0
+                    weighted_vector = (a / (word_prob + a)) * np.asarray(vec)
+                    dictionary[word] = weighted_vector
+                    f3.writelines(word + "\u241E" + " ".join([str(el) for el in weighted_vector]) + "\n")
+        return dictionary
+
+    def train_deep_averaging_network(self, train_data_fname, model_fname):
+        model = {"vectors": [], "labels": [], "sentences": []}
+        train_data = self.load_or_tokenize_corpus(train_data_fname)
+        with open(model_fname, "w") as f:
+            for sentence, tokens, label in train_data:
+                tokens = self.tokenizer.morphs(sentence)
+                sentence_vector = self.get_sentence_vector(tokens)
+                model["sentences"].append(sentence)
+                model["vectors"].append(sentence_vector)
+                model["labels"].append(label)
+                str_vector = " ".join([str(el) for el in sentence_vector])
+                f.writelines(sentence + "\u241E" + " ".join(tokens) + "\u241E" + str_vector + "\u241E" + label + "\n")
+        return model
+
+    def load_deep_averaging_network(self, model_fname):
+        model = {"vectors": [], "labels": [], "sentences": []}
+        with open(model_fname, "r") as f:
+            for line in f:
+                sentence, _, vector, label = line.strip().split("\u241E")
+                vector = np.array([float(el) for el in vector.split()])
+                model["sentences"].append(sentence)
+                model["vectors"].append(vector)
+                model["labels"].append(label)
+        return model
 
 
 def make_save_path(full_path):
@@ -66,11 +230,18 @@ if __name__ == '__main__':
     parser.add_argument('--method', type=str, help='method')
     parser.add_argument('--input_path', type=str, help='Location of input files')
     parser.add_argument('--output_path', type=str, help='Location of output files')
+    parser.add_argument('--embedding_path', type=str, help='Location of embedding model')
+    parser.add_argument('--is_weighted', type=bool, help='Use weighted method or not')
+    parser.add_argument('--train_corpus_path', type=str, help='Location of train corpus')
+    parser.add_argument('--test_corpus_path', type=str, help='Location of test corpus')
+    parser.add_argument('--embedding_name', type=str, help='embedding name')
     args = parser.parse_args()
 
     if args.method == "train_word2vec":
         train_word2vec(args.input_path, args.output_path)
     elif args.method == "latent_semantic_analysis":
         args.latent_semantic_analysis(args.input_path, args.output_path)
-    elif args.method == "construct_weighted_embedding":
-        construct_weighted_embedding(args.input_path, args.output_path)
+    elif args.method == "average":
+        model = AveragingNetwork(args.train_corpus_path, args.embedding_path,
+                                 args.output_path, args.embedding_name, args.is_weighted)
+        model.evaluate(args.test_corpus_path)
