@@ -205,6 +205,8 @@ class Tuner(object):
         self.num_epochs = num_epochs
         self.dropout_keep_prob_rate = dropout_keep_prob_rate
         self.best_valid_score = 0.0
+        if not os.path.exists(model_save_path):
+            os.mkdir(model_save_path)
         # define tokenizer
         if self.model_name == "bert":
             self.tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)

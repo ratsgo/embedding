@@ -20,28 +20,24 @@ case $COMMAND in
         ;;
     lsa-tfidf)
         echo "latent semantic analysis with tf-idf matrix..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/lsa-tfidf
         python models/sent_utils.py --method latent_semantic_analysis \
             --input_path /notebooks/embedding/data/processed/processed_blog.txt \
             --output_path /notebooks/embedding/data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs
         ;;
     doc2vec)
         echo "train doc2vec model..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/doc2vec
         python models/sent_utils.py --method doc2vec \
             --input_path /notebooks/embedding/data/processed/processed_review_movieid.txt \
             --output_path /notebooks/embedding/data/sentence-embeddings/doc2vec/doc2vec.model
         ;;
     lda)
         echo "latent_dirichlet_allocation..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/lda
         python models/sent_utils.py --method latent_dirichlet_allocation \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/sentence-embeddings/lda/lda
         ;;
     tune-random)
         echo "tune random init with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/word-embeddings/random-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
@@ -50,7 +46,6 @@ case $COMMAND in
         ;;
     tune-word2vec)
         echo "tune word2vec with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/word-embeddings/word2vec-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
@@ -60,7 +55,6 @@ case $COMMAND in
         ;;
     tune-glove)
         echo "tune glove with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/word-embeddings/glove-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
@@ -70,7 +64,6 @@ case $COMMAND in
         ;;
     tune-ft)
         echo "tune fasttext with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/word-embeddings/fasttext-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
@@ -80,7 +73,6 @@ case $COMMAND in
         ;;
     tune-swivel)
         echo "tune swivel with Bi-LSTM attention model..."
-        mkdir -p /notebooks/embedding/data/word-embeddings/swivel-tune
         nohup sh -c "python models/tune_utils.py --model_name word \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \

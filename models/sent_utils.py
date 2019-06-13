@@ -14,6 +14,7 @@ from bilm import dump_weights as dump_elmo_weights
 
 
 def latent_semantic_analysis(corpus_fname, output_fname, tokenizer_name="mecab"):
+    make_save_path(output_fname)
     tokenizer = get_tokenizer(tokenizer_name)
     titles, raw_corpus, noun_corpus = [], [], []
     with open(corpus_fname, 'r', encoding='utf-8') as f:
@@ -61,12 +62,14 @@ class Doc2VecInput:
 
 
 def doc2vec(corpus_fname, output_fname):
+    make_save_path(output_fname)
     corpus = Doc2VecInput(corpus_fname)
     model = Doc2Vec(corpus, vector_size=100)
     model.save(output_fname)
 
 
 def latent_dirichlet_allocation(corpus_fname, output_fname, tokenizer_name="mecab"):
+    make_save_path(output_fname)
     documents, tokenized_corpus = [], []
     tokenizer = get_tokenizer(tokenizer_name)
     with open(corpus_fname, 'r', encoding='utf-8') as f:
@@ -92,6 +95,7 @@ def latent_dirichlet_allocation(corpus_fname, output_fname, tokenizer_name="meca
 
 
 def construct_elmo_vocab(corpus_fname, output_fname):
+    make_save_path(output_fname)
     count = Counter()
     with open(corpus_fname, 'r', encoding='utf-8') as f1:
         for sentence in f1:
@@ -104,6 +108,12 @@ def construct_elmo_vocab(corpus_fname, output_fname):
         f2.writelines("<UNK>\n")
         for word, _ in count.most_common(100000):
             f2.writelines(word + "\n")
+
+
+def make_save_path(full_path):
+    model_path = '/'.join(full_path.split("/")[:-1])
+    if not os.path.exists(model_path):
+       os.mkdir(model_path)
 
 
 if __name__ == '__main__':
