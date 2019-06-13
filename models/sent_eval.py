@@ -92,7 +92,7 @@ class LDAEvaluator:
 
 class LSAEvaluator:
 
-    def __init__(self, model_fname="data/lsa-tfidf.vecs"):
+    def __init__(self, model_fname="data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs"):
         self.titles, self.vectors = self.load_model(model_fname)
 
     def most_similar(self, doc_id, topn=10):

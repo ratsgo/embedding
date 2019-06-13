@@ -11,6 +11,7 @@ from preprocess import get_tokenizer, jamo_sentence
 sys.path.append('models')
 from visualize_utils import visualize_words, visualize_between_words
 
+
 class WordEmbeddingEvaluator:
 
     def __init__(self, vecs_txt_fname, vecs_bin_fname=None, method="word2vec", dim=100, tokenizer_name="mecab"):
@@ -247,7 +248,7 @@ model.most_similar("문재인") # [('청와대', 0.828278), ('김대중', 0.7862
 model.visualize_words("data/kor_analogy_semantic.txt")
 model.visualize_words("data/kor_analogy_syntactic.txt")
 
-model = WordEmbeddingEval("data/lsa-pmi.vecs", "lsa-pmi", dim=100, tokenize_name="mecab")
+model = WordEmbeddingEvaluator("/notebooks/embedding/data/word-embeddings/lsa/lsa-pmi.vecs", method="lsa-pmi", dim=100, tokenizer_name="mecab")
 model.word_sim_test("data/kor_ws353.csv") # 0.1824178080678877 0.16985325941114984 0
 model.word_analogy_test("data/kor_analogy_semantic.txt") # 34 420 0
 model.most_similar("문재인") # [('이명박', 0.9668353235506264), ('김대중', 0.965416730672013), ('이승만', 0.9642945139418547), ('노무현', 0.962421106788593), ('전두환', 0.9601622267707821), ('오딘', 0.9509565666301292), ('김영삼', 0.9489033288641142), ('이회창', 0.9479594521397682), ('나폴레옹', 0.9445780885897337), ('선장', 0.9415429819696624)]
