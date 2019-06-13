@@ -56,8 +56,8 @@ def latent_semantic_analysis(corpus_fname, output_fname):
 
 class AveragingModel(object):
 
-    def __init__(self, train_fname, embedding_fname, model_fname, embedding_method="fasttext",
-                 is_weighted=True, dim=100, tokenizer_name="mecab"):
+    def __init__(self, train_fname, embedding_fname, model_fname, embedding_corpus_fname,
+                 embedding_method="fasttext", is_weighted=True, dim=100, tokenizer_name="mecab"):
         # configurations
         make_save_path(model_fname)
         self.dim = dim
@@ -69,7 +69,7 @@ class AveragingModel(object):
         self.tokenizer = get_tokenizer(tokenizer_name)
         if self.is_weighted:
             # ready for weighted embeddings
-            self.embeddings = self.load_or_construct_weighted_embedding(embedding_fname, embedding_method, train_fname)
+            self.embeddings = self.load_or_construct_weighted_embedding(embedding_fname, embedding_method, embedding_corpus_fname)
             print("loading weighted embeddings, complete!")
         else:
             # ready for original embeddings
@@ -158,13 +158,15 @@ class AveragingModel(object):
                     f3.writelines(sentence + "\u241E" + ' '.join(tokens) + "\u241E" + label + "\n")
         return data
 
-    def compute_word_frequency(self, data):
+    def compute_word_frequency(self, embedding_corpus_fname):
         total_count = 0
         words_count = defaultdict(int)
-        for _, tokens, _ in data:
-            for token in tokens:
-                words_count[token] += 1
-                total_count += 1
+        with open(embedding_corpus_fname, "r") as f:
+            for line in f:
+                tokens = line.strip().split()
+                for token in tokens:
+                    words_count[token] += 1
+                    total_count += 1
         return words_count, total_count
 
     def load_word_embeddings(self, vecs_fname, method):
@@ -187,7 +189,7 @@ class AveragingModel(object):
                     vecs.append(vec)
         return words, vecs
 
-    def load_or_construct_weighted_embedding(self, embedding_fname, embedding_method, train_data_fname, a=0.0001):
+    def load_or_construct_weighted_embedding(self, embedding_fname, embedding_method, embedding_corpus_fname, a=0.0001):
         dictionary = {}
         if os.path.exists(embedding_fname + "-weighted"):
             # load weighted word embeddings
@@ -200,8 +202,7 @@ class AveragingModel(object):
             # load pretrained word embeddings
             words, vecs = self.load_word_embeddings(embedding_fname, embedding_method)
             # compute word frequency
-            train_data = self.load_or_tokenize_corpus(train_data_fname)
-            words_count, total_word_count = self.compute_word_frequency(train_data)
+            words_count, total_word_count = self.compute_word_frequency(embedding_corpus_fname)
             # construct weighted word embeddings
             with open(embedding_fname + "-weighted", "w") as f3:
                 for word, vec in zip(words, vecs):
@@ -256,6 +257,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_corpus_path', type=str, help='Location of train corpus')
     parser.add_argument('--test_corpus_path', type=str, help='Location of test corpus')
     parser.add_argument('--embedding_name', type=str, help='embedding name')
+    parser.add_argument('--embedding_corpus_path', type=str, help='embedding name')
     args = parser.parse_args()
 
     def str2bool(str):
@@ -267,5 +269,6 @@ if __name__ == '__main__':
         args.latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "average":
         model = AveragingModel(args.train_corpus_path, args.embedding_path,
-                               args.output_path, args.embedding_name, str2bool(args.is_weighted))
+                               args.output_path, args.embedding_corpus_path,
+                               args.embedding_name, str2bool(args.is_weighted))
         model.evaluate(args.test_corpus_path)
