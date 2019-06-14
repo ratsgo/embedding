@@ -32,7 +32,7 @@ case $COMMAND in
         echo "download word embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word-embeddings.zip
+        gdrive_download 1gpOaOl0BcUvYpgoOA2JpZY2z-BUhuBLX /notebooks/embedding/data/word-embeddings.zip
         unzip word-embeddings.zip
         rm word-embeddings.zip
         ;;
@@ -40,7 +40,7 @@ case $COMMAND in
         echo "download sentence embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1u80kFwKlkN8ds0JvQtn6an2dl9QY1rE1 /notebooks/embedding/data/sentence-embeddings.zip
+        gdrive_download 1y_58tgW4S9ujOrwUs9oUtLMM6MfGhctr /notebooks/embedding/data/sentence-embeddings.zip
         unzip sentence-embeddings.zip
         rm sentence-embeddings.zip
         ;;
@@ -48,7 +48,7 @@ case $COMMAND in
         echo "download tokenized data..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
+        gdrive_download 1QEdjvT0Jpqmz9F57ATmjy3i016kdcURq /notebooks/embedding/data/tokenized.zip
         unzip tokenized.zip
         rm tokenized.zip
         ;;
@@ -56,7 +56,7 @@ case $COMMAND in
         echo "download trained models..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1yDUcFNlDT8KYaLLpo26aDboTILMcNAp6 /notebooks/embedding/data/trained-models.zip
+        gdrive_download 1RBZ13ixJKQL3OozjgXWH4rDuOHGS1r8R /notebooks/embedding/data/trained-models.zip
         unzip trained-models.zip
         rm trained-models.zip
         ;;
@@ -64,7 +64,7 @@ case $COMMAND in
         echo "download processed data..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1hscU5_f_1vXfbhHabNpqfnp8DU2ZWmcT /notebooks/embedding/data/processed.zip
+        gdrive_download 1oO5v6YqNlKTq0vWfjME3SiLXAYCMAmkc /notebooks/embedding/data/processed.zip
         unzip processed.zip
         rm processed.zip
         ;;
