@@ -1,4 +1,4 @@
-import argparse, os, sys
+import argparse, os, sys, math
 import numpy as np
 from gensim.models import Word2Vec
 from sklearn.decomposition import TruncatedSVD
@@ -44,7 +44,7 @@ def latent_semantic_analysis(corpus_fname, output_fname):
     # pmi(word, contexts)
     # px: Probability of rows(items)
     # py: Probability of columns(features)
-    pmi_matrix, _, _ = pmi(input_matrix, min_pmi=0, alpha=0)
+    pmi_matrix, _, _ = pmi(input_matrix, min_pmi=math.log(5))
     # compute truncated SVD
     pmi_svd = TruncatedSVD(n_components=100)
     pmi_vecs = pmi_svd.fit_transform(input_matrix)
@@ -266,7 +266,7 @@ if __name__ == '__main__':
     if args.method == "train_word2vec":
         train_word2vec(args.input_path, args.output_path)
     elif args.method == "latent_semantic_analysis":
-        args.latent_semantic_analysis(args.input_path, args.output_path)
+        latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "cbow":
         model = CBoWModel(args.train_corpus_path, args.embedding_path,
                           args.output_path, args.embedding_corpus_path,

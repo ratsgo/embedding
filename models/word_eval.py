@@ -35,9 +35,9 @@ class WordEmbeddingEvaluator:
                     next(f)  # skip head line
                 for line in f:
                     if method == "swivel":
-                        splited_line = line.replace("\n", "").strip().split("\t")
+                        splited_line = line.strip().split("\t")
                     else:
-                        splited_line = line.replace("\n", "").strip().split(" ")
+                        splited_line = line.strip().split(" ")
                     words.append(splited_line[0])
                     vec = [float(el) for el in splited_line[1:]]
                     vecs.append(vec)

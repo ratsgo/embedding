@@ -1,4 +1,4 @@
-import sys, re, json, glob, argparse
+import re, json, glob, argparse
 from gensim.corpora import WikiCorpus
 from gensim.utils import to_unicode
 

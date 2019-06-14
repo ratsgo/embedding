@@ -25,8 +25,6 @@ case $COMMAND in
         ;;
     glove)
         echo "glove word embedding..."
-        # 각 파일 역할
-        # https://github.com/stanfordnlp/GloVe/tree/master/src
         mkdir -p /notebooks/embedding/data/word-embeddings/glove
         /notebooks/embedding/models/glove/build/vocab_count -min-count 5 -verbose 2 < /notebooks/embedding/data/tokenized/corpus_mecab.txt > /notebooks/embedding/data/word-embeddings/glove/glove.vocab
         /notebooks/embedding/models/glove/build/cooccur -memory 10.0 -vocab-file /notebooks/embedding/data/word-embeddings/glove/glove.vocab -verbose 2 -window-size 15 < /notebooks/embedding/data/tokenized/corpus_mecab.txt > /notebooks/embedding/data/word-embeddings/glove/glove.cooc
