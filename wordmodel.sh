@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
-
 COMMAND=$1
 export LC_CTYPE=C.UTF-8
 case $COMMAND in
@@ -54,19 +52,19 @@ case $COMMAND in
     weighted)
         echo "evaluate weighted embeddings..."
         # word2vec - original
-        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec --output_path /notebooks/embedding/data/word-embeddings/cbow/word2vec --embedding_name word2vec --method average --is_weighted False
+        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec --output_path /notebooks/embedding/data/word-embeddings/cbow/word2vec --embedding_name word2vec --method cbow --is_weighted False
         # word2vec - weighted
         python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_corpus_path /notebooks/embedding/data/tokenized/corpus_mecab.txt --embedding_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec --output_path /notebooks/embedding/data/word-embeddings/cbow/word2vec --embedding_name word2vec --method cbow --is_weighted True
         # fasttext - original
-        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/fasttext/fasttext.vec --output_path /notebooks/embedding/data/word-embeddings/cbow/fasttext --embedding_name fasttext --method average --is_weighted False
+        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/fasttext/fasttext.vec --output_path /notebooks/embedding/data/word-embeddings/cbow/fasttext --embedding_name fasttext --method cbow --is_weighted False
         # fasttext - weighted
         python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_corpus_path /notebooks/embedding/data/tokenized/corpus_mecab.txt --embedding_path /notebooks/embedding/data/word-embeddings/fasttext/fasttext.vec --output_path /notebooks/embedding/data/word-embeddings/cbow/fasttext --embedding_name fasttext --method cbow --is_weighted True
         # glove - original
-        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/glove/glove.txt --output_path /notebooks/embedding/data/word-embeddings/cbow/glove --embedding_name glove --method average --is_weighted False
+        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/glove/glove.txt --output_path /notebooks/embedding/data/word-embeddings/cbow/glove --embedding_name glove --method cbow --is_weighted False
         # glove - weighted
         python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_corpus_path /notebooks/embedding/data/tokenized/corpus_mecab.txt --embedding_path /notebooks/embedding/data/word-embeddings/glove/glove.txt --output_path /notebooks/embedding/data/word-embeddings/cbow/glove --embedding_name glove --method cbow --is_weighted True
         # swivel - original
-        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/swivel/row_embedding.tsv --output_path /notebooks/embedding/data/word-embeddings/cbow/swivel --embedding_name swivel --method average --is_weighted False
+        python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/swivel/row_embedding.tsv --output_path /notebooks/embedding/data/word-embeddings/cbow/swivel --embedding_name swivel --method cbow --is_weighted False
         # swivel - weighted
         python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_corpus_path /notebooks/embedding/data/tokenized/corpus_mecab.txt --embedding_path /notebooks/embedding/data/word-embeddings/swivel/row_embedding.tsv --output_path /notebooks/embedding/data/word-embeddings/cbow/swivel --embedding_name swivel --method cbow --is_weighted True
         ;;
