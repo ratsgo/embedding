@@ -47,7 +47,7 @@ case $COMMAND in
         /notebooks/embedding/models/swivel/fastprep --input /notebooks/embedding/data/tokenized/corpus_mecab.txt --output_dir /notebooks/embedding/data/word-embeddings/swivel/swivel.data
         python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks/embedding/data/word-embeddings/swivel/swivel.data --output_base_path /notebooks/embedding/data/word-embeddings/swivel --dim 100
         ;;
-    weighted)
+    cbow)
         echo "evaluate weighted embeddings..."
         # word2vec - original
         python /notebooks/embedding/models/word_utils.py --train_corpus_path /notebooks/embedding/data/processed/processed_ratings_train.txt --test_corpus_path /notebooks/embedding/data/processed/processed_ratings_test.txt --embedding_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec --output_path /notebooks/embedding/data/word-embeddings/cbow/word2vec --embedding_name word2vec --method cbow --is_weighted False
