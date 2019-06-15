@@ -54,13 +54,10 @@ class Doc2VecEvaluator:
 
 class LDAEvaluator:
 
-    def __init__(self, results_fname="data/lda.results",
-                 model_fname="data/lda.model", tokenizer_name="mecab",
-                 vis_fname="data/lda.vis"):
-        self.all_topics = self.load_results(results_fname)
+    def __init__(self, model_path="data/lda.results", tokenizer_name="mecab"):
         self.tokenizer = get_tokenizer(tokenizer_name)
-        self.model = LdaModel.load(model_fname)
-        self.vis_fname = vis_fname
+        self.all_topics = self.load_results(model_path + ".results")
+        self.model = LdaModel.load(model_path + ".model")
 
     def load_results(self, results_fname):
         topic_dict = defaultdict(list)
@@ -371,7 +368,7 @@ model.most_similar("83893") # 광해 왕이된 남자
 
 
 # LDA
-model = LDAEvaluator()
+model = LDAEvaluator("data/sentence-embeddings/lda")
 model.show_topic_docs(topic_id=1)
 model.show_topic_words(topic_id=0)
 model.show_new_document_topic(["너무 사랑스러운 영화", "인생을 말하는 영화"])
