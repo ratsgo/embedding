@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 COMMAND=$1
-export LC_CTYPE=C.UTF-8
 function gdrive_download () {
   CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')
   wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2
@@ -142,7 +141,7 @@ case $COMMAND in
             --random_seed=7 \
             --dupe_factor=5
         echo "pretrain fresh BERT..."
-        gdrive_download 1MAfK-GLVUdlje-Twp6hFEOXYk3LjeIak /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
+        gdrive_download 1pC0wDY4H3NynB9N9cB6i1MkNn2mu-sAG /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
         nohup sh -c "python models/bert/run_pretraining.py \
                       --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
                       --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
