@@ -57,7 +57,7 @@ def main(args):
 
     tf_save_dir = args.save_dir
     tf_log_dir = args.save_dir
-    train(options, data, n_gpus, tf_save_dir, tf_log_dir)
+    train(options, data, int(n_gpus), tf_save_dir, tf_log_dir)
 
 
 if __name__ == '__main__':
