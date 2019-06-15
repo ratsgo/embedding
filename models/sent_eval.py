@@ -42,7 +42,7 @@ class Doc2VecEvaluator:
             title = ""
         return title
 
-    def visualize_movies(self, n_sample=100, palette="Viridis256", type="between"):
+    def visualize_movies(self, n_sample=30, palette="Viridis256", type="between"):
         movie_ids = self.get_titles_in_corpus(n_sample=n_sample)
         movie_titles = [movie_ids[key] for key in movie_ids.keys()]
         movie_vecs = [self.model.docvecs[self.doc2idx[movie_id]] for movie_id in movie_ids.keys()]
@@ -354,28 +354,4 @@ model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파
 model.predict("이 영화 정말 재미 있다")
 model.visualize_between_sentences(sampled_sentences)
 model.visualize_sentences(sampled_reviews)
-
-
-# Doc2Vec
-model = Doc2VecEvaluator()
-model.get_titles_in_corpus(n_sample=30)
-model.visualize_movies()
-model.visualize_movies(type="between")
-model.most_similar("36843") # 러브 액츄얼리
-model.most_similar("19227") # 스파이더맨
-model.most_similar("24479") # 스타워즈: 에피소드 1
-model.most_similar("83893") # 광해 왕이된 남자
-
-
-# LDA
-model = LDAEvaluator("data/sentence-embeddings/lda")
-model.show_topic_docs(topic_id=1)
-model.show_topic_words(topic_id=0)
-model.show_new_document_topic(["너무 사랑스러운 영화", "인생을 말하는 영화"])
-
-
-# LSA
-model = LSAEvaluator()
-model.most_similar(doc_id=111)
-model.visualize(mode="between", num_sents=10)
 '''
