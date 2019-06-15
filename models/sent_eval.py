@@ -159,7 +159,7 @@ class SentenceEmbeddingEvaluator:
         visualize_homonym(homonym, tokenized_sentences, vecs, self.model_name, palette)
 
     def visualize_sentences(self, sentences, palette="Viridis256"):
-        vecs = np.array([model.get_sentence_vector(sentence)[1] for sentence in sentences])
+        vecs = np.array([self.get_sentence_vector(sentence)[1] for sentence in sentences])
         visualize_sentences(vecs, sentences, palette)
 
     def visualize_between_sentences(self, sentences, palette="Viridis256"):
@@ -308,7 +308,7 @@ class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
         input_feed = {self.ids_placeholder: model_input}
         return input_feed
 
-
+'''
 import csv, random
 sentences = []
 with open("data/kor_pair_train.csv", "r", encoding="utf-8") as f:
@@ -381,3 +381,4 @@ model.show_new_document_topic(["너무 사랑스러운 영화", "인생을 말�
 model = LSAEvaluator()
 model.most_similar(doc_id=111)
 model.visualize(mode="between", num_sents=10)
+'''
