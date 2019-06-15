@@ -169,9 +169,9 @@ class SentenceEmbeddingEvaluator:
 
 class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
 
-    def __init__(self, model_fname="data/bert",
-                 bertconfig_fname="data/bert/multi_cased_L-12_H-768_A-12/bert_config.json",
-                 vocab_fname="data/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
+    def __init__(self, model_fname="/notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt",
+                 bertconfig_fname="/notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json",
+                 vocab_fname="/notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
                  max_seq_length=32, dimension=768, num_labels=2):
 
         super().__init__("bert", dimension)
@@ -201,7 +201,7 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
     def get_token_vector_sequence(self, sentence):
         tokens = self.tokenize(sentence)
         model_input = self.make_input(tokens)
-        return [tokens, self.sess.run(self.model.get_sequence_output()[0], model_input)[:len(tokens)]]
+        return [tokens, self.sess.run(self.model.get_sequence_output()[0], model_input)[:len(tokens) + 2]]
 
     """
     sentence를 입력하면 토크나이즈 결과와 [CLS] 벡터를 반환한다
@@ -251,10 +251,10 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
 
 class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
 
-    def __init__(self, tune_model_fname="data/elmo",
-                 pretrain_model_fname="data/elmo/elmo.model",
-                 options_fname="data/elmo/options.json",
-                 vocab_fname="data/elmo/elmo-vocab.txt",
+    def __init__(self, tune_model_fname="/notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt",
+                 pretrain_model_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model",
+                 options_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json",
+                 vocab_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt",
                  max_characters_per_token=30, dimension=256, num_labels=2):
 
         # configurations
@@ -304,54 +304,3 @@ class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
         model_input = self.batcher.batch_sentences([tokens])
         input_feed = {self.ids_placeholder: model_input}
         return input_feed
-
-'''
-import csv, random
-sentences = []
-with open("data/kor_pair_train.csv", "r", encoding="utf-8") as f:
-    reader = csv.reader(f, delimiter=",")
-    next(reader) # skip head line
-    for line in reader:
-        _, _, _, sent1, sent2, _ = line
-        sentences.append(sent1)
-        sentences.append(sent2)
-sampled_sentences = random.sample(sentences, 30)
-
-positive_reviews, negative_reviews = [], []
-with open("data/ratings_train.txt", "r", encoding="utf-8") as f:
-    reader = csv.reader(f, delimiter="\t")
-    next(reader) # skip head line
-    for line in reader:
-        _, sentence, label = line
-        if label == '1':
-            positive_reviews.append(sentence)
-        else:
-            negative_reviews.append(sentence)
-sampled_reviews = random.sample(positive_reviews, 5)
-sampled_reviews.extend(random.sample(negative_reviews, 5))
-
-
-# BERT
-model = BERTEmbeddingEvaluator()
-model.get_sentence_vector("나는 학교에 간다")
-model.get_token_vector_sequence("나는 학교에 간다")
-model.visualize_homonym("배", ["배 고프다", "배 아프다", "배 나온다", "배가 불렀다",
-                                "배는 사과보다 맛있다", "배는 수분이 많은 과일이다", "배를 깎아 먹다",
-                                "배를 바다에 띄웠다", "배 멀미가 난다"])
-model.visualize_self_attention_scores("배가 아파서 병원에 갔어")
-model.predict("이 영화 정말 재미 있다")
-model.visualize_between_sentences(sampled_sentences)
-model.visualize_sentences(sampled_sentences)
-
-
-# ELMo
-model = ELMoEmbeddingEvaluator()
-model.get_sentence_vector("나는 학교에 간다")
-model.get_token_vector_sequence("나는 학교에 간다")
-model.visualize_homonym("배", ["배가 고파서 밥 먹었어", "배가 아파서 병원에 갔어",  "고기를 많이 먹으면 배가 나온다",
-                                "사과와 배는 맛있어", "갈아만든 배", "감기에 걸렸을 땐 배를 달여 드세요",
-                                "항구에 배가 많다", "배를 타면 멀미가 난다", "배를 건조하는 데 돈이 많이 든다"])
-model.predict("이 영화 정말 재미 있다")
-model.visualize_between_sentences(sampled_sentences)
-model.visualize_sentences(sampled_reviews)
-'''

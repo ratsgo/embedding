@@ -103,7 +103,7 @@ def make_bert_graph(bert_config, max_seq_length, dropout_keep_prob_rate, num_lab
     input_mask = tf.placeholder(tf.int32, [None, max_seq_length], name='input_mask')
     segment_ids = tf.placeholder(tf.int32, [None, max_seq_length], name='segment_ids')
     model = BertModel(config=bert_config,
-                      is_training=True,
+                      is_training=tune,
                       input_ids=input_ids,
                       input_mask=input_mask,
                       token_type_ids=segment_ids)
