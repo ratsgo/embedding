@@ -13,6 +13,7 @@ case $COMMAND in
         echo "process nsmc raw json.."
         cd /notebooks
         git clone https://github.com/e9t/nsmc.git
+        cd /notebooks/embedding
         python preprocess/dump.py --preprocess_mode nsmc-json \
             --input_path /notebooks/nsmc/raw \
             --output_path /notebooks/embedding/data/processed/processed_review_movieid.txt \
