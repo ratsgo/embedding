@@ -187,9 +187,9 @@ case $COMMAND in
         ;;
     mecab-user-dic)
         echo "insert mecab user dictionary..."
-        cp -f preprocess/mecab-user-dic.csv /tmp/mecab-ko-dic-2.1.1-20180720/user-dic/nnp.csv
-        bash /tmp/mecab-ko-dic-2.1.1-20180720/tools/add-userdic.sh
-        cd /tmp/mecab-ko-dic-2.1.1-20180720/user-dic
+        cd /tmp/mecab-ko-dic-2.1.1-20180720
+        cp -f /notebooks/embedding/preprocess/mecab-user-dic.csv /tmp/mecab-ko-dic-2.1.1-20180720/user-dic/nnp.csv
+        ./tools/add-userdic.sh
         make install
         cd /notebooks/embedding
         ;;
