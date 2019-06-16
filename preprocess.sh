@@ -185,4 +185,12 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;
+    mecab-user-dic)
+        echo "insert mecab user dictionary..."
+        cp -f preprocess/mecab-user-dic.csv /tmp/mecab-ko-dic-2.1.1-20180720/user-dic/nnp.csv
+        bash /tmp/mecab-ko-dic-2.1.1-20180720/tools/add-userdic.sh
+        cd /tmp/mecab-ko-dic-2.1.1-20180720/user-dic
+        make install
+        cd /notebooks/embedding
+        ;;
 esac
