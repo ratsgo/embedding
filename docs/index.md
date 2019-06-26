@@ -2,220 +2,28 @@
 layout: default
 ---
 
-# embedding
-자연언어처리의 근간이 되는 각종 임베딩 기법들에 관련한 튜토리얼입니다. 한국어 처리를 염두에 두고 작성됐습니다.
+### 개요
+- 자연언어처리의 근간이 되는 각종 임베딩 기법들에 관련한 튜토리얼입니다. 
+- 한국어 처리를 염두에 두고 작성됐습니다.
+- 아래 모든 명령은 도커 컨테이너 상에서 동작합니다.
+- 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.
 
 
-### [1. 개발환경 설정](./docker.html)
+### 데이터 전처리
 
-
-아래 모든 명령은 도커 컨테이너 상에서 동작합니다.
-
-
-
-
-
-### 3. 데이터 덤프
-
-아래의 `wget` 명령어를 입력해 필요한 말뭉치를 다운로드합니다.
-
-#### [네이버 영화 말뭉치](https://github.com/e9t/nsmc)
-
-```bash
-wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw
-wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw
-wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw
-```
-
-#### 한국어 위키피디아
-
-```bash
-wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw
-```
-
-#### [KorQuAD](https://korquad.github.io)
-
-```bash
-wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw
-wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw
-```
-
-#### [유사 문장](https://github.com/songys/Question_pair)
-
-```bash
-wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
-wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
-```
-
-#### [ratsgo blog](http://ratsgo.github.io)
-
-```bash
-function gdrive_download () {
-  CONFIRM=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate "https://docs.google.com/uc?export=download&id=$1" -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')
-  wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$CONFIRM&id=$1" -O $2
-  rm -rf /tmp/cookies.txt
-}
-          
-gdrive_download 1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/processed_blog.txt
-```
-
-  
-
-
-
-### 4. 데이터를 문장 단위 텍스트 파일로 저장하기
-
-`/notebooks/embedding` 위치에서 다음을 실행하면 각기 다른 형식의 데이터를 한 라인이 한 문서인 형태의 텍스트 파일로 저장합니다. 이 단계에서는 별도로 토크나이즈를 하진 않습니다.
-
-#### 네이버 영화 말뭉치 전처리
-
-json, text 형태의 영화 리뷰를 처리합니다.
-
-```bash
-python preprocess/dump.py --preprocess_mode nsmc \
-	--input_path /notebooks/embedding/data/raw/ratings.txt \
-	--output_path /notebooks/embedding/data/processed/processed_ratings.txt \
-	--with_label False
-python preprocess/dump.py --preprocess_mode nsmc \
-	--input_path /notebooks/embedding/data/raw/ratings_train.txt \
-	--output_path /notebooks/embedding/data/processed/processed_ratings_train.txt \
-	--with_label True
-python preprocess/dump.py --preprocess_mode nsmc \
-	--input_path /notebooks/embedding/data/raw/ratings_test.txt \
-	--output_path /notebooks/embedding/data/processed/processed_ratings_test.txt \
-	--with_label True
-```
-
-#### 한국어 위키피디아 말뭉치 전처리
-
-위키피디아 원문에서 이메일, URL, 여러 형태의 공백 등 불필요 문자를 제거하고 숫자 사이에 공백을 추가하는 등의 전처리를 시행합니다. 
-
-```bash
-python preprocess/dump.py --preprocess_mode wiki \
-	--input_path /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 \
-	--output_path /notebooks/embedding/data/processed/processed_wiki_ko.txt
-```
-
-#### KorQuad 데이터 전처리
-
-json 내 context를 문서 하나로 취급합니다. question, anwers은 두 쌍을 공백으로 묶어서 문서 하나로 취급합니다.
-
-```bash
-python preprocess/dump.py --preprocess_mode korsquad \
-	--input_path /notebooks/embedding/data/raw/KorQuAD_v1.0_train.json \
-	--output_path /notebooks/embedding/data/processed/processed_korsquad_train.txt
-python preprocess/dump.py --preprocess_mode korsquad \
-	--input_path /notebooks/embedding/data/raw/KorQuAD_v1.0_dev.json \
-	--output_path data/processed/processed_korsquad_dev.txt
-```
-
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 처리된 파일들을 한꺼번에 내려받을 수 있습니다. 
-
-```bash
-gdrive_download 1hscU5_f_1vXfbhHabNpqfnp8DU2ZWmcT /notebooks/embedding/data/processed.zip
-```
-
-  
-
-
-
-### 5. 형태소 분석
-
-`/notebooks/embedding` 위치에서 다음을 실행하면 각 데이터를 형태소 분석할 수 있습니다. 입력 파일은 한 라인이 한 문서인 형태여야 합니다. 
-
-#### supervised tokenizer
-
-은전한닢 등 5개의 한국어 형태소 분석기를 지원합니다. 사용법은 다음과 같습니다.
-
-| 형태소 분석기 | 명령                                                         |
-| ------------- | ------------------------------------------------------------ |
-| 은전한닢      | python preprocess/supervised_nlputils.py --tokenizer mecab --input_path input_file_path --output_path output_file_path |
-| 코모란        | python preprocess/supervised_nlputils.py --tokenizer komoran --input_path input_file_path --output_path output_file_path |
-| Okt           | python preprocess/supervised_nlputils.py --tokenizer okt --input_path input_file_path --output_path output_file_path |
-| 한나눔        | python preprocess/supervised_nlputils.py --tokenizer hannanum --input_path input_file_path --output_path output_file_path |
-| Khaiii        | python preprocess/supervised_nlputils.py --tokenizer khaiii --input_path input_file_path --output_path output_file_path |
-
-#### unsupervised tokenizer
-
-soynlp와 구글 SentencePiece 두 가지 분석기를 지원합니다. supervised tokenizer들과 달리 말뭉치의 통계량을 확인한 뒤 토크나이즈를 하기 때문에 토크나이즈 적용 전 모델 학습이 필요합니다.
-
-#### soynlp
-
-사용법은 다음과 같습니다.
-
-```bash
-# train
-python preprocess/unsupervised_nlputils.py --preprocess_mode compute_soy_word_score \
-	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--model_path /notebooks/embedding/data/trained-models/soyword.model
-# tokenize
-python preprocess/unsupervised_nlputils.py --preprocess_mode soy_tokenize \
-	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--model_path /notebooks/embedding/data/trained-models/soyword.model \
-	--output_path /notebooks/embedding/data/tokenized/ratings_soynlp.txt
-```
-
-#### sentencepiece
-
-사용법은 다음과 같습니다.
-
-```bash
-# train
-cd /notebooks/embedding/data/trained-models
-spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=50000
-cd /notebooks/embedding
-python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
-	--input_path /notebooks/embedding/data/trained-models/sentpiece.vocab \
-	--vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
-# tokenize
-python preprocess/unsupervised_nlputils.py --preprocess_mode sentencepiece_tokenize \
-	--vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab \
-	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
-```
-
-#### 띄어쓰기 교정
-
-`supervised tokenizer`이든, `unsupervised tokenizer`이든 띄어쓰기가 잘 되어 있을 수록 형태소 분석 품질이 좋아집니다. soynlp의 띄어쓰기 교정 모델을 학습하고 말뭉치에 모델을 적용하는 과정은 다음과 같습니다.
-
-```bash
-# train
-python preprocess/unsupervised_nlputils.py --preprocess_mode train_space \
-	--input_path /notebooks/embedding/data/processed/processed_ratings.txt \
-	--model_path /notebooks/embedding/data/trained-models/space-correct.model
-# correct
-python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct \
-	--input_path /notebooks/embedding/data/processed/processed_ratings.txt \
-	--model_path /notebooks/embedding/data/trained-models/space-correct.model \
-	--output_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--with_label False
-```
-
-#### 전처리 데이터 
-
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 처리된 파일들을 한꺼번에 내려받을 수 있습니다. 
+- [데이터 전처리](./preprocess.html)
+- [형태소 분석](./tokenize.html)
+- 다음 한 줄이면 위 글의 내용을 실행하지 않아도 이미 처리된 파일들을 한꺼번에 내려받을 수 있습니다. 
 
 ```bash
 gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
 ```
 
-  
 
-
-
-### 6. 단어 임베딩 모델 학습
+### 단어 임베딩 모델 학습
 
 `/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다. 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
 
-#### 데이터 준비
-
-이미 형태소 분석이 완료된 파일들을 내려 받아 준비합니다. 이후 아래처럼 데이터를 merge합니다.
-
-```bash
-gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
-cat /notebooks/embedding/data/tokenized/wiki_ko_mecab.txt /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/corpus_mecab.txt
-cat /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/for-lsa-mecab.txt
-```
 
 #### Latent Semantic Analysis
 

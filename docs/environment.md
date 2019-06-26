@@ -1,14 +1,17 @@
 ---
 layout: default
+title: 개발환경 설정
+description: 도커 설치 및 컨테이너 실행 방법을 안내합니다.
 ---
 
 
-### 1. 요구사항
+
+### 요구사항
 
 docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/install-docker/)
 
 
-### 2. 도커 실행방법
+### 도커 실행방법
 
 튜토리얼을 위한 도커 컨테이너를 실행하려면 자신의 환경에 따라 다음 네 가지 중 하나의 작업을 실시하여야 합니다.
 
@@ -43,3 +46,8 @@ docker run -it --rm ratsgo/embedding-cpu:1.1 bash
 docker pull ratsgo/embedding-cpu:1.1
 docker run -it --rm ratsgo/embedding-cpu:1.1 bash
 ```
+
+
+### 
+
+[메인페이지로 돌아가기](./index.html)
