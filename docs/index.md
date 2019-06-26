@@ -338,9 +338,8 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 
 아래는 위의 코드 실행으로 시각화된 결과물의 예시입니다.
 
-<img src='http://drive.google.com/uc?export=view&id=1Aia5psgzxU2kMiW7-3jOG5CM4bp0jox9' width=700 />
-
-<img src='http://drive.google.com/uc?export=view&id=1aCLrdqDZvChepoDFZ4oBmqsgvJ6GJwNL' widh=700 />
+![visual1](http://drive.google.com/uc?export=view&id=1Aia5psgzxU2kMiW7-3jOG5CM4bp0jox9)
+![visual2](http://drive.google.com/uc?export=view&id=1aCLrdqDZvChepoDFZ4oBmqsgvJ6GJwNL)
 
 
 
@@ -525,7 +524,5 @@ model.visualize_sentences(sampled_sentences)
 
 아래는 위의 코드 실행으로 시각화한 결과물의 예시입니다.
 
-
-<img src="http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW" width=500 />
-
-<img src="http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV" width=500 />
+![visual3](http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW)
+![visual4](http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV
