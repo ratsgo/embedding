@@ -7,7 +7,7 @@
 
 ### 1. 요구사항
 
-- docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/install-docker/)
+docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/install-docker/)
 
 
 
@@ -15,9 +15,9 @@
 
 ### 2. 도커 실행방법
 
-- 튜토리얼을 위한 도커 컨테이너를 실행하려면 자신의 환경에 따라 다음 네 가지 중 하나의 작업을 실시하여야 합니다.
+튜토리얼을 위한 도커 컨테이너를 실행하려면 자신의 환경에 따라 다음 네 가지 중 하나의 작업을 실시하여야 합니다.
 
-  (1) 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
+#### 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
 
   ```bash
   git clone https://github.com/ratsgo/embedding.git
@@ -502,7 +502,7 @@ model.visualize_sentences(sampled_sentences)
 
 - 아래는 위의 코드 실행으로 시각화한 결과물의 예시입니다.
 
-<img src='http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW' width=500 />
+<img src='http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW' width=500>
 
-<img src='http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV' width=500 />
+<img src='http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV' width=500>
 
