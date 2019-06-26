@@ -19,14 +19,14 @@ docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/insta
 
 #### 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
 
-  ```bash
-  git clone https://github.com/ratsgo/embedding.git
-  cd embedding
-  docker build -t ratsgo/embedding-gpu:1.0 -f docker/Dockerfile-GPU .
-  docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.0 bash
-  ```
+```bash
+git clone https://github.com/ratsgo/embedding.git
+cd embedding
+docker build -t ratsgo/embedding-gpu:1.0 -f docker/Dockerfile-GPU .
+docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.0 bash
+```
 
-  (2) 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
+#### 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
 
   ```bash
   docker pull ratsgo/embedding-gpu:1.0
@@ -502,7 +502,6 @@ model.visualize_sentences(sampled_sentences)
 
 - 아래는 위의 코드 실행으로 시각화한 결과물의 예시입니다.
 
-<img src='http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW' width=500>
+<img src="http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW" width=500 />
 
-<img src='http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV' width=500>
-
+<img src="http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV" width=500 />
