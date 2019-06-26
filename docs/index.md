@@ -6,52 +6,8 @@ layout: default
 자연언어처리의 근간이 되는 각종 임베딩 기법들에 관련한 튜토리얼입니다. 한국어 처리를 염두에 두고 작성됐습니다.
 
 
+### [1. 개발환경 설정](./docker.html)
 
-
-
-### 1. 요구사항
-
-docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/install-docker/)
-
-
-
-
-
-### 2. 도커 실행방법
-
-튜토리얼을 위한 도커 컨테이너를 실행하려면 자신의 환경에 따라 다음 네 가지 중 하나의 작업을 실시하여야 합니다.
-
-#### 로컬에 nvidia GPU가 있고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
-
-```bash
-git clone https://github.com/ratsgo/embedding.git
-cd embedding
-docker build -t ratsgo/embedding-gpu:1.1 -f docker/Dockerfile-GPU .
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.1 bash
-```
-
-#### 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
-
-```bash
-docker pull ratsgo/embedding-gpu:1.1
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.1 bash
-```
-
-#### 로컬에 nvidia GPU가 없고 Dockerfile로부터 도커이미지를 처음부터 만들어서 컨테이너 띄우기
-
-```bash
-git clone https://github.com/ratsgo/embedding.git
-cd embedding
-docker build -t ratsgo/embedding-cpu:1.1 -f docker/Dockerfile-CPU .
-docker run -it --rm ratsgo/embedding-cpu:1.1 bash
-```
-
-#### 로컬에 nvidia GPU가 없고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
-
-```bash
-docker pull ratsgo/embedding-cpu:1.1
-docker run -it --rm ratsgo/embedding-cpu:1.1 bash
-```
 
 아래 모든 명령은 도커 컨테이너 상에서 동작합니다.
 
@@ -521,8 +477,3 @@ model.predict("이 영화 정말 재미 있다")
 model.visualize_between_sentences(sampled_sentences)
 model.visualize_sentences(sampled_sentences)
 ```
-
-아래는 위의 코드 실행으로 시각화한 결과물의 예시입니다.
-
-![visual3](http://drive.google.com/uc?export=view&id=1J8bsPWMBPVUaRehTlCwZ5-GNQLv6TiqW)
-![visual4](http://drive.google.com/uc?export=view&id=1eh18VG1kRU7wdWT7zuG_69HA1r7iS_lV
