@@ -2,14 +2,14 @@
 layout: default
 ---
 
-### 개요
+# 개요
 - 자연언어처리의 근간이 되는 각종 임베딩 기법들에 관련한 튜토리얼입니다. 
 - 한국어 처리를 염두에 두고 작성됐습니다.
 - 아래 모든 명령은 도커 컨테이너 상에서 동작합니다.
 - 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.
 
 
-### 데이터 전처리
+# 데이터 전처리
 
 - [데이터 전처리](./preprocess.html)
 - [형태소 분석](./tokenize.html)
@@ -20,14 +20,16 @@ gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/toke
 ```
 
 
-### 단어 임베딩 모델 학습
+# 단어 임베딩 모델 학습
 
-`/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다. 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
+- `/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다. 
+- 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 
+- 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
 
 
-#### Latent Semantic Analysis
+## Latent Semantic Analysis
 
-Word-Context 혹은 PPMI Matrix에 Singular Value Decomposition을 시행합니다.
+- Word-Context 혹은 PPMI Matrix에 Singular Value Decomposition을 시행합니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/lsa
@@ -36,7 +38,7 @@ python models/word_utils.py --method latent_semantic_analysis \
 	--output_path /notebooks/embedding/data/word-embeddings/lsa/lsa
 ```
 
-#### Word2Vec
+## Word2Vec
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/word2vec
@@ -45,7 +47,7 @@ python models/word_utils.py --method train_word2vec \
 	--output_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec
 ```
 
-#### GloVe
+## GloVe
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/glove
@@ -55,16 +57,16 @@ mkdir -p /notebooks/embedding/data/word-embeddings/glove
 /notebooks/embedding/models/glove/build/glove -save-file /notebooks/embedding/data/word-embeddings/glove/glove.vecs -threads 4 -input-file /notebooks/embedding/data/word-embeddings/glove/glove.shuf -x-max 10 -iter 15 -vector-size 100 -binary 2 -vocab-file /notebooks/embedding/data/word-embeddings/glove/glove.vocab -verbose 2
 ```
 
-#### FastText
+## FastText
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 /notebooks/embedding/models/fastText/fasttext skipgram -input /notebooks/embedding/data/tokenized/corpus_mecab.txt -output /notebooks/embedding/data/word-embeddings/fasttext/fasttext
 ```
 
-#### Swivel
+## Swivel
 
-아래 `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
+- 아래 `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/swivel
@@ -72,22 +74,18 @@ mkdir -p /notebooks/embedding/data/word-embeddings/swivel
 python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks/embedding/data/word-embeddings/swivel/swivel.data --output_base_path /notebooks/embedding/data/word-embeddings/swivel --dim 100
   ```
 
-#### 단어 임베딩 다운로드
+# 단어 임베딩 다운로드
 
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
+- 다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
 
 ```bash
 gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word-embeddings.zip
 ```
 
 
+# 단어 임베딩 모델 평가
 
-
-
-
-### 7. 단어 임베딩 모델 평가
-
-아래는 단어 임베딩 모델 평가 코드입니다. 파이썬 콘솔에서 실행합니다.
+- 아래는 단어 임베딩 모델 평가 코드입니다. 파이썬 콘솔에서 실행합니다.
 
 ```python
 from models.word_eval import WordEmbeddingEval
@@ -100,29 +98,23 @@ model.visualize_words("data/kor_analogy_semantic.txt", palette="Viridis256")
 model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256")
 ```
 
-아래는 위의 코드 실행으로 시각화된 결과물의 예시입니다.
+- 아래는 위의 코드 실행으로 시각화된 결과물의 예시입니다.
 
 ![visual1](http://drive.google.com/uc?export=view&id=1Aia5psgzxU2kMiW7-3jOG5CM4bp0jox9)
 ![visual2](http://drive.google.com/uc?export=view&id=1aCLrdqDZvChepoDFZ4oBmqsgvJ6GJwNL)
 
 
 
-### 8. 문장 임베딩 모델 학습
+# 문장 임베딩 모델 학습
 
-`/notebooks/embedding` 위치에서 다음을 실행하면 각 문장 임베딩 모델을 학습할 수 있습니다. 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
+- `/notebooks/embedding` 위치에서 다음을 실행하면 각 문장 임베딩 모델을 학습할 수 있습니다. 
+- 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 
+- 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
 
-#### 데이터 준비
 
-이미 전처리가 완료된 말뭉치를 내려받습니다.
+## Latent Semantic Analysis
 
-```
-gdrive_download 1hscU5_f_1vXfbhHabNpqfnp8DU2ZWmcT /notebooks/embedding/data/processed.zip
-gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
-```
-
-#### Latent Semantic Analysis
-
-TF-IDF Matrix에 Singular Value Decomposition을 시행합니다.
+- TF-IDF Matrix에 Singular Value Decomposition을 시행합니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/lsa-tfidf
@@ -131,7 +123,7 @@ python models/sent_utils.py --method latent_semantic_analysis \
 	--output_path /notebooks/embedding/data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs
 ```
 
-#### Doc2Vec
+## Doc2Vec
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/doc2vec
@@ -140,7 +132,7 @@ python models/sent_utils.py --method doc2vec \
 	--output_path /notebooks/embedding/data/sentence-embeddings/doc2vec/doc2vec.model
 ```
 
-#### Latent Dirichlet Allocation
+## Latent Dirichlet Allocation
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/lda
@@ -149,9 +141,9 @@ python models/sent_utils.py --method latent_dirichlet_allocation \
 	--output_path /notebooks/embedding/data/sentence-embeddings/lda/lda
 ```
 
-#### ELMo
+## ELMo
 
-다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다.
+- 다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다.
 
 ```bash
 # preprocess
@@ -171,7 +163,7 @@ nohup sh -c "python models/train_elmo.py \
 	--n_gpus 1" > elmo-pretrain.log &
 ```
 
-프리트레인(pretrain)이 끝나면 파인튜닝(fine-tuning) 용도로 파라메터를 별도로 저장합니다.
+- 프리트레인(pretrain)이 끝나면 파인튜닝(fine-tuning) 용도로 파라메터를 별도로 저장합니다.
 
 ```bash
 python models/sent_utils.py --method dump_elmo_weights \
@@ -179,7 +171,7 @@ python models/sent_utils.py --method dump_elmo_weights \
 	--output_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model
 ```
 
-아래를 실행해 내 데이터에 맞게 파인튜닝합니다.
+- 아래를 실행해 내 데이터에 맞게 파인튜닝합니다.
 
 ```bash
 export LC_CTYPE=C.UTF-8
@@ -192,9 +184,9 @@ nohup sh -c "python models/tune_utils.py --model_name elmo \
 	--model_save_path /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
 ```
 
-#### BERT
+## BERT
 
-vocabulary를 만듭니다
+- vocabulary를 만듭니다
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
@@ -207,7 +199,7 @@ python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
 	--vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
 ```
 
-pretrain 학습데이터를 만듭니다. 학습데이터는 tf.record 형태로 저장됩니다.
+- pretrain 학습데이터를 만듭니다. 학습데이터는 tf.record 형태로 저장됩니다.
 
 ```bash
 export LC_CTYPE=C.UTF-8
@@ -224,7 +216,7 @@ python models/bert/create_pretraining_data.py \
 	--dupe_factor=5
 ```
 
-프리트레인(pretrain)을 수행합니다.
+- 프리트레인(pretrain)을 수행합니다.
 
 ```bash
 # download bert configurations
@@ -243,7 +235,7 @@ nohup sh -c "python models/bert/run_pretraining.py \
 	--learning_rate=2e-5" > bert-pretrain.log &
 ```
 
-프리트레인된 모델을 바탕으로 내 데이터에 맞게 튜닝합니다.
+- 프리트레인된 모델을 바탕으로 내 데이터에 맞게 튜닝합니다.
 
 ```bash
 export LC_CTYPE=C.UTF-8
@@ -256,19 +248,16 @@ nohup sh -c "python models/tune_utils.py --model_name bert \
 	--model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
 ```
 
+# 문장 임베딩 다운로드
 
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
+- 다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
 
 ```bash
 gdrive_download 1u80kFwKlkN8ds0JvQtn6an2dl9QY1rE1 /notebooks/embedding/data/sentence-embeddings.zip
 ```
 
 
-
-
-
-
-### 9. 문장 임베딩 모델 평가
+# 문장 임베딩 모델 평가
 
 아래는 문장 임베딩 모델 평가 예시 코드입니다.
 
