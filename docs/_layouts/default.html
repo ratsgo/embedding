@@ -26,12 +26,14 @@
       <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
       <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
       {% if site.github.is_project_page %}
-        <a href="{{ site.github.repository_url }}" class="btn">깃허브 레포 확인</a>
+        <a href="https://ratsgo.github.io/embedding" class="btn">메인 페이지</a>
+        <a href="{{ site.github.repository_url }}" class="btn">Github 확인</a>
       {% endif %}
       {% if site.show_downloads %}
         <a href="{{ site.github.zip_url }}" class="btn">코드 내려받기</a>
         <a href="https://drive.google.com/open?id=1XmQoAgnjzqt3ZG6gBHFq8EyKyjpe3SQc" class="btn">데이터 내려받기</a>
         <a href="https://github.com/ratsgo/embedding/issues" class="btn">버그 리포트</a>
+        <a href="https://ratsgo.github.io/embedding" class="btn">도서 안내</a>
       {% endif %}
     </header>
 
