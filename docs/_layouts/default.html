@@ -20,8 +20,6 @@
     <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
   </head>
   <body>
-    <a id="skip-to-content" href="#content">Skip to the content.</a>
-
     <header class="page-header" role="banner">
       <h1 class="project-name">{{ page.title | default: site.title | default: site.github.repository_name }}</h1>
       <h2 class="project-tagline">{{ page.description | default: site.description | default: site.github.project_tagline }}</h2>
@@ -30,6 +28,9 @@
         <a href="{{ site.github.repository_url }}" class="btn">Github 확인</a>
       {% endif %}
       {% if site.show_downloads %}
+        <a href="https://ratsgo.github.io/embedding/environment.html" class="btn">개발환경 설정</a>
+        <a href="https://ratsgo.github.io/embedding/preprocess.html" class="btn">데이터 전처리</a>
+        <a href="https://ratsgo.github.io/embedding/tokenize.html" class="btn">형태소 분석</a>
         <a href="{{ site.github.zip_url }}" class="btn">코드 내려받기</a>
         <a href="https://drive.google.com/open?id=1XmQoAgnjzqt3ZG6gBHFq8EyKyjpe3SQc" class="btn">데이터 내려받기</a>
         <a href="https://github.com/ratsgo/embedding/issues" class="btn">버그 리포트</a>
