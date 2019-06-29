@@ -1,10 +1,8 @@
-```
 ---
 layout: default
 title: 버그 신고 및 정오표
 description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 안내합니다.
 ---
-```
 
 
 
