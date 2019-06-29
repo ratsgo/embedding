@@ -26,15 +26,18 @@ description: 말뭉치나 임베딩을 다운로드하는 방법을 안내합니
 
 [이곳](https://drive.google.com/open?id=1oO5v6YqNlKTq0vWfjME3SiLXAYCMAmkc)을 클릭하시면 전처리가 완료된 데이터를 내려받을 수 있습니다. 순수 텍스트 파일이며 1개 라인에 1개 문서가 기록돼 있습니다. 그 목록은 다음과 같습니다.
 
-| 파일명                      | 내용                                                         |
-| --------------------------- | ------------------------------------------------------------ |
-| processed_wiki_ko.txt       | 한국어 위키백과                                              |
-| processed_korquad.txt       | KorQuAD 학습/데브셋                                          |
-| processed_ratings.txt       | 네이버 영화 말뭉치 학습/테스트셋 (레이블 없음)               |
-| processed_ratings_train.txt | 네이버 영화 말뭉치 학습셋 (레이블 있음)                      |
-| processed_ratings_test.txt  | 네이버 영화 말뭉치 테스트셋 (레이블 있음)                    |
-| corrected_ratings_train.txt | [띄어쓰기 교정(soynlp)](https://github.com/lovit/soynlp)한 네이버 영화 말뭉치 학습셋 (레이블 있음) |
-| corrected_ratings_test.txt  | [띄어쓰기 교정(soynlp)](https://github.com/lovit/soynlp)한 네이버 영화 말뭉치 테스트셋 (레이블 없음) |
+| 파일명                       | 내용                                                         |
+| ---------------------------  | ------------------------------------------------------------ |
+| processed_wiki_ko.txt        | 한국어 위키백과                                              |
+| processed_korquad.txt        | KorQuAD 학습/데브셋                                          |
+| processed_ratings.txt        | 네이버 영화 말뭉치 학습/테스트셋 (극성 레이블 없음)               |
+| processed_ratings_train.txt  | 네이버 영화 말뭉치 학습셋 (극성 레이블 있음)                      |
+| processed_ratings_test.txt   | 네이버 영화 말뭉치 테스트셋 (극성 레이블 있음)                    |
+| processed_review_movieid.txt | 네이버 영화 말뭉치 전체 데이터셋 (영화 ID 포함)                  |
+| space-correct.model          | 네이버 영화 말뭉치로 학습한 [띄어쓰기 교정(soynlp)](https://github.com/lovit/soynlp) 모델 |
+| corrected_ratings_train.txt  | [띄어쓰기 교정(soynlp)](https://github.com/lovit/soynlp)한 네이버 영화 말뭉치 학습셋 (레이블 있음) |
+| corrected_ratings_test.txt   | [띄어쓰기 교정(soynlp)](https://github.com/lovit/soynlp)한 네이버 영화 말뭉치 테스트셋 (레이블 없음) |
+| soyword.model                | 네이버 영화 말뭉치로 학습한 [soynlp](https://github.com/lovit/soynlp) 형태소 분석 모델 |
 
 혹은 우분투 쉘(도커 컨테이너, [개발환경 설정 참고](https://ratsgo.github.io/embedding/environment.html))의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/processed` 디렉토리에 모든 파일을 한꺼번에 내려받습니다.
 
