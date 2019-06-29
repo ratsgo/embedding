@@ -33,7 +33,7 @@ case $COMMAND in
         mkdir /notebooks/embedding/data/tokenized
         mkdir /notebooks/embedding/data/trained-models
         ;;
-    dump-word-embedding)
+    dump-word-embeddings)
         echo "download word embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
@@ -41,7 +41,7 @@ case $COMMAND in
         unzip word-embeddings.zip
         rm word-embeddings.zip
         ;;
-    dump-sentence-embedding)
+    dump-sentence-embeddings)
         echo "download sentence embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
