@@ -8,16 +8,22 @@ function gdrive_download () {
 }
 
 case $COMMAND in
-    dump-raw)
+    dump-raw-wiki)
+        echo "download ko-wikipedia..."
+        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw
+        ;;
+    dump-raw-korquad)
+        echo "download KorQuAD data..."
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw
+        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw
+        ;;
+    dump-raw-nsmc)
         echo "download naver movie corpus..."
         wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw
         wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw
         wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw
-        echo "download ko-wikipedia..."
-        wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw
-        echo "download KorQuAD data..."
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw
-        wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw
+        ;;
+    dump-raw)
         echo "download similar sentence data..."
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
         wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
@@ -73,7 +79,7 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 \
             --output_path /notebooks/embedding/data/processed/processed_wiki_ko.txt
         ;;
-    process-navermovie)
+    process-nsmc)
         echo "processing naver movie corpus..."
         python preprocess/dump.py --preprocess_mode nsmc \
             --input_path /notebooks/embedding/data/raw/ratings.txt \
@@ -89,7 +95,7 @@ case $COMMAND in
             --with_label True
         ;;
     process-korquad)
-        echo "processing KorQaAD corpus..."
+        echo "processing KorQuAD corpus..."
         python preprocess/dump.py --preprocess_mode korquad \
             --input_path /notebooks/embedding/data/raw/KorQuAD_v1.0_train.json \
             --output_path /notebooks/embedding/data/processed/processed_korquad_train.txt
@@ -172,14 +178,14 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_khaiii.txt
         ;;
-    sentencepiece)
-        echo "processing sentencepiece..."
-        cd /notebooks/embedding/data/trained-models
-        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=50000
-        cd /notebooks/embedding
-        python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
-            --input_path /notebooks/embedding/data/trained-models/sentpiece.vocab \
+    make-bert-vocab)
+        echo "processing BERT vocabulary..."
+        python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
+            --input_path /notebooks/embedding/data/processed/processed_wiki_ko.txt \
             --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
+        mv sentpiece* /notebooks/embedding/data/trained-models
+        ;;
+    bert-vocab-tokenize)
         python preprocess/unsupervised_nlputils.py --preprocess_mode sentencepiece_tokenize \
             --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \

@@ -5,6 +5,7 @@ from soynlp.normalizer import *
 from soyspacing.countbase import CountSpace
 from soynlp.hangle import decompose, character_is_korean
 
+import sentencepiece as spm
 sys.path.append('models')
 from bert.tokenization import FullTokenizer, convert_to_unicode
 
@@ -66,8 +67,10 @@ def soy_tokenize(corpus_fname, model_fname, output_fname):
             f2.writelines(tokenized_sent + '\n')
 
 
-def process_sp_vocab(vocab_fname, output_fname):
-    with open(vocab_fname, 'r', encoding='utf-8') as f1, \
+def make_bert_vocab(input_fname, output_fname):
+    train = '--input=' + input_fname + ' --model_prefix=sentpiece --vocab_size=32000 --model_type=bpe --character_coverage=1.0'
+    spm.SentencePieceTrainer.Train(train)
+    with open('sentpiece.vocab', 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
         f2.writelines("[PAD]\n[UNK]\n[CLS]\n[MASK]\n[SEP]\n")
         for line in f1:
@@ -141,8 +144,8 @@ if __name__ == '__main__':
         compute_soy_word_score(args.input_path, args.model_path)
     elif args.preprocess_mode == "soy_tokenize":
         soy_tokenize(args.input_path, args.model_path, args.output_path)
-    elif args.preprocess_mode == "process_sp_vocab":
-        process_sp_vocab(args.input_path, args.vocab_path)
+    elif args.preprocess_mode == "make_bert_vocab":
+        make_bert_vocab(args.input_path, args.vocab_path)
     elif args.preprocess_mode == "sentencepiece_tokenize":
         sentencepiece_tokenize(args.vocab_path, args.input_path, args.output_path)
     elif args.preprocess_mode == "jamo":
