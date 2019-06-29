@@ -41,18 +41,7 @@ RUN git clone https://github.com/kakao/khaiii.git \
  && pip install  . \
  && PATH=$PATH:/notebooks/khaiii/build/lib
 
-RUN pip install gensim soynlp soyspacing bokeh networkx selenium lxml pyldavis
-
-WORKDIR /notebooks
-RUN git clone https://github.com/google/sentencepiece.git \
- && cd /notebooks/sentencepiece \
- && git reset --hard ae4dea47712827f5a9b53f3be944368e7ef21c1f \
- && mkdir /notebooks/sentencepiece/build \
- && cd /notebooks/sentencepiece/build \
- && cmake .. \
- && make -j $(nproc) \
- && make install \
- && ldconfig -v
+RUN pip install gensim soynlp soyspacing bokeh networkx selenium lxml pyldavis sentencepiece
 
 WORKDIR /notebooks
 RUN git clone http://github.com/stanfordnlp/glove \
@@ -69,7 +58,6 @@ RUN git clone https://github.com/ratsgo/embedding.git \
  && make -f fastprep.mk
 
 RUN mv /notebooks/fastText /notebooks/embedding/models \
- && mv /notebooks/glove /notebooks/embedding/models \
- && mv /notebooks/sentencepiece /notebooks/embedding/preprocess
+ && mv /notebooks/glove /notebooks/embedding/models
 
 WORKDIR /notebooks/embedding
