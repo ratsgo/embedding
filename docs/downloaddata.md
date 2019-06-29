@@ -24,7 +24,7 @@ description: 말뭉치나 임베딩을 다운로드하는 방법을 안내합니
 
 ## 전처리 데이터
 
-[이곳](https://drive.google.com/open?id=1oO5v6YqNlKTq0vWfjME3SiLXAYCMAmkc)을 클릭하시면 전처리가 완료된 데이터를 내려받을 수 있습니다. 순수 텍스트 파일이며 1개 라인에 1개 문서가 기록돼 있습니다. 그 목록은 다음과 같습니다.
+[이곳](https://drive.google.com/open?id=1kUecR7xO7bsHFmUI6AExtY5u2XXlObOG)을 클릭하시면 전처리가 완료된 데이터를 내려받을 수 있습니다. 순수 텍스트 파일이며 1개 라인에 1개 문서가 기록돼 있습니다. 그 목록은 다음과 같습니다.
 
 | 파일명                       | 내용                                                         |
 | ---------------------------  | ------------------------------------------------------------ |
@@ -52,7 +52,7 @@ bash preprocess.sh dump-processed
 
 ## 형태소 분석 데이터
 
-[이곳](https://drive.google.com/open?id=1QEdjvT0Jpqmz9F57ATmjy3i016kdcURq)을 클릭하시면 형태소 분석이 완료된 데이터를 내려받을 수 있습니다. 순수 텍스트 파일이며 1개 라인에 1개 문서가 기록돼 있습니다. 그 목록은 다음과 같습니다.
+[이곳](https://drive.google.com/open?id=1Ybp_DmzNEpsBrUKZ1-NoPDzCMO39f-fx)을 클릭하시면 형태소 분석이 완료된 데이터를 내려받을 수 있습니다. 순수 텍스트 파일이며 1개 라인에 1개 문서가 기록돼 있습니다. 그 목록은 다음과 같습니다.
 
 | 파일명                | 내용                                                         |
 | --------------------- | ------------------------------------------------------------ |
@@ -63,7 +63,6 @@ bash preprocess.sh dump-processed
 | ratings_komoran.txt   | 네이버 영화 말뭉치를 코모란으로 형태소 분석한 데이터셋       |
 | ratings_mecab.txt     | 네이버 영화 말뭉치를 은전한닢으로 형태소 분석한 데이터셋     |
 | ratings_okt.txt       | 네이버 영화 말뭉치를 Okt로 형태소 분석한 데이터셋            |
-| ratings_sentpiece.txt | 네이버 영화 말뭉치를 [구글 sentencepiece 패키지](https://github.com/google/sentencepiece)로 형태소 분석한 데이터셋 |
 | ratings_soynlp.txt    | [soynlp 패키지](https://github.com/lovit/soynlp)로 형태소 분석한 데이터셋 |
 | wiki_ko_mecab.txt     | 한국어 위키백과를 은전한닢으로 형태소 분석한 데이터셋        |
 
@@ -103,7 +102,7 @@ bash preprocess.sh dump-word-embeddings
 
 ## 문장 임베딩
 
-[이곳](https://drive.google.com/open?id=1y_58tgW4S9ujOrwUs9oUtLMM6MfGhctr)을 클릭하시면 학습이 완료된 문장 수준 임베딩을 내려받을 수 있습니다. 그 목록은 다음과 같습니다.
+[이곳](https://drive.google.com/open?id=1jL3Q5H1vwATewHrx0PJgJ8YoUCtEkaGW)을 클릭하시면 학습이 완료된 문장 수준 임베딩을 내려받을 수 있습니다. 그 목록은 다음과 같습니다.
 
 | 파일명  | 내용                                                         |
 | ------- | ------------------------------------------------------------ |

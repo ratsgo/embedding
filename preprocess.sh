@@ -44,7 +44,7 @@ case $COMMAND in
         echo "download sentence embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1y_58tgW4S9ujOrwUs9oUtLMM6MfGhctr /notebooks/embedding/data/sentence-embeddings.zip
+        gdrive_download 1jL3Q5H1vwATewHrx0PJgJ8YoUCtEkaGW /notebooks/embedding/data/sentence-embeddings.zip
         unzip sentence-embeddings.zip
         rm sentence-embeddings.zip
         ;;
@@ -52,7 +52,7 @@ case $COMMAND in
         echo "download tokenized data..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1QEdjvT0Jpqmz9F57ATmjy3i016kdcURq /notebooks/embedding/data/tokenized.zip
+        gdrive_download 1Ybp_DmzNEpsBrUKZ1-NoPDzCMO39f-fx /notebooks/embedding/data/tokenized.zip
         unzip tokenized.zip
         rm tokenized.zip
         ;;
@@ -60,7 +60,7 @@ case $COMMAND in
         echo "download processed data..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1oO5v6YqNlKTq0vWfjME3SiLXAYCMAmkc /notebooks/embedding/data/processed.zip
+        gdrive_download 1kUecR7xO7bsHFmUI6AExtY5u2XXlObOG /notebooks/embedding/data/processed.zip
         unzip processed.zip
         rm processed.zip
         ;;
