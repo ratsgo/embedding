@@ -34,10 +34,8 @@ RUN rm -rf /notebooks/*
 RUN git clone https://github.com/kakao/khaiii.git \
  && mkdir /notebooks/khaiii/build \
  && cd /notebooks/khaiii/build \
- && cmake .. && make all && make resource && make package_python \
+ && cmake .. && make all && make resource && make install && make package_python \
  && cd /notebooks/khaiii/build/package_python \
- && rm setup.py \
- && wget https://gist.githubusercontent.com/ratsgo/ae99a267abc47506a767622aa682c65a/raw/f755ba622914cf2333eb4d60a3f7c8fef482a1d2/setup.py \
  && pip install  . \
  && PATH=$PATH:/notebooks/khaiii/build/lib
 
