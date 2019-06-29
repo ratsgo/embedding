@@ -31,7 +31,6 @@ case $COMMAND in
         gdrive_download 1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/processed_blog.txt
         echo "make directories..."
         mkdir /notebooks/embedding/data/tokenized
-        mkdir /notebooks/embedding/data/trained-models
         ;;
     dump-word-embeddings)
         echo "download word embeddings..."
@@ -56,14 +55,6 @@ case $COMMAND in
         gdrive_download 1QEdjvT0Jpqmz9F57ATmjy3i016kdcURq /notebooks/embedding/data/tokenized.zip
         unzip tokenized.zip
         rm tokenized.zip
-        ;;
-    dump-trained-models)
-        echo "download trained models..."
-        mkdir -p /notebooks/embedding/data
-        cd /notebooks/embedding/data
-        gdrive_download 1RBZ13ixJKQL3OozjgXWH4rDuOHGS1r8R /notebooks/embedding/data/trained-models.zip
-        unzip trained-models.zip
-        rm trained-models.zip
         ;;
     dump-processed)
         echo "download processed data..."
@@ -127,20 +118,20 @@ case $COMMAND in
         echo "train & apply space correct..."
         python preprocess/unsupervised_nlputils.py --preprocess_mode train_space \
             --input_path /notebooks/embedding/data/processed/processed_ratings.txt \
-            --model_path /notebooks/embedding/data/trained-models/space-correct.model
+            --model_path /notebooks/embedding/data/processed/space-correct.model
         python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct \
             --input_path /notebooks/embedding/data/processed/processed_ratings.txt \
-            --model_path /notebooks/embedding/data/trained-models/space-correct.model \
+            --model_path /notebooks/embedding/data/processed/space-correct.model \
             --output_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --with_label False
         python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct \
             --input_path /notebooks/embedding/data/processed/processed_ratings_train.txt \
-            --model_path /notebooks/embedding/data/trained-models/space-correct.model \
+            --model_path /notebooks/embedding/data/processed/space-correct.model \
             --output_path /notebooks/embedding/data/processed/corrected_ratings_train.txt \
             --with_label True
         python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct \
             --input_path /notebooks/embedding/data/processed/processed_ratings_test.txt \
-            --model_path /notebooks/embedding/data/trained-models/space-correct.model \
+            --model_path /notebooks/embedding/data/processed/space-correct.model \
             --output_path /notebooks/embedding/data/processed/corrected_ratings_test.txt \
             --with_label True
         ;;
@@ -148,10 +139,10 @@ case $COMMAND in
         echo "soynlp, LTokenizing..."
         python preprocess/unsupervised_nlputils.py --preprocess_mode compute_soy_word_score \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-            --model_path /notebooks/embedding/data/trained-models/soyword.model
+            --model_path /notebooks/embedding/data/processed/soyword.model
         python preprocess/unsupervised_nlputils.py --preprocess_mode soy_tokenize \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-            --model_path /notebooks/embedding/data/trained-models/soyword.model \
+            --model_path /notebooks/embedding/data/processed/soyword.model \
             --output_path /notebooks/embedding/data/tokenized/ratings_soynlp.txt
         ;;
     komoran-tokenize)
@@ -182,12 +173,12 @@ case $COMMAND in
         echo "processing BERT vocabulary..."
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
             --input_path /notebooks/embedding/data/processed/processed_wiki_ko.txt \
-            --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab
-        mv sentpiece* /notebooks/embedding/data/trained-models
+            --vocab_path /notebooks/embedding/data/processed/bert.vocab
+        mv sentpiece* /notebooks/embedding/data/processed
         ;;
     bert-vocab-tokenize)
         python preprocess/unsupervised_nlputils.py --preprocess_mode sentencepiece_tokenize \
-            --vocab_path /notebooks/embedding/data/trained-models/processed_sentpiece.vocab \
+            --vocab_path /notebooks/embedding/data/processed/bert.vocab \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;
