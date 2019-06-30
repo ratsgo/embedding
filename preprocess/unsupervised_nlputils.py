@@ -79,7 +79,7 @@ def make_bert_vocab(input_fname, output_fname):
             f2.writelines(word + "\n")
 
 
-def sentencepiece_tokenize(vocab_fname, corpus_fname, output_fname):
+def bert_tokenize(vocab_fname, corpus_fname, output_fname):
     tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
@@ -146,7 +146,7 @@ if __name__ == '__main__':
         soy_tokenize(args.input_path, args.model_path, args.output_path)
     elif args.preprocess_mode == "make_bert_vocab":
         make_bert_vocab(args.input_path, args.vocab_path)
-    elif args.preprocess_mode == "sentencepiece_tokenize":
-        sentencepiece_tokenize(args.vocab_path, args.input_path, args.output_path)
+    elif args.preprocess_mode == "bert_tokenize":
+        bert_tokenize(args.vocab_path, args.input_path, args.output_path)
     elif args.preprocess_mode == "jamo":
         process_jamo(args.input_path, args.output_path)

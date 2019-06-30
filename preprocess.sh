@@ -176,8 +176,8 @@ case $COMMAND in
             --vocab_path /notebooks/embedding/data/processed/bert.vocab
         mv sentpiece* /notebooks/embedding/data/processed
         ;;
-    bert-vocab-tokenize)
-        python preprocess/unsupervised_nlputils.py --preprocess_mode sentencepiece_tokenize \
+    bert-tokenize)
+        python preprocess/unsupervised_nlputils.py --preprocess_mode bert_tokenize \
             --vocab_path /notebooks/embedding/data/processed/bert.vocab \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
