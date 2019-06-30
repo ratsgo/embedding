@@ -96,3 +96,14 @@ python preprocess/unsupervised_nlputils.py --preprocess_mode apply_space_correct
 	--output_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
 	--with_label False
 ```
+
+
+
+### 형태소 분석 완료된 데이터 다운로드
+
+형태소 분석에 시간을 투자하고 싶지 않은 분들은 아래를 실행하면 형태소 분석이 모두 완료된 데이터들을 한꺼번에 다운로드할 수 있습니다. 이밖에 다른 데이터를 내려받고 싶다면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요.
+
+```bash
+bash preprocess.sh dump-tokenized
+```
+
