@@ -3,16 +3,14 @@
 아래 모든 명령은 도커 컨테이너 상에서 동작합니다.  
 
 
-## 데이터 다운로드
+
+## 개발환경 및 데이터 준비
+
 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.  
-데이터 전처리는 [이 글](./preprocess.html)을 참조하세요.  
-형태소 분석은 [이 글](./tokenize.html)을 참조하세요.  
+데이터 전처리 방법을 보시려면 [이 글](./preprocess.html)을 참조하세요.  
+형태소 분석하는 방법은 [이 글](./tokenize.html)을 참조하세요.  
+데이터 다운로드는 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참조하세요.
 
-다음 한 줄이면 위 글의 내용을 실행하지 않아도 이미 처리된 파일들을 한꺼번에 내려받을 수 있습니다. 
-
-```bash
-gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/tokenized.zip
-```
 
 
 ## 단어 임베딩 모델 학습
@@ -20,6 +18,7 @@ gdrive_download 1vXiJr0qy_qA-bX4TxmDVqx1VB7_jRcIQ /notebooks/embedding/data/toke
 `/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다.  
 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다.  
 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
+
 
 
 ### Latent Semantic Analysis
@@ -33,6 +32,8 @@ python models/word_utils.py --method latent_semantic_analysis \
 	--output_path /notebooks/embedding/data/word-embeddings/lsa/lsa
 ```
 
+
+
 ### Word2Vec
 
 ```bash
@@ -41,6 +42,8 @@ python models/word_utils.py --method train_word2vec \
 	--input_path /notebooks/embedding/data/tokenized/corpus_mecab.txt \
 	--output_path /notebooks/embedding/data/word-embeddings/word2vec/word2vec
 ```
+
+
 
 ### GloVe
 
@@ -52,12 +55,16 @@ mkdir -p /notebooks/embedding/data/word-embeddings/glove
 /notebooks/embedding/models/glove/build/glove -save-file /notebooks/embedding/data/word-embeddings/glove/glove.vecs -threads 4 -input-file /notebooks/embedding/data/word-embeddings/glove/glove.shuf -x-max 10 -iter 15 -vector-size 100 -binary 2 -vocab-file /notebooks/embedding/data/word-embeddings/glove/glove.vocab -verbose 2
 ```
 
+
+
 ### FastText
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 /notebooks/embedding/models/fastText/fasttext skipgram -input /notebooks/embedding/data/tokenized/corpus_mecab.txt -output /notebooks/embedding/data/word-embeddings/fasttext/fasttext
 ```
+
+
 
 ### Swivel
 
@@ -67,7 +74,9 @@ mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 mkdir -p /notebooks/embedding/data/word-embeddings/swivel
 /notebooks/embedding/models/swivel/fastprep --input /notebooks/embedding/data/tokenized/corpus_mecab.txt --output_dir /notebooks/embedding/data/word-embeddings/swivel/swivel.data
 python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks/embedding/data/word-embeddings/swivel/swivel.data --output_base_path /notebooks/embedding/data/word-embeddings/swivel --dim 100
-  ```
+```
+
+
 
 ## 단어 임베딩 다운로드
 
@@ -78,9 +87,10 @@ gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word
 ```
 
 
+
 ## 단어 임베딩 모델 평가
 
-아래는 단어 임베딩 모델 평가 코드입니다. 파이썬 콘솔에서 실행합니다.
+아래는 단어 임베딩 모델 평가 코드입니다. 단, 해당 단어 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래 코드는 파이썬 콘솔에서 실행합니다.
 
 ```python
 from models.word_eval import WordEmbeddingEval
@@ -94,11 +104,13 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 ```
 
 
+
 ## 문장 임베딩 모델 학습
 
 `/notebooks/embedding` 위치에서 다음을 실행하면 각 문장 임베딩 모델을 학습할 수 있습니다. 
 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 
 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
+
 
 
 ### Latent Semantic Analysis
@@ -112,6 +124,8 @@ python models/sent_utils.py --method latent_semantic_analysis \
 	--output_path /notebooks/embedding/data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs
 ```
 
+
+
 ### Doc2Vec
 
 ```bash
@@ -121,6 +135,8 @@ python models/sent_utils.py --method doc2vec \
 	--output_path /notebooks/embedding/data/sentence-embeddings/doc2vec/doc2vec.model
 ```
 
+
+
 ### Latent Dirichlet Allocation
 
 ```bash
@@ -129,6 +145,8 @@ python models/sent_utils.py --method latent_dirichlet_allocation \
 	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
 	--output_path /notebooks/embedding/data/sentence-embeddings/lda/lda
 ```
+
+
 
 ### ELMo
 
@@ -172,6 +190,8 @@ nohup sh -c "python models/tune_utils.py --model_name elmo \
 	--config_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json \
 	--model_save_path /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
 ```
+
+
 
 ### BERT
 
@@ -237,18 +257,11 @@ nohup sh -c "python models/tune_utils.py --model_name bert \
 	--model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
 ```
 
-## 문장 임베딩 다운로드
-
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
-
-```bash
-gdrive_download 1u80kFwKlkN8ds0JvQtn6an2dl9QY1rE1 /notebooks/embedding/data/sentence-embeddings.zip
-```
 
 
 ## 문장 임베딩 모델 평가
 
-아래는 문장 임베딩 모델 평가 예시 코드입니다.
+아래는 문장 임베딩 모델 평가 코드입니다. 단, 해당 문장 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래는 문장 임베딩 모델 평가 예시 코드입니다.
 
 ```python
 from models.sent_eval import BERTEmbeddingEvaluator
