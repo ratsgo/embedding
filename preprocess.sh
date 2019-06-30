@@ -172,7 +172,7 @@ case $COMMAND in
     make-bert-vocab)
         echo "processing BERT vocabulary..."
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
-            --input_path /notebooks/embedding/data/processed/processed_wiki_ko.txt \
+            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --vocab_path /notebooks/embedding/data/processed/bert.vocab
         mv sentpiece* /notebooks/embedding/data/processed
         ;;

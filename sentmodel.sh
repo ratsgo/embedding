@@ -121,13 +121,7 @@ case $COMMAND in
         # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
         # 띄어쓰기 교정은 이미 되어 있다고 가정
         echo "construct vocab..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
-        cd  /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
-        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=32000
-        cd  /notebooks/embedding
-        python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
-            --input_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab/sentpiece.vocab \
-            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
+        bash preprocess.sh make-bert-vocab
         echo "preprocess corpus..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata
         python models/bert/create_pretraining_data.py \
