@@ -78,16 +78,6 @@ python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks
 
 
 
-## 단어 임베딩 다운로드
-
-다음 한 줄이면 위 명령을 수행하지 않고도 이미 학습된 모델들을 한꺼번에 내려받을 수 있습니다. 
-
-```bash
-gdrive_download 1yHGtccC2FV3_d6C6_Q4cozYSOgA7bG-e /notebooks/embedding/data/word-embeddings.zip
-```
-
-
-
 ## 단어 임베딩 모델 평가
 
 아래는 단어 임베딩 모델 평가 코드입니다. 단, 해당 단어 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래 코드는 파이썬 콘솔에서 실행합니다.
@@ -198,14 +188,9 @@ nohup sh -c "python models/tune_utils.py --model_name elmo \
 vocabulary를 만듭니다
 
 ```bash
-mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
-cd  /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab
-spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt --model_prefix=sentpiece --vocab_size=32000
-cd  /notebooks/embedding
-export LC_CTYPE=C.UTF-8
-python preprocess/unsupervised_nlputils.py --preprocess_mode process_sp_vocab \
-	--input_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab/sentpiece.vocab \
-	--vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
+python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
+	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+	--vocab_path /notebooks/embedding/data/processed/bert.vocab
 ```
 
 pretrain 학습데이터를 만듭니다. 학습데이터는 tf.record 형태로 저장됩니다.
@@ -216,7 +201,7 @@ mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traind
 python models/bert/create_pretraining_data.py \
 	--input_file=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
 	--output_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord \
-	--vocab_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
+	--vocab_file=/notebooks/embedding/data/processed/bert.vocab \
 	--do_lower_case=False \
 	--max_seq_length=128 \
 	--max_predictions_per_seq=20 \
@@ -244,7 +229,7 @@ nohup sh -c "python models/bert/run_pretraining.py \
 	--learning_rate=2e-5" > bert-pretrain.log &
 ```
 
-프리트레인된 모델을 바탕으로 내 데이터에 맞게 튜닝합니다.
+프리트레인된 모델을 바탕으로 내 데이터에 맞게 튜닝합니다. 단 아래 코드는 구글에서 공개한 BERT 모델(`multi_cased_L-12_H-768_A-12`)를 튜닝합니다. 커스텀 프리트레인 모델을 튜닝하고 싶다면 `vocab_fname`,  `pretrain_model_fname`, `config_fname`을 자신이 만든 모델 경로에 맞게 수정하면 됩니다.
 
 ```bash
 export LC_CTYPE=C.UTF-8

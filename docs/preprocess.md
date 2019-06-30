@@ -73,7 +73,7 @@ bash preprocess.sh process-nsmc
 bash preprocess.sh process-wiki
 ```
 
-#### KorQuad 데이터 전처리
+#### KorQuAD 데이터 전처리
 
 json 내 context를 문서 하나로 취급합니다. question, anwers은 두 쌍을 공백으로 묶어서 문서 하나로 취급합니다.
 
