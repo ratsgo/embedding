@@ -506,7 +506,7 @@ class XLNetTuner(Tuner):
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  pretrain_model_fname, config_fname, model_save_path,
                  sp_model_path, max_seq_length=128, warmup_steps=0, decay_method="poly",
-                 train_steps=1000, min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
+                 min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
                  weight_decay=0.00, batch_size=32, learning_rate=1e-5, clip=1.0, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
@@ -774,10 +774,19 @@ if __name__ == '__main__':
                           pretrain_model_fname=args.pretrain_model_fname,
                           bertconfig_fname=args.config_fname,
                           model_save_path=args.model_save_path)
+    elif args.model_name == "xlnet":
+        model = XLNetTuner(train_corpus_fname=args.train_corpus_fname,
+                           test_corpus_fname=args.test_corpus_fname,
+                           pretrain_model_fname=args.pretrain_model_fname,
+                           config_fname=args.config_fname,
+                           model_save_path=args.model_save_path,
+                           sp_model_path=args.vocab_fname)
     elif args.model_name == "word":
         model = WordEmbeddingTuner(train_corpus_fname=args.train_corpus_fname,
-                          test_corpus_fname=args.test_corpus_fname,
-                          embedding_name=args.embedding_name,
-                          embedding_fname=args.embedding_fname,
-                          model_save_path=args.model_save_path)
+                                   test_corpus_fname=args.test_corpus_fname,
+                                   embedding_name=args.embedding_name,
+                                   embedding_fname=args.embedding_fname,
+                                   model_save_path=args.model_save_path)
+    else:
+        model = None
     model.tune()
