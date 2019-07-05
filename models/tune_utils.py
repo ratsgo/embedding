@@ -611,7 +611,7 @@ class XLNetTuner(Tuner):
         for tokens in sentences:
             # classifier_utils의 convert_single_example 참고
             truncated_tokens = tokens[:(self.max_seq_length - 2)]
-            input_ids = encode_ids(self.tokenizer, truncated_tokens) + [self.SEP_ID, self.CLS_ID]
+            input_ids = [self.tokenizer.PieceToId(token) for token in truncated_tokens] + [self.SEP_ID, self.CLS_ID]
             input_mask = [0] * len(tokens)
             segment_ids = [self.SEG_ID_A] * (len(tokens) + 1) + [self.SEG_ID_CLS]
             if len(input_ids) < self.max_seq_length:
