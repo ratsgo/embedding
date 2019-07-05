@@ -4,8 +4,9 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
-import os
+import os, sys
 import tensorflow as tf
+sys.path.append('models/xlnet')
 import modeling
 import xlnet
 

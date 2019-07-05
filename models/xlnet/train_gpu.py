@@ -13,7 +13,7 @@ from absl import flags
 import absl.logging as _logging  # pylint: disable=unused-import
 
 import tensorflow as tf
-
+sys.path.append('models/xlnet')
 import data_utils
 import model_utils
 from gpu_utils import assign_to_gpu, average_grads_and_vars

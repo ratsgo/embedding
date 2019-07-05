@@ -5,7 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-import os
+import os, sys
 import random
 
 from absl import flags
@@ -15,7 +15,7 @@ import numpy as np
 
 
 import tensorflow as tf
-
+sys.path.append('models/xlnet')
 from prepro_utils import preprocess_text, encode_ids
 import sentencepiece as spm
 
