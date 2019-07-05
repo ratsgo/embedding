@@ -21,7 +21,7 @@ from xlnet.model_utils import AdamWeightDecayOptimizer
 
 def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     input_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='inputs_ids')
-    input_mask = tf.placeholder(tf.int32, [max_seq_length, None], name='input_mask')
+    input_mask = tf.placeholder(tf.float32, [max_seq_length, None], name='input_mask')
     segment_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='segment_ids')
     label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
     xlnet_config = XLNetConfig(json_path=model_config_path)
