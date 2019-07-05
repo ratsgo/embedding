@@ -604,7 +604,7 @@ class XLNetTuner(Tuner):
         self.train(sess, saver, global_step, output_feed)
 
     def make_input(self, sentences, labels, is_training):
-        collated_batch = {'input_ids': [], 'input_mask': [], 'segment_ids': []}
+        features = {'input_ids': [], 'input_mask': [], 'segment_ids': []}
         for tokens in sentences:
             # classifier_utils의 convert_single_example 참고
             truncated_tokens = tokens[:(self.max_seq_length - 2)]
@@ -616,23 +616,23 @@ class XLNetTuner(Tuner):
                 input_ids = [0] * delta_len + input_ids
                 input_mask = [1] * delta_len + input_mask
                 segment_ids = [self.SEG_ID_PAD] * delta_len + segment_ids
-            collated_batch['input_ids'].append(input_ids)
-            collated_batch['input_mask'].append(input_mask)
-            collated_batch['segment_ids'].append(segment_ids)
+            features['input_ids'].append(input_ids)
+            features['input_mask'].append(input_mask)
+            features['segment_ids'].append(segment_ids)
         if is_training:
             input_feed = {
                 self.training: is_training,
-                self.input_ids: np.array(collated_batch['input_ids']),
-                self.segment_ids: np.array(collated_batch['segment_ids']),
-                self.input_mask: np.array(collated_batch['input_mask']),
+                self.input_ids: np.transpose(np.array(features['input_ids'])),
+                self.segment_ids: np.transpose(np.array(features['segment_ids'])),
+                self.input_mask: np.transpose(np.array(features['input_mask'])),
                 self.label_ids: np.array(labels)
             }
         else:
             input_feed_ = {
                 self.training: is_training,
-                self.input_ids: np.array(collated_batch['input_ids']),
-                self.segment_ids: np.array(collated_batch['segment_ids']),
-                self.input_mask: np.array(collated_batch['input_mask']),
+                self.input_ids: np.transpose(np.array(features['input_ids'])),
+                self.segment_ids: np.transpose(np.array(features['segment_ids'])),
+                self.input_mask: np.transpose(np.array(features['input_mask'])),
                 self.label_ids: np.array(labels)
             }
             input_feed = [input_feed_, labels]
