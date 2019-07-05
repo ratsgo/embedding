@@ -171,14 +171,15 @@ case $COMMAND in
         ;;
     make-bert-vocab)
         echo "processing BERT vocabulary..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-            --vocab_path /notebooks/embedding/data/processed/bert.vocab
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
         mv sentpiece* /notebooks/embedding/data/processed
         ;;
     bert-tokenize)
         python preprocess/unsupervised_nlputils.py --preprocess_mode bert_tokenize \
-            --vocab_path /notebooks/embedding/data/processed/bert.vocab \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;

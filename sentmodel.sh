@@ -110,12 +110,14 @@ case $COMMAND in
                       --config_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
         ;;
-    dump-pretrained-bert)
-        echo "dump pretrained BERT weights..."
-        wget https://storage.googleapis.com/bert_models/2018_11_23/multi_cased_L-12_H-768_A-12.zip -O /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12.zip
-        cd /notebooks/embedding/data/sentence-embeddings/bert
-        unzip multi_cased_L-12_H-768_A-12.zip
-        rm multi_cased_L-12_H-768_A-12.zip
+    download-pretrained-bert)
+        echo "download pretrained BERT weights..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
+        gdrive_download 1DEpdPRJc-kjmeU_5pgMPzTOuH8qrwIzY /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
+        gdrive_download 12cCImHAM97lXb427vCl_3MXOY7bxNlYe /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.data-00000-of-00001
+        gdrive_download 10jD8gN94Vr_5XMftheJB7n0IBm-pjdwd /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.index
+        gdrive_download 1pLNR2xL17HCLD3GmWCLls7a9xhhDIdw2 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.meta
+        gdrive_download 1LkyTFPeoTvWoO5XP0bDi3Af53XPCLE59 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
         ;;
     pretrain-bert)
         # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
@@ -135,7 +137,7 @@ case $COMMAND in
             --random_seed=7 \
             --dupe_factor=5
         echo "pretrain fresh BERT..."
-        gdrive_download 1pC0wDY4H3NynB9N9cB6i1MkNn2mu-sAG /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
+        gdrive_download 1DEpdPRJc-kjmeU_5pgMPzTOuH8qrwIzY /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
         nohup sh -c "python models/bert/run_pretraining.py \
                       --input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
                       --output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
@@ -152,9 +154,9 @@ case $COMMAND in
         nohup sh -c "python models/tune_utils.py --model_name bert \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
-                      --vocab_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/vocab.txt \
-                      --pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_model.ckpt \
-                      --config_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json \
+                      --vocab_fname /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
+                      --pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt \
+                      --config_fname /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
         ;;
     download-pretrained-xlnet)
