@@ -157,4 +157,19 @@ case $COMMAND in
                       --config_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
         ;;
+    download-pretrained-xlnet)
+        echo "download pretrained xlnet..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
+        gdrive_download 15GMvzX-65lWnhHvfrLhcrc4grT8arAYO /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
+        ;;
+    tune-xlnet)
+        echo "tune XLNet..."
+        nohup sh -c "python models/tune_utils.py --model_name xlnet \
+                      --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
+                      --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
+                      --vocab_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
+                      --pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/output_file_model.ckpt \
+                      --config_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/output_file_config.json \
+                      --model_save_path /notebooks/embedding/data/sentence-embeddings/xlnet/tune-ckpt" > xlnet-tune.log &
+        ;;
 esac
