@@ -13,7 +13,10 @@ from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bert.modeling import BertModel, BertConfig
 from bert.optimization import create_optimizer
 from bert.tokenization import FullTokenizer, convert_to_unicode
-from xlnet import xlnet, modeling, prepro_utils, model_utils
+from xlnet.modeling import classification_loss
+from xlnet.xlnet import XLNetConfig, RunConfig, XLNetModel
+from xlnet.prepro_utils import preprocess_text, encode_pieces, encode_ids
+from xlnet.model_utils import AdamWeightDecayOptimizer
 
 
 def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
@@ -21,7 +24,7 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     input_mask = tf.placeholder(tf.int32, [max_seq_length, None], name='input_mask')
     segment_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='segment_ids')
     label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
-    xlnet_config = xlnet.XLNetConfig(json_path=model_config_path)
+    xlnet_config = XLNetConfig(json_path=model_config_path)
     # 모두 기본값으로 세팅
     kwargs = dict(
         is_training=tune,
@@ -33,15 +36,15 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
         init_range=0.1,
         init_std=0.1,
         clamp_len=-1)
-    run_config = xlnet.RunConfig(**kwargs)
-    xlnet_model = xlnet.XLNetModel(
+    run_config = RunConfig(**kwargs)
+    xlnet_model = XLNetModel(
         xlnet_config=xlnet_config,
         run_config=run_config,
         input_ids=input_ids,
         seg_ids=segment_ids,
         input_mask=input_mask)
     summary = xlnet_model.get_pooled_out("last", True)
-    per_example_loss, logits = modeling.classification_loss(
+    per_example_loss, logits = classification_loss(
         hidden=summary,
         labels=label_ids,
         n_class=num_labels,
@@ -283,8 +286,8 @@ class Tuner(object):
                     if self.model_name == "bert":
                         tokens = self.tokenizer.tokenize(convert_to_unicode(sentence))
                     elif self.model_name == "xlnet":
-                        normalized_sentence = prepro_utils.preprocess_text(sentence, lower=False)
-                        tokens = prepro_utils.encode_pieces(self.tokenizer, normalized_sentence, return_unicode=False, sample=False)
+                        normalized_sentence = preprocess_text(sentence, lower=False)
+                        tokens = encode_pieces(self.tokenizer, normalized_sentence, return_unicode=False, sample=False)
                     else:
                         tokens = self.tokenizer.morphs(sentence)
                         tokens = post_processing(tokens)
@@ -568,7 +571,7 @@ class XLNetTuner(Tuner):
                 learning_rate=learning_rate,
                 epsilon=self.adam_epsilon)
         else:
-            optimizer = model_utils.AdamWeightDecayOptimizer(
+            optimizer = AdamWeightDecayOptimizer(
                 learning_rate=learning_rate,
                 epsilon=self.adam_epsilon,
                 exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"],
@@ -593,7 +596,7 @@ class XLNetTuner(Tuner):
         train_op = optimizer.apply_gradients(zip(clipped, variables), global_step=global_step)
         output_feed = [train_op, global_step, self.logits, self.loss]
         # Manually increment `global_step` for AdamWeightDecayOptimizer
-        if isinstance(optimizer, model_utils.AdamWeightDecayOptimizer):
+        if isinstance(optimizer, AdamWeightDecayOptimizer):
             new_global_step = global_step + 1
             train_op = tf.group(train_op, [global_step.assign(new_global_step)])
         restore_vars = [v for v in tf.trainable_variables()]
@@ -608,7 +611,7 @@ class XLNetTuner(Tuner):
         for tokens in sentences:
             # classifier_utils의 convert_single_example 참고
             truncated_tokens = tokens[:(self.max_seq_length - 2)]
-            input_ids = prepro_utils.encode_ids(self.tokenizer, truncated_tokens) + [self.SEP_ID, self.CLS_ID]
+            input_ids = encode_ids(self.tokenizer, truncated_tokens) + [self.SEP_ID, self.CLS_ID]
             input_mask = [0] * len(tokens)
             segment_ids = [self.SEG_ID_A] * (len(tokens) + 1) + [self.SEG_ID_CLS]
             if len(input_ids) < self.max_seq_length:
