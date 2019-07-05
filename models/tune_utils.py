@@ -1,9 +1,10 @@
-import sys, os, random, argparse
+import sys, os, random, argparse, re
 import numpy as np
 import tensorflow as tf
 from gensim.models import Word2Vec
 from collections import defaultdict
 from scipy.stats import truncnorm
+import sentencepiece as spm
 
 sys.path.append('models')
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -12,6 +13,49 @@ from bilm import Batcher, BidirectionalLanguageModel, weight_layers
 from bert.modeling import BertModel, BertConfig
 from bert.optimization import create_optimizer
 from bert.tokenization import FullTokenizer, convert_to_unicode
+from xlnet import xlnet, modeling, prepro_utils, model_utils
+
+
+def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
+    input_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='inputs_ids')
+    input_mask = tf.placeholder(tf.int32, [max_seq_length, None], name='input_mask')
+    segment_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='segment_ids')
+    label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
+    xlnet_config = xlnet.XLNetConfig(json_path=model_config_path)
+    # 모두 기본값으로 세팅
+    kwargs = dict(
+        is_training=tune,
+        use_tpu=False,
+        use_bfloat16=False,
+        dropout=0.1,
+        dropatt=0.1,
+        init="normal",
+        init_range=0.1,
+        init_std=0.1,
+        clamp_len=-1)
+    run_config = xlnet.RunConfig(**kwargs)
+    xlnet_model = xlnet.XLNetModel(
+        xlnet_config=xlnet_config,
+        run_config=run_config,
+        input_ids=input_ids,
+        seg_ids=segment_ids,
+        input_mask=input_mask)
+    summary = xlnet_model.get_pooled_out("last", True)
+    per_example_loss, logits = modeling.classification_loss(
+        hidden=summary,
+        labels=label_ids,
+        n_class=num_labels,
+        initializer=xlnet_model.get_initializer(),
+        scope="classification_layer",
+        return_logits=True)
+    if tune:
+        # loss layer
+        total_loss = tf.reduce_mean(per_example_loss)
+        return input_ids, input_mask, segment_ids, label_ids, logits, total_loss
+    else:
+        # prob Layer
+        probs = tf.nn.softmax(logits, axis=-1, name='probs')
+        return input_ids, input_mask, segment_ids, probs
 
 
 def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_token, num_labels, tune=False):
@@ -195,7 +239,8 @@ class Tuner(object):
     def __init__(self, train_corpus_fname=None, tokenized_train_corpus_fname=None,
                  test_corpus_fname=None, tokenized_test_corpus_fname=None,
                  model_name="bert", model_save_path=None, vocab_fname=None, eval_every=1000,
-                 batch_size=32, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None):
+                 batch_size=32, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None,
+                 sp_model_path=None):
         # configurations
         self.model_name = model_name
         self.eval_every = eval_every
@@ -210,6 +255,10 @@ class Tuner(object):
         # define tokenizer
         if self.model_name == "bert":
             self.tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
+        elif self.model_name == "xlnet":
+            sp = spm.SentencePieceProcessor()
+            sp.Load(sp_model_path)
+            self.tokenizer = sp
         else:
             self.tokenizer = get_tokenizer("mecab")
         # load or tokenize corpus
@@ -233,6 +282,9 @@ class Tuner(object):
                     sentence, label = line.strip().split("\u241E")
                     if self.model_name == "bert":
                         tokens = self.tokenizer.tokenize(convert_to_unicode(sentence))
+                    elif self.model_name == "xlnet":
+                        normalized_sentence = prepro_utils.preprocess_text(sentence, lower=False)
+                        tokens = prepro_utils.encode_pieces(self.tokenizer, normalized_sentence, return_unicode=False, sample=False)
                     else:
                         tokens = self.tokenizer.morphs(sentence)
                         tokens = post_processing(tokens)
@@ -443,6 +495,144 @@ class BERTTuner(Tuner):
                 self.input_ids: np.array(collated_batch['sequences']),
                 self.segment_ids: np.array(collated_batch['segments']),
                 self.input_mask: np.array(collated_batch['masks']),
+                self.label_ids: np.array(labels)
+            }
+            input_feed = [input_feed_, labels]
+        return input_feed
+
+
+class XLNetTuner(Tuner):
+
+    def __init__(self, train_corpus_fname, test_corpus_fname,
+                 pretrain_model_fname, config_fname, model_save_path,
+                 sp_model_path, max_seq_length=128, warmup_steps=0, decay_method="poly",
+                 train_steps=1000, min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
+                 weight_decay=0.00, batch_size=32, learning_rate=1e-5, clip=1.0, num_labels=2):
+        # Load a corpus.
+        super().__init__(train_corpus_fname=train_corpus_fname,
+                         tokenized_train_corpus_fname=train_corpus_fname + ".tokenized",
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
+                         tokenized_test_corpus_fname=test_corpus_fname + ".tokenized",
+                         model_name="xlnet", vocab_fname=None, model_save_path=model_save_path, sp_model_path=sp_model_path)
+        # configurations
+        self.pretrain_model_fname = pretrain_model_fname
+        self.max_seq_length = max_seq_length
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.warmup_steps = warmup_steps
+        self.decay_method = decay_method
+        self.min_lr_ratio = min_lr_ratio
+        self.weight_decay = weight_decay
+        self.adam_epsilon = adam_epsilon
+        self.lr_layer_decay_rate = lr_layer_decay_rate
+        self.clip = clip
+        self.num_labels = 2 # positive, negative
+        self.SEG_ID_A = 0
+        self.SEG_ID_CLS = 2
+        self.SEG_ID_PAD = 4
+        self.CLS_ID = 3
+        self.SEP_ID = 4
+        self.train_steps = int(self.train_data_size * self.num_epochs / self.batch_size)
+        self.eval_every = int(self.train_data_size / self.batch_size)  # epoch마다 평가
+        self.training = tf.placeholder(tf.bool)
+        # build train graph
+        self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_xlnet_graph(config_fname, max_seq_length, num_labels, tune=True)
+
+    def tune(self):
+        global_step = tf.train.get_or_create_global_step()
+        # increase the learning rate linearly
+        if self.warmup_steps > 0:
+            warmup_lr = (tf.cast(global_step, tf.float32)
+                         / tf.cast(self.warmup_steps, tf.float32)
+                         * self.learning_rate)
+        else:
+            warmup_lr = 0.0
+            # decay the learning rate
+        if self.decay_method == "poly":
+            decay_lr = tf.train.polynomial_decay(
+                self.learning_rate,
+                global_step=global_step - self.warmup_steps,
+                decay_steps=self.train_steps - self.warmup_steps,
+                end_learning_rate=self.learning_rate * self.min_lr_ratio)
+        elif self.decay_method == "cos":
+            decay_lr = tf.train.cosine_decay(
+                self.learning_rate,
+                global_step=global_step - self.warmup_steps,
+                decay_steps=self.train_steps - self.warmup_steps,
+                alpha=self.min_lr_ratio)
+        else:
+            raise ValueError(self.decay_method)
+        learning_rate = tf.where(global_step < self.warmup_steps, warmup_lr, decay_lr)
+        if self.weight_decay == 0:
+            optimizer = tf.train.AdamOptimizer(
+                learning_rate=learning_rate,
+                epsilon=self.adam_epsilon)
+        else:
+            optimizer = model_utils.AdamWeightDecayOptimizer(
+                learning_rate=learning_rate,
+                epsilon=self.adam_epsilon,
+                exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"],
+                weight_decay_rate=self.weight_decay)
+        grads_and_vars = optimizer.compute_gradients(self.loss)
+        gradients, variables = zip(*grads_and_vars)
+        clipped, gnorm = tf.clip_by_global_norm(gradients, self.clip)
+        if self.lr_layer_decay_rate != 1.0:
+            n_layer = 0
+            for i in range(len(clipped)):
+                m = re.search(r"model/transformer/layer_(\d+?)/", variables[i].name)
+                if not m: continue
+                n_layer = max(n_layer, int(m.group(1)) + 1)
+            for i in range(len(clipped)):
+                for l in range(n_layer):
+                    if "model/transformer/layer_{}/".format(l) in variables[i].name:
+                        abs_rate = self.lr_layer_decay_rate ** (n_layer - 1 - l)
+                        clipped[i] *= abs_rate
+                        tf.logging.info("Apply mult {:.4f} to layer-{} grad of {}".format(
+                            abs_rate, l, variables[i].name))
+                        break
+        train_op = optimizer.apply_gradients(zip(clipped, variables), global_step=global_step)
+        output_feed = [train_op, global_step, self.logits, self.loss]
+        # Manually increment `global_step` for AdamWeightDecayOptimizer
+        if isinstance(optimizer, model_utils.AdamWeightDecayOptimizer):
+            new_global_step = global_step + 1
+            train_op = tf.group(train_op, [global_step.assign(new_global_step)])
+        restore_vars = [v for v in tf.trainable_variables()]
+        sess = tf.Session()
+        tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
+        saver = tf.train.Saver(max_to_keep=1)
+        sess.run(tf.global_variables_initializer())
+        self.train(sess, saver, global_step, output_feed)
+
+    def make_input(self, sentences, labels, is_training):
+        collated_batch = {'input_ids': [], 'input_mask': [], 'segment_ids': []}
+        for tokens in sentences:
+            # classifier_utils의 convert_single_example 참고
+            truncated_tokens = tokens[:(self.max_seq_length - 2)]
+            input_ids = prepro_utils.encode_ids(self.tokenizer, truncated_tokens) + [self.SEP_ID, self.CLS_ID]
+            input_mask = [0] * len(tokens)
+            segment_ids = [self.SEG_ID_A] * (len(tokens) + 1) + [self.SEG_ID_CLS]
+            if len(input_ids) < self.max_seq_length:
+                delta_len = self.max_seq_length - len(input_ids)
+                input_ids = [0] * delta_len + input_ids
+                input_mask = [1] * delta_len + input_mask
+                segment_ids = [self.SEG_ID_PAD] * delta_len + segment_ids
+            collated_batch['input_ids'].append(input_ids)
+            collated_batch['input_mask'].append(input_mask)
+            collated_batch['segment_ids'].append(segment_ids)
+        if is_training:
+            input_feed = {
+                self.training: is_training,
+                self.input_ids: np.array(collated_batch['input_ids']),
+                self.segment_ids: np.array(collated_batch['segment_ids']),
+                self.input_mask: np.array(collated_batch['input_mask']),
+                self.label_ids: np.array(labels)
+            }
+        else:
+            input_feed_ = {
+                self.training: is_training,
+                self.input_ids: np.array(collated_batch['input_ids']),
+                self.segment_ids: np.array(collated_batch['segment_ids']),
+                self.input_mask: np.array(collated_batch['input_mask']),
                 self.label_ids: np.array(labels)
             }
             input_feed = [input_feed_, labels]
