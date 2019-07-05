@@ -599,7 +599,7 @@ class XLNetTuner(Tuner):
         if isinstance(optimizer, AdamWeightDecayOptimizer):
             new_global_step = global_step + 1
             train_op = tf.group(train_op, [global_step.assign(new_global_step)])
-        restore_vars = [v for v in tf.trainable_variables()]
+        restore_vars = [v for v in tf.trainable_variables() if not "classification_layer" in v.name]
         sess = tf.Session()
         tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
         saver = tf.train.Saver(max_to_keep=1)
