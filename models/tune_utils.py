@@ -613,7 +613,7 @@ class XLNetTuner(Tuner):
             truncated_tokens = tokens[:(self.max_seq_length - 2)]
             input_ids = [self.tokenizer.PieceToId(token) for token in truncated_tokens] + [self.SEP_ID, self.CLS_ID]
             input_mask = [0] * len(input_ids)
-            segment_ids = [self.SEG_ID_A] * (len(tokens) + 1) + [self.SEG_ID_CLS]
+            segment_ids = [self.SEG_ID_A] * (len(truncated_tokens) + 1) + [self.SEG_ID_CLS]
             if len(input_ids) < self.max_seq_length:
                 delta_len = self.max_seq_length - len(input_ids)
                 input_ids = [0] * delta_len + input_ids
