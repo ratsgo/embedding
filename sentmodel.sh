@@ -159,6 +159,48 @@ case $COMMAND in
                       --config_fname /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
         ;;
+    pretrain-xlnet)
+        echo "construct vocab..."
+        '''
+        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+	              --model_prefix=sp10m.cased.v3 \
+	              --vocab_size=32000 \
+	              --character_coverage=0.99995 \
+	              --model_type=unigram \
+	              --control_symbols=<cls>,<sep>,<pad>,<mask>,<eod> \
+	              --user_defined_symbols=<eop>,.,(,),",-,–,£,€ \
+	              --shuffle_input_sentence \
+	              --input_sentence_size=10000000
+        '''
+        python data_utils.py --bsz_per_host=32 \
+	                         --num_core_per_host=16 \
+	                         --seq_len=512 \
+	                         --reuse_len=256 \
+	                         --input_glob=*.txt \
+	                         --save_dir=${SAVE_DIR} \
+	                         --num_passes=20 \
+	                         --bi_data=True \
+	                         --sp_path=spiece.model \
+	                         --mask_alpha=6 \
+	                         --mask_beta=1 \
+	                         --num_predict=85
+	    python train_gpu.py --record_info_dir=$DATA/tfrecords \
+                            --train_batch_size=2048 \
+                            --seq_len=512 \
+                            --reuse_len=256 \
+                            --mem_len=384 \
+                            --perm_size=256 \
+                            --n_layer=24 \
+                            --d_model=1024 \
+                            --d_embed=1024 \
+                            --n_head=16 \
+                            --d_head=64 \
+                            --d_inner=4096 \
+                            --untie_r=True \
+                            --mask_alpha=6 \
+                            --mask_beta=1 \
+                            --num_predict=85
+        ;;
     download-pretrained-xlnet)
         echo "download pretrained xlnet..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
