@@ -47,9 +47,9 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     # summary_type="first", 마지막 레이어 히든 벡터 시퀀스의 첫번째 벡터
     # summary_type="mean", 마지막 레이어 히든 벡터 시퀀스의 평균 벡터
     # summary_type="attn", 마지막 레이어 히든 벡터 시퀀스에 멀티 헤드 어텐션 적용
-    # use_proj=True, 이미 만든 summary 벡터에 선형변환 + tanh 적용
+    # use_proj=True, 이미 만든 summary 벡터에 선형변환 + tanh 적용 (BERT와 동일)
     # use_proj=False, 이미 만든 summary 벡터를 그대로 리턴
-    summary = xlnet_model.get_pooled_out(summary_type="last", use_summ_proj=False)
+    summary = xlnet_model.get_pooled_out(summary_type="last", use_summ_proj=True)
     # summary 벡터에 활성함수(act_fn) 없이 선형변환 후 cross entropy loss 구함
     per_example_loss, logits = classification_loss(
         hidden=summary,
