@@ -286,15 +286,12 @@ class Tuner(object):
                         data_set.append([tokens.split(" "), int(label)])
         else:
             tf.logging.info("tokenize corpus : " + corpus_fname + " > " + tokenized_corpus_fname)
-            if self.model_name == "bert":
-                pretokenizer = get_tokenizer("mecab")
             with open(corpus_fname, 'r') as f2:
                 next(f2)  # skip head line
                 for line in f2:
                     sentence, label = line.strip().split("\u241E")
                     if self.model_name == "bert":
-                        normalized_sentence = ' '.join(pretokenizer.morphs(sentence))
-                        tokens = self.tokenizer.tokenize(normalized_sentence)
+                        tokens = self.tokenizer.tokenize(sentence)
                     elif self.model_name == "xlnet":
                         normalized_sentence = preprocess_text(sentence, lower=False)
                         tokens = encode_pieces(self.tokenizer, normalized_sentence, return_unicode=False, sample=False)
