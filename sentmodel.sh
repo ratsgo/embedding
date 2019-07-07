@@ -100,6 +100,15 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt \
             --output_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model
         ;;
+    download-pretrained-elmo)
+        echo "download pretrained ELMo weights..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt
+        gdrive_download 1mCRJ45ty-HvSS-glIUSvsj3HeC1-nQqn /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.zip
+        cd /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt
+        unzip elmo.zip
+        rm elmo.zip
+        cd /notebooks/embedding
+        ;;
     tune-elmo)
         echo "tune ELMo..."
         nohup sh -c "python models/tune_utils.py --model_name elmo \
