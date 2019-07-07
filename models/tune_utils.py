@@ -371,9 +371,9 @@ class ELMoTuner(Tuner):
                  batch_size=32, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
-                         tokenized_train_corpus_fname=train_corpus_fname + ".tokenized",
+                         tokenized_train_corpus_fname=train_corpus_fname + ".elmo-tokenized",
                          test_corpus_fname=test_corpus_fname,
-                         tokenized_test_corpus_fname=test_corpus_fname + ".tokenized",
+                         tokenized_test_corpus_fname=test_corpus_fname + ".elmo-tokenized",
                          model_name="elmo", vocab_fname=vocab_fname,
                          model_save_path=model_save_path, batch_size=batch_size)
         # configurations
@@ -435,9 +435,9 @@ class BERTTuner(Tuner):
                  batch_size=32, learning_rate=2e-5, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
-                         tokenized_train_corpus_fname=train_corpus_fname + ".tokenized",
+                         tokenized_train_corpus_fname=train_corpus_fname + ".bert-tokenized",
                          test_corpus_fname=test_corpus_fname, batch_size=batch_size,
-                         tokenized_test_corpus_fname=test_corpus_fname + ".tokenized",
+                         tokenized_test_corpus_fname=test_corpus_fname + ".bert-tokenized",
                          model_name="bert", vocab_fname=vocab_fname, model_save_path=model_save_path)
         # configurations
         config = BertConfig.from_json_file(bertconfig_fname)
@@ -511,12 +511,6 @@ class XLNetTuner(Tuner):
                  sp_model_path, max_seq_length=64, warmup_steps=5000, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
                  weight_decay=0.00, batch_size=16, learning_rate=2e-5, clip=1.0, num_labels=2):
-        # Load a corpus.
-        super().__init__(train_corpus_fname=train_corpus_fname,
-                         tokenized_train_corpus_fname=train_corpus_fname + ".tokenized",
-                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
-                         tokenized_test_corpus_fname=test_corpus_fname + ".tokenized",
-                         model_name="xlnet", vocab_fname=None, model_save_path=model_save_path, sp_model_path=sp_model_path)
         # configurations
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
@@ -529,15 +523,21 @@ class XLNetTuner(Tuner):
         self.adam_epsilon = adam_epsilon
         self.lr_layer_decay_rate = lr_layer_decay_rate
         self.clip = clip
-        self.num_labels = 2 # positive, negative
+        self.num_labels = 2  # positive, negative
         self.SEG_ID_A = 0
         self.SEG_ID_CLS = 2
         self.SEG_ID_PAD = 4
         self.CLS_ID = 3
         self.SEP_ID = 4
+        self.training = tf.placeholder(tf.bool)
+        # Load a corpus.
+        super().__init__(train_corpus_fname=train_corpus_fname,
+                         tokenized_train_corpus_fname=train_corpus_fname + ".xlnet-tokenized",
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
+                         tokenized_test_corpus_fname=test_corpus_fname + ".xlnet-tokenized",
+                         model_name="xlnet", vocab_fname=None, model_save_path=model_save_path, sp_model_path=sp_model_path)
         self.train_steps = int(self.train_data_size * self.num_epochs / self.batch_size)
         self.eval_every = int(self.train_data_size / self.batch_size)  # epoch마다 평가
-        self.training = tf.placeholder(tf.bool)
         # build train graph
         self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_xlnet_graph(config_fname, max_seq_length, num_labels, tune=True)
 
@@ -649,9 +649,9 @@ class WordEmbeddingTuner(Tuner):
                  embedding_size=100, batch_size=128, learning_rate=0.0001, num_labels=2):
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
-                         tokenized_train_corpus_fname=train_corpus_fname + ".tokenized",
+                         tokenized_train_corpus_fname=train_corpus_fname + ".word-embedding-tokenized",
                          test_corpus_fname=test_corpus_fname, batch_size=batch_size,
-                         tokenized_test_corpus_fname=test_corpus_fname + ".tokenized",
+                         tokenized_test_corpus_fname=test_corpus_fname + ".word-embedding-tokenized",
                          model_name=embedding_name, model_save_path=model_save_path)
         self.lr = learning_rate
         self.embedding_size = embedding_size
