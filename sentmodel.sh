@@ -103,7 +103,7 @@ case $COMMAND in
     download-pretrained-elmo)
         echo "download pretrained ELMo weights..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt
-        gdrive_download 1mCRJ45ty-HvSS-glIUSvsj3HeC1-nQqn /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.zip
+        gdrive_download 1qAvKvo6TpUPPpRrxhgcFZz6x3Z073FsX /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.zip
         cd /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt
         unzip elmo.zip
         rm elmo.zip
