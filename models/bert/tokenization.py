@@ -347,8 +347,13 @@ class WordpieceTokenizer(object):
             break
           end -= 1
         if cur_substr is None:
-          is_bad = True
-          break
+          # 오타 음절(아래에서 '및')이고 해당 음절이 vocab에 존재하지 않으면
+          # 해당 토큰 전체를 UNK 토큰으로 치환하게 돼 성능 급격히 저하
+          # 예 : chars = "너무재밓었다그래서보는것을추천한다"인 경우 전체를 UNK 처리
+          # is_bad = True
+          # break
+          start += 1
+          continue
         sub_tokens.append(cur_substr)
         start = end
 
