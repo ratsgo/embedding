@@ -190,7 +190,7 @@ case $COMMAND in
             --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3
         echo "preprocess corpus..."
         cd models/xlnet
-        python data_utils.py --bsz_per_host=16 \
+        python data_utils.py --bsz_per_host=32 \
 	                         --num_core_per_host=1 \
 	                         --seq_len=512 \
 	                         --reuse_len=256 \
@@ -204,12 +204,12 @@ case $COMMAND in
 	                         --num_predict=85
 	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecords \
                             --model_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
-                            --train_batch_size=16 \
+                            --train_batch_size=32 \
                             --seq_len=512 \
                             --reuse_len=256 \
                             --mem_len=384 \
                             --perm_size=256 \
-                            --n_layer=24 \
+                            --n_layer=3 \
                             --d_model=1024 \
                             --d_embed=1024 \
                             --n_head=16 \
