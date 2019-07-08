@@ -192,6 +192,7 @@ case $COMMAND in
         ;;
     process-documents)
         echo "processing documents for BERT or XLNet..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/pretrain-data
         python preprocess/dump.py --preprocess_mode process-documents \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/processed/pretrain.txt
