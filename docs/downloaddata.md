@@ -100,19 +100,28 @@ bash preprocess.sh dump-word-embeddings
 
 
 
-## 문장 임베딩
+## BERT
 
-[이곳](https://drive.google.com/open?id=1jL3Q5H1vwATewHrx0PJgJ8YoUCtEkaGW)을 클릭하시면 학습이 완료된 문장 수준 임베딩을 내려받을 수 있습니다. 그 목록은 다음과 같습니다.
-
-| 파일명 | 내용                                                         |
-| ------ | ------------------------------------------------------------ |
-| bert   | (1) 구글이 공개한 다국어 BERT 임베딩 (multi_cased_L-12_H-768_A-12)<br />(2) (1)을 네이버 영화 말뭉치로 파인튜닝한 BERT 모델 |
-| elmo   | (1) 한국어 위키백과, KorQuAD, 네이버 영화 말뭉치를 은전한닢으로 형태소 분석한 뒤 학습<br />(2) (1)을 네이버 영화 말뭉치로 파인튜닝한 ELMo 모델 |
-
-혹은 우분투 쉘(도커 컨테이너, [개발환경 설정 참고](https://ratsgo.github.io/embedding/environment.html))의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings` 디렉토리에 모든 파일을 한꺼번에 내려받습니다.
+자연어 처리 연구자 오연택 님께서 공개한 [한국어 BERT 임베딩](https://github.com/yeontaek/BERT-Korean-Model)을 내려받습니다. 도커 컨테이너 우분투 쉘의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings/bert/pretrained-ckpt` 디렉토리에 프리트레인을 마친 BERT 임베딩을 자동으로 내려받습니다.
 
 ```bash
 git pull origin master
-bash preprocess.sh dump-sentence-embeddings
+bash preprocess.sh download-pretrained-bert
 ```
 
+BERT 임베딩 구축 방법 및 하이퍼파라메터 설정 등 자세한 내용은 [이곳](https://github.com/yeontaek/BERT-Korean-Model)을, 도커 컨테이너 설정은 [이곳](https://ratsgo.github.io/embedding/environment.html)을 참고하시면 됩니다.
+
+
+
+
+
+## XLNet
+
+자연어 처리 연구자 오연택 님께서 공개한 [한국어 XLNet 임베딩](https://github.com/yeontaek/XLNET-Korean-Model)을 내려받습니다. 도커 컨테이너 우분투 쉘의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings/xlnet/pretrained-ckpt` 디렉토리에 프리트레인을 마친 XLNet 임베딩을 자동으로 내려받습니다.
+
+```bash
+git pull origin master
+bash preprocess.sh download-pretrained-xlnet
+```
+
+XLNet 임베딩 구축 방법 및 하이퍼파라메터 설정 등 자세한 내용은 [이곳](https://github.com/yeontaek/XLNET-Korean-Model)을, 도커 컨테이너 설정은 [이곳](https://ratsgo.github.io/embedding/environment.html)을 참고하시면 됩니다.

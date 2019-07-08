@@ -23,7 +23,7 @@
 
 ### Latent Semantic Analysis
 
-Word-Context 혹은 PPMI Matrix에 Singular Value Decomposition을 시행합니다.
+Word-Context 혹은 PPMI Matrix에 Singular Value Decomposition을 시행합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/lsa
@@ -36,6 +36,8 @@ python models/word_utils.py --method latent_semantic_analysis \
 
 ### Word2Vec
 
+Word2Vec 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input_path`를 바꿔주면 됩니다.
+
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/word2vec
 python models/word_utils.py --method train_word2vec \
@@ -46,6 +48,8 @@ python models/word_utils.py --method train_word2vec \
 
 
 ### GloVe
+
+GloVe 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 아래 스크립트에서 `/notebooks/embedding/data/tokenized/corpus_mecab.txt`를 해당 데이터 경로로 바꿔주면 됩니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/glove
@@ -59,6 +63,8 @@ mkdir -p /notebooks/embedding/data/word-embeddings/glove
 
 ### FastText
 
+FastText 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input`을 바꿔주면 됩니다.
+
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 /notebooks/embedding/models/fastText/fasttext skipgram -input /notebooks/embedding/data/tokenized/corpus_mecab.txt -output /notebooks/embedding/data/word-embeddings/fasttext/fasttext
@@ -68,7 +74,7 @@ mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 
 ### Swivel
 
-아래 `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
+Swivel 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input`만 바꿔주면 됩니다. 아래 `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/word-embeddings/swivel
@@ -80,7 +86,7 @@ python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks
 
 ## 단어 임베딩 모델 평가
 
-아래는 단어 임베딩 모델 평가 코드입니다. 단, 해당 단어 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래 코드는 파이썬 콘솔에서 실행합니다.
+아래는 단어 임베딩 모델 평가 코드입니다. 단, 해당 단어 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 단어 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래 코드는 파이썬 콘솔에서 실행합니다.
 
 ```python
 from models.word_eval import WordEmbeddingEval
@@ -105,7 +111,7 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 
 ### Latent Semantic Analysis
 
-TF-IDF Matrix에 Singular Value Decomposition을 시행합니다.
+TF-IDF Matrix에 Singular Value Decomposition을 시행합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/lsa-tfidf
@@ -118,6 +124,8 @@ python models/sent_utils.py --method latent_semantic_analysis \
 
 ### Doc2Vec
 
+Doc2Vec 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
+
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/doc2vec
 python models/sent_utils.py --method doc2vec \
@@ -128,6 +136,8 @@ python models/sent_utils.py --method doc2vec \
 
 
 ### Latent Dirichlet Allocation
+
+LDA 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
 ```bash
 mkdir -p /notebooks/embedding/data/sentence-embeddings/lda
@@ -140,124 +150,100 @@ python models/sent_utils.py --method latent_dirichlet_allocation \
 
 ### ELMo
 
-다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다.
+다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-elmo` 항목에서 `sent_utils.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석을 모두 마친 데이터여야 합니다.
 
 ```bash
-# preprocess
-mkdir -p /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata
-cat /notebooks/embedding/data/tokenized/wiki_ko_mecab.txt /notebooks/embedding/data/tokenized/ratings_mecab.txt /notebooks/embedding/data/tokenized/korsquad_mecab.txt > /notebooks/embedding/data/tokenized/corpus_mecab.txt
-split -l 100000 /notebooks/embedding/data/tokenized/corpus_mecab.txt /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata/data_
-# make vocab
-export LC_CTYPE=C.UTF-8
-python models/sent_utils.py --method construct_elmo_vocab \
-	--input_path /notebooks/embedding/data/tokenized/corpus_mecab.txt \
-	--output_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt
-# pretrain
-nohup sh -c "python models/train_elmo.py \
-	--train_prefix='/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/traindata/*' \
-	--vocab_file /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt \
-	--save_dir /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt \
-	--n_gpus 1" > elmo-pretrain.log &
+git pull origin master
+bash sentmodel.sh pretrain-elmo
 ```
 
 프리트레인(pretrain)이 끝나면 파인튜닝(fine-tuning) 용도로 파라메터를 별도로 저장합니다.
 
 ```bash
-python models/sent_utils.py --method dump_elmo_weights \
-	--input_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt \
-	--output_path /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model
+bash sentmodel.sh dump-pretrained-elmo
 ```
 
-아래를 실행해 내 데이터에 맞게 파인튜닝합니다.
+컴퓨팅 환경이 여의치 않거나 ELMo 프리트레인에 리소스를 투자하고 싶지 않다면 아래 명령을 수행하면 프리트레인이 완료된 ELMo 모델을 내려받을 수 있습니다. 이 모델은 한국어 위키백과, 네이버 영화 리뷰 말뭉치, KorQuAD로 학습됐습니다.
 
 ```bash
-export LC_CTYPE=C.UTF-8
-nohup sh -c "python models/tune_utils.py --model_name elmo \
-	--train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
-	--test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
-	--vocab_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt \
-	--pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model \
-	--config_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json \
-	--model_save_path /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
+bash sentmodel.sh download-pretrained-elmo
+```
+
+아래를 실행해 내 데이터에 맞게 파인튜닝합니다. 파인튜닝을 수행하려면 프리트레인이 완료된 ELMo 모델이 `/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt` 경로에 있어야 합니다. 
+
+자신이 가지고 있는 데이터로 파인튜닝을 수행하고 싶다면 `sentmodel.sh`의 `tune-elmo` 항목에서 `train_corpus_fname`과 `test_corpus_fname`을 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
+
+```bash
+bash sentmodel.sh tune-elmo
 ```
 
 
 
 ### BERT
 
-vocabulary를 만듭니다
+다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-bert` 항목에서 `dump.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
 
 ```bash
-python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
-	--input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--vocab_path /notebooks/embedding/data/processed/bert.vocab
+bash sentmodel.sh pretrain-bert
 ```
 
-pretrain 학습데이터를 만듭니다. 학습데이터는 tf.record 형태로 저장됩니다.
+컴퓨팅 환경이 여의치 않거나 BERT 프리트레인에 리소스를 투자하고 싶지 않다면 아래 명령을 수행하면 프리트레인이 완료된 BERT 모델을 내려받을 수 있습니다. 이 모델은 자연어 처리 연구자 오연택 님께서 공개한 모델입니다. 자세한 구축 방법은 [이곳](https://github.com/yeontaek/BERT-Korean-Model)을 참고하세요.
 
 ```bash
-export LC_CTYPE=C.UTF-8
-mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata
-python models/bert/create_pretraining_data.py \
-	--input_file=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	--output_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord \
-	--vocab_file=/notebooks/embedding/data/processed/bert.vocab \
-	--do_lower_case=False \
-	--max_seq_length=128 \
-	--max_predictions_per_seq=20 \
-	--masked_lm_prob=0.15 \
-	--random_seed=7 \
-	--dupe_factor=5
+bash sentmodel.sh download-pretrained-bert
 ```
 
-프리트레인(pretrain)을 수행합니다.
+아래를 실행해 내 데이터에 맞게 파인튜닝합니다. 파인튜닝을 수행하려면 프리트레인이 완료된 BERT 모델이 `/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt` 경로에 있어야 합니다. 
+
+자신이 가지고 있는 데이터로 파인튜닝을 수행하고 싶다면 `sentmodel.sh`의 `tune-bert` 항목에서 `train_corpus_fname`과 `test_corpus_fname`을 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
 
 ```bash
-# download bert configurations
-gdrive_download 1MAfK-GLVUdlje-Twp6hFEOXYk3LjeIak /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
-# pretrain
-export LC_CTYPE=C.UTF-8
-nohup sh -c "python models/bert/run_pretraining.py \
-	--input_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord* \
-	--output_dir=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt \
-	--do_train=True \
-	--do_eval=True \
-	--bert_config_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json \
-	--train_batch_size=32 \
-	--max_seq_length=128 \
-	--max_predictions_per_seq=20 \
-	--learning_rate=2e-5" > bert-pretrain.log &
+bash sentmodel.sh tune-bert
 ```
 
-프리트레인된 모델을 바탕으로 내 데이터에 맞게 튜닝합니다. 단 아래 코드는 구글에서 공개한 BERT 모델(`multi_cased_L-12_H-768_A-12`)를 튜닝합니다. 커스텀 프리트레인 모델을 튜닝하고 싶다면 `vocab_fname`,  `pretrain_model_fname`, `config_fname`을 자신이 만든 모델 경로에 맞게 수정하면 됩니다.
+
+
+
+
+### XLNet
+
+다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-xlnet` 항목에서 `dump.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
 
 ```bash
-export LC_CTYPE=C.UTF-8
-nohup sh -c "python models/tune_utils.py --model_name bert \
-	--train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
-	--test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
-	--vocab_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/vocab.txt \
-	--pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_model.ckpt \
-	--config_fname /notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json \
-	--model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
+bash sentmodel.sh pretrain-xlnet
 ```
+
+컴퓨팅 환경이 여의치 않거나 XLNet 프리트레인에 리소스를 투자하고 싶지 않다면 아래 명령을 수행하면 프리트레인이 완료된 XLNet 모델을 내려받을 수 있습니다. 이 모델은 자연어 처리 연구자 오연택 님께서 공개한 모델입니다. 자세한 구축 방법은 [이곳](https://github.com/yeontaek/XLNET-Korean-Model)을 참고하세요.
+
+```bash
+bash sentmodel.sh download-pretrained-xlnet
+```
+
+아래를 실행해 내 데이터에 맞게 파인튜닝합니다. 파인튜닝을 수행하려면 프리트레인이 완료된 XLNet 모델이 `/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt` 경로에 있어야 합니다. 
+
+자신이 가지고 있는 데이터로 파인튜닝을 수행하고 싶다면 `sentmodel.sh`의 `tune-xlnet` 항목에서 `train_corpus_fname`과 `test_corpus_fname`을 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
+
+```bash
+bash sentmodel.sh tune-xlnet
+```
+
+
 
 
 
 ## 문장 임베딩 모델 평가
 
-아래는 문장 임베딩 모델 평가 코드입니다. 단, 해당 문장 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래는 문장 임베딩 모델 평가 예시 코드입니다.
+아래는 파인튜닝을 마친 문장 임베딩 모델을 평가하는 코드 예시입니다. 파이썬 콘솔에서 실행하면 됩니다. 단, 모든 파일이 해당 디렉토리에 존재해야 합니다. 
 
 ```python
-from models.sent_eval import BERTEmbeddingEvaluator
-model = BERTEmbeddingEvaluator()
-model.get_sentence_vector("나는 학교에 간다")
-model.get_token_vector_sequence("나는 학교에 간다")
-model.visualize_homonym("배", ["배 고프다", "배 나온다", "배가 불렀다",
-                                "배는 수분이 많은 과일이다", 
-                                "배를 바다에 띄웠다", "배 멀미가 난다"])
-model.visualize_self_attention_scores("배 고파 밥줘")
-model.predict("이 영화 정말 재미 있다")
-model.visualize_between_sentences(sampled_sentences)
-model.visualize_sentences(sampled_sentences)
+from models.sent_eval import ELMoEmbeddingEvaluator
+model = ELMoEmbeddingEvaluator(tune_model_fname="/notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt",
+					                     pretrain_model_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model",
+						                   options_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json",
+						                   vocab_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt",
+					                     max_characters_per_token=30, dimension=256, num_labels=2)
+model.predict("이 영화 엄청 재미있네요") # label 예측
+model.get_token_vector_sequence("이 영화 엄청 재미있네요") # ELMo의 토큰별 임베딩 추출
+model.get_sentence_vector("이 영화 엄청 재미있네요") # ELMo의 문장 임베딩 추출
+
 ```
