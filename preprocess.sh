@@ -169,34 +169,11 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_khaiii.txt
         ;;
-    make-bert-vocab)
-        echo "processing BERT vocabulary..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
-        python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
-            --input_path /notebooks/embedding/data/processed/pretrain.txt \
-            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
-        mv sentpiece* /notebooks/embedding/data/processed
-        ;;
     bert-tokenize)
         python preprocess/unsupervised_nlputils.py --preprocess_mode bert_tokenize \
             --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
-        ;;
-    make-xlnet-vocab)
-        echo "processing XLNet vocabulary..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
-        python preprocess/unsupervised_nlputils.py --preprocess_mode make_xlnet_vocab \
-            --input_path /notebooks/embedding/data/processed/pretrain.txt \
-            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3
-        ;;
-    process-documents)
-        echo "processing documents for BERT or XLNet..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/pretrain-data
-        python preprocess/dump.py --preprocess_mode process-documents \
-            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-            --output_path /notebooks/embedding/data/processed/pretrain.txt
-        split -l 300000 /notebooks/embedding/data/processed/pretrain.txt /notebooks/embedding/data/sentence-embeddings/pretrain-data/data_
         ;;
     mecab-user-dic)
         echo "insert mecab user dictionary..."

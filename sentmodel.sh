@@ -119,21 +119,19 @@ case $COMMAND in
                       --config_fname /notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/elmo/tune-ckpt" > elmo-tune.log &
         ;;
-    download-pretrained-bert)
-        echo "download pretrained BERT weights..."
-        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
-        gdrive_download 1DEpdPRJc-kjmeU_5pgMPzTOuH8qrwIzY /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
-        gdrive_download 12cCImHAM97lXb427vCl_3MXOY7bxNlYe /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.data-00000-of-00001
-        gdrive_download 10jD8gN94Vr_5XMftheJB7n0IBm-pjdwd /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.index
-        gdrive_download 1pLNR2xL17HCLD3GmWCLls7a9xhhDIdw2 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.meta
-        gdrive_download 1LkyTFPeoTvWoO5XP0bDi3Af53XPCLE59 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
-        ;;
     pretrain-bert)
-        # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
-        # 띄어쓰기 교정은 이미 되어 있다고 가정
-        echo "construct vocab..."
-        bash preprocess.sh process-documents
-        bash preprocess.sh make-bert-vocab
+        echo "precess documents..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/pretrain-data
+        python preprocess/dump.py --preprocess_mode process-documents \
+            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --output_path /notebooks/embedding/data/processed/pretrain.txt
+        split -l 300000 /notebooks/embedding/data/processed/pretrain.txt /notebooks/embedding/data/sentence-embeddings/pretrain-data/data_
+        echo "processing BERT vocabulary..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
+        python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
+            --input_path /notebooks/embedding/data/processed/pretrain.txt \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
+        mv sentpiece* /notebooks/embedding/data/processed
         echo "preprocess corpus..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata
         python models/bert/create_pretraining_data.py \
@@ -159,6 +157,15 @@ case $COMMAND in
                       --max_predictions_per_seq=20 \
                       --learning_rate=2e-5" > bert-pretrain.log &
         ;;
+    download-pretrained-bert)
+        echo "download pretrained BERT weights..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
+        gdrive_download 1DEpdPRJc-kjmeU_5pgMPzTOuH8qrwIzY /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_config.json
+        gdrive_download 12cCImHAM97lXb427vCl_3MXOY7bxNlYe /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.data-00000-of-00001
+        gdrive_download 10jD8gN94Vr_5XMftheJB7n0IBm-pjdwd /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.index
+        gdrive_download 1pLNR2xL17HCLD3GmWCLls7a9xhhDIdw2 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/bert_model.ckpt.meta
+        gdrive_download 1LkyTFPeoTvWoO5XP0bDi3Af53XPCLE59 /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
+        ;;
     tune-bert)
         echo "tune BERT..."
         nohup sh -c "python models/tune_utils.py --model_name bert \
@@ -170,23 +177,32 @@ case $COMMAND in
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt" > bert-tune.log &
         ;;
     pretrain-xlnet)
-        echo "construct vocab..."
-        bash preprocess.sh process-documents
-        bash preprocess.sh make-xlnet-vocab
+        echo "precess documents..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/pretrain-data
+        python preprocess/dump.py --preprocess_mode process-documents \
+            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --output_path /notebooks/embedding/data/processed/pretrain.txt
+        split -l 300000 /notebooks/embedding/data/processed/pretrain.txt /notebooks/embedding/data/sentence-embeddings/pretrain-data/data_
+        echo "construct XLNet vocabulary..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
+        python preprocess/unsupervised_nlputils.py --preprocess_mode make_xlnet_vocab \
+            --input_path /notebooks/embedding/data/processed/pretrain.txt \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3
         echo "preprocess corpus..."
+        cd models/xlnet
         python data_utils.py --bsz_per_host=32 \
 	                         --num_core_per_host=16 \
 	                         --seq_len=512 \
 	                         --reuse_len=256 \
 	                         --input_glob=/notebooks/embedding/data/sentence-embeddings/pretrain-data/* \
-	                         --save_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/traindata \
+	                         --save_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
 	                         --num_passes=20 \
 	                         --bi_data=True \
 	                         --sp_path=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
 	                         --mask_alpha=6 \
 	                         --mask_beta=1 \
 	                         --num_predict=85
-	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/traindata \
+	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecord \
                             --train_batch_size=2048 \
                             --seq_len=512 \
                             --reuse_len=256 \
