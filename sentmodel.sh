@@ -202,7 +202,7 @@ case $COMMAND in
 	                         --mask_alpha=6 \
 	                         --mask_beta=1 \
 	                         --num_predict=85
-	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecord \
+	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecords \
                             --model_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
                             --train_batch_size=32 \
                             --seq_len=512 \
@@ -215,6 +215,7 @@ case $COMMAND in
                             --n_head=16 \
                             --d_head=64 \
                             --d_inner=4096 \
+                            --uncased=True \
                             --untie_r=True \
                             --mask_alpha=6 \
                             --mask_beta=1 \
