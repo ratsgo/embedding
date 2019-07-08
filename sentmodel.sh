@@ -192,34 +192,34 @@ case $COMMAND in
         cd models/xlnet
         python data_utils.py --bsz_per_host=16 \
 	                         --num_core_per_host=1 \
-	                         --seq_len=512 \
-	                         --reuse_len=256 \
+	                         --seq_len=256 \
+	                         --reuse_len=128 \
 	                         --input_glob=/notebooks/embedding/data/sentence-embeddings/pretrain-data/* \
 	                         --save_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
-	                         --num_passes=20 \
+	                         --num_passes=10 \
 	                         --bi_data=True \
 	                         --sp_path=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
 	                         --mask_alpha=6 \
 	                         --mask_beta=1 \
-	                         --num_predict=85
+	                         --num_predict=45
 	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecords \
                             --model_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
                             --train_batch_size=16 \
-                            --seq_len=512 \
-                            --reuse_len=256 \
-                            --mem_len=384 \
-                            --perm_size=256 \
+                            --seq_len=256 \
+                            --reuse_len=128 \
+                            --mem_len=192 \
+                            --perm_size=128 \
                             --n_layer=3 \
-                            --d_model=1024 \
-                            --d_embed=1024 \
-                            --n_head=16 \
-                            --d_head=64 \
-                            --d_inner=4096 \
+                            --d_model=512 \
+                            --d_embed=512 \
+                            --n_head=8 \
+                            --d_head=32 \
+                            --d_inner=2048 \
                             --uncased=True \
                             --untie_r=True \
                             --mask_alpha=6 \
                             --mask_beta=1 \
-                            --num_predict=85
+                            --num_predict=45
         ;;
     download-pretrained-xlnet)
         echo "download pretrained xlnet..."
