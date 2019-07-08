@@ -245,5 +245,4 @@ model = ELMoEmbeddingEvaluator(tune_model_fname="/notebooks/embedding/data/sente
 model.predict("이 영화 엄청 재미있네요") # label 예측
 model.get_token_vector_sequence("이 영화 엄청 재미있네요") # ELMo의 토큰별 임베딩 추출
 model.get_sentence_vector("이 영화 엄청 재미있네요") # ELMo의 문장 임베딩 추출
-
 ```
