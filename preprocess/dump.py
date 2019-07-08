@@ -87,6 +87,15 @@ def process_korQuAD(corpus_fname, output_fname):
                 f2.writelines(line + "\n")
 
 
+def process_documents(corpus_fname, output_fname):
+    with open(corpus_fname) as f1, open(output_fname, 'w', encoding='utf-8') as f2:
+        for line in f1:
+            sentences = re.split("(?<=[.!?])\s+", line.strip())
+            for sentence in sentences:
+                f2.writelines(sentence + "\n")
+            f2.writelines("\n")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--preprocess_mode', type=str, help='preprocess mode')
@@ -101,3 +110,5 @@ if __name__ == '__main__':
         process_nsmc(args.input_path, args.output_path, "json" in args.preprocess_mode, args.with_label.lower() == "true")
     elif args.preprocess_mode == "korquad":
         process_korQuAD(args.input_path, args.output_path)
+    elif args.preprocess_mode == "process-documents":
+        process_documents(args.input_path, args.output_path)

@@ -132,11 +132,12 @@ case $COMMAND in
         # sentence piece는 띄어쓰기가 잘 되어 있는 말뭉치일 수록 좋은 성능
         # 띄어쓰기 교정은 이미 되어 있다고 가정
         echo "construct vocab..."
+        bash preprocess.sh process-documents
         bash preprocess.sh make-bert-vocab
         echo "preprocess corpus..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata
         python models/bert/create_pretraining_data.py \
-            --input_file=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --input_file=/notebooks/embedding/data/sentence-embeddings/pretrain-data/* \
             --output_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/traindata/tfrecord \
             --vocab_file=/notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
             --do_lower_case=False \
@@ -170,30 +171,22 @@ case $COMMAND in
         ;;
     pretrain-xlnet)
         echo "construct vocab..."
-        '''
-        spm_train --input=/notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-	              --model_prefix=sp10m.cased.v3 \
-	              --vocab_size=32000 \
-	              --character_coverage=0.99995 \
-	              --model_type=unigram \
-	              --control_symbols=<cls>,<sep>,<pad>,<mask>,<eod> \
-	              --user_defined_symbols=<eop>,.,(,),",-,–,£,€ \
-	              --shuffle_input_sentence \
-	              --input_sentence_size=10000000
-        '''
+        bash preprocess.sh process-documents
+        bash preprocess.sh make-xlnet-vocab
+        echo "preprocess corpus..."
         python data_utils.py --bsz_per_host=32 \
 	                         --num_core_per_host=16 \
 	                         --seq_len=512 \
 	                         --reuse_len=256 \
-	                         --input_glob=*.txt \
-	                         --save_dir=${SAVE_DIR} \
+	                         --input_glob=/notebooks/embedding/data/sentence-embeddings/pretrain-data/* \
+	                         --save_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/traindata \
 	                         --num_passes=20 \
 	                         --bi_data=True \
-	                         --sp_path=spiece.model \
+	                         --sp_path=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
 	                         --mask_alpha=6 \
 	                         --mask_beta=1 \
 	                         --num_predict=85
-	    python train_gpu.py --record_info_dir=$DATA/tfrecords \
+	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/traindata \
                             --train_batch_size=2048 \
                             --seq_len=512 \
                             --reuse_len=256 \

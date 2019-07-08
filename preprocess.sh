@@ -173,7 +173,7 @@ case $COMMAND in
         echo "processing BERT vocabulary..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
-            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --input_path /notebooks/embedding/data/processed/pretrain.txt \
             --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt
         mv sentpiece* /notebooks/embedding/data/processed
         ;;
@@ -187,8 +187,15 @@ case $COMMAND in
         echo "processing XLNet vocabulary..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_xlnet_vocab \
+            --input_path /notebooks/embedding/data/processed/pretrain.txt \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3
+        ;;
+    process-documents)
+        echo "processing documents for BERT or XLNet..."
+        python preprocess/dump.py --preprocess_mode process-documents \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
-            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3
+            --output_path /notebooks/embedding/data/processed/pretrain.txt
+        split -l 300000 /notebooks/embedding/data/processed/pretrain.txt /notebooks/embedding/data/sentence-embeddings/pretrain-data/data_
         ;;
     mecab-user-dic)
         echo "insert mecab user dictionary..."
