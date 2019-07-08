@@ -100,13 +100,28 @@ bash preprocess.sh dump-word-embeddings
 
 
 
-## BERT
+## ELMo
 
-자연어 처리 연구자 오연택 님께서 공개한 [한국어 BERT 임베딩](https://github.com/yeontaek/BERT-Korean-Model)을 내려받습니다. 도커 컨테이너 우분투 쉘의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings/bert/pretrained-ckpt` 디렉토리에 프리트레인을 마친 BERT 임베딩을 자동으로 내려받습니다.
+ELMo 임베딩을 내려받습니다. 도커 컨테이너 우분투 쉘의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings/elmo/pretrained-ckpt` 디렉토리에 프리트레인을 마친 ELMo 임베딩을 자동으로 다운로드합니다. 이 모델은 한국어 위키백과, 네이버 영화 리뷰 말뭉치, KorQuAD로 학습됐습니다.
 
 ```bash
 git pull origin master
-bash preprocess.sh download-pretrained-bert
+bash sentmodel.sh download-pretrained-elmo
+```
+
+도커 컨테이너 설정은 [이곳](https://ratsgo.github.io/embedding/environment.html)을 참고하시면 됩니다.
+
+
+
+
+
+## BERT
+
+자연어 처리 연구자 오연택 님께서 공개한 [한국어 BERT 임베딩](https://github.com/yeontaek/BERT-Korean-Model)을 내려받습니다. 도커 컨테이너 우분투 쉘의 `/notebooks/embedding` 디렉토리에서 아래 스크립트를 실행하면 `/notebooks/embedding/data/sentence-embeddings/bert/pretrained-ckpt` 디렉토리에 프리트레인을 마친 BERT 임베딩을 자동으로 다운로드합니다.
+
+```bash
+git pull origin master
+bash sentmodel.sh download-pretrained-bert
 ```
 
 BERT 임베딩 구축 방법 및 하이퍼파라메터 설정 등 자세한 내용은 [이곳](https://github.com/yeontaek/BERT-Korean-Model)을, 도커 컨테이너 설정은 [이곳](https://ratsgo.github.io/embedding/environment.html)을 참고하시면 됩니다.
