@@ -183,6 +183,13 @@ case $COMMAND in
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_sentpiece.txt
         ;;
+    make-xlnet-vocab)
+        echo "processing XLNet vocabulary..."
+        mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
+        python preprocess/unsupervised_nlputils.py --preprocess_mode make_xlnet_vocab \
+            --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3
+        ;;
     mecab-user-dic)
         echo "insert mecab user dictionary..."
         cd /tmp/mecab-ko-dic-2.1.1-20180720

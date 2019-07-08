@@ -79,6 +79,22 @@ def make_bert_vocab(input_fname, output_fname):
             f2.writelines(word + "\n")
 
 
+def make_xlnet_vocab(input_fname, output_fname):
+    SPM_COMMAND = ('--input={} '
+                   '--model_prefix={} '
+                   '--vocab_size={} '
+                   '--character_coverage={} '
+                   '--shuffle_input_sentence=true '
+                   '--model_type=unigram '
+                   '--control_symbols=<cls>,<sep>,<pad>,<mask>,<eod> '
+                   '--user_defined_symbols=<eop>,.,(,),",-,–,£,€ ').format(
+                   input_fname,
+                   output_fname,
+                   32000,
+                   0.99995)
+    spm.SentencePieceTrainer.Train(SPM_COMMAND)
+
+
 def bert_tokenize(vocab_fname, corpus_fname, output_fname):
     tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
     with open(corpus_fname, 'r', encoding='utf-8') as f1, \
@@ -148,5 +164,7 @@ if __name__ == '__main__':
         make_bert_vocab(args.input_path, args.vocab_path)
     elif args.preprocess_mode == "bert_tokenize":
         bert_tokenize(args.vocab_path, args.input_path, args.output_path)
+    elif args.preprocess_mode == "make_xlnet_vocab":
+        make_xlnet_vocab(args.input_path, args.vocab_path)
     elif args.preprocess_mode == "jamo":
         process_jamo(args.input_path, args.output_path)
