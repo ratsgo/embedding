@@ -219,7 +219,8 @@ case $COMMAND in
                             --untie_r=True \
                             --mask_alpha=6 \
                             --mask_beta=1 \
-                            --num_predict=45
+                            --num_predict=45 \
+                            --save_steps=10000
         ;;
     download-pretrained-xlnet)
         echo "download pretrained xlnet..."
