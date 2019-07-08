@@ -191,7 +191,7 @@ case $COMMAND in
         echo "preprocess corpus..."
         cd models/xlnet
         python data_utils.py --bsz_per_host=16 \
-	                         --num_core_per_host=16 \
+	                         --num_core_per_host=1 \
 	                         --seq_len=512 \
 	                         --reuse_len=256 \
 	                         --input_glob=/notebooks/embedding/data/sentence-embeddings/pretrain-data/* \
