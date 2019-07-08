@@ -203,12 +203,13 @@ case $COMMAND in
 	                         --mask_beta=1 \
 	                         --num_predict=85
 	    python train_gpu.py --record_info_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/tfrecord \
-                            --train_batch_size=2048 \
+                            --model_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
+                            --train_batch_size=32 \
                             --seq_len=512 \
                             --reuse_len=256 \
                             --mem_len=384 \
                             --perm_size=256 \
-                            --n_layer=24 \
+                            --n_layer=12 \
                             --d_model=1024 \
                             --d_embed=1024 \
                             --n_head=16 \
