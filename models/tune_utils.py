@@ -515,9 +515,9 @@ class XLNetTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  pretrain_model_fname, config_fname, model_save_path,
-                 sp_model_path, max_seq_length=64, warmup_steps=5000, decay_method="poly",
+                 sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
-                 weight_decay=0.00, batch_size=16, learning_rate=2e-5, clip=1.0, num_labels=2):
+                 weight_decay=0.00, batch_size=16, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
