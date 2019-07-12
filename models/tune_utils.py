@@ -344,7 +344,7 @@ class Tuner(object):
             data_size = self.train_data_size
         else:
             data_size = self.test_data_size
-        num_batches_per_epoch = int((data_size - 1) / self.batch_size) + 1
+        num_batches_per_epoch = int((data_size - 1) / self.batch_size)
         if is_training:
             tf.logging.info("num_batches_per_epoch : " + str(num_batches_per_epoch))
         for epoch in range(num_epochs):
@@ -355,13 +355,12 @@ class Tuner(object):
                 batch_labels = []
                 start_index = batch_num * self.batch_size
                 end_index = (batch_num + 1) * self.batch_size
-                if end_index < data_size:
-                    features = data[start_index:end_index]
-                    for feature in features:
-                        sentence, label = feature
-                        batch_sentences.append(sentence)
-                        batch_labels.append(int(label))
-                    yield self.make_input(batch_sentences, batch_labels, is_training)
+                features = data[start_index:end_index]
+                for feature in features:
+                    sentence, label = feature
+                    batch_sentences.append(sentence)
+                    batch_labels.append(int(label))
+                yield self.make_input(batch_sentences, batch_labels, is_training)
 
     def make_input(self, sentences, labels, is_training):
         raise NotImplementedError
@@ -515,7 +514,7 @@ class XLNetTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  pretrain_model_fname, config_fname, model_save_path,
-                 sp_model_path, max_seq_length=64, warmup_steps=500, decay_method="poly",
+                 sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, num_gpus=1, weight_decay=0.00,
                  batch_size=128, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
