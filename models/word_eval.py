@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import scipy.stats as st
 from gensim.models import Word2Vec
-from fastText import load_model as load_ft_model
+from fasttext import load_model as load_ft_model
 from sklearn.preprocessing import normalize
 
 from soynlp.hangle import compose, character_is_korean
