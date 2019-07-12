@@ -1,6 +1,7 @@
-import sys, os, random, argparse, re
+import sys, os, random, argparse, re, collections
 import numpy as np
 import tensorflow as tf
+from tensorflow.contrib import nccl
 from gensim.models import Word2Vec
 from collections import defaultdict
 from scipy.stats import truncnorm
@@ -19,19 +20,12 @@ from xlnet.prepro_utils import preprocess_text, encode_pieces, encode_ids
 from xlnet.model_utils import AdamWeightDecayOptimizer
 
 
-def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
-    input_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='inputs_ids')
-    input_mask = tf.placeholder(tf.float32, [max_seq_length, None], name='input_mask')
-    segment_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='segment_ids')
-    label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
-    if tune:
-        is_training = tf.placeholder(tf.bool)
-    else:
-        is_training = False
+def make_xlnet_graph(input_ids, input_mask, segment_ids, label_ids, model_config_path,
+                     num_labels, is_training_placeholder, tune=False):
     xlnet_config = XLNetConfig(json_path=model_config_path)
     # 모두 기본값으로 세팅
     kwargs = dict(
-        is_training=is_training,
+        is_training=is_training_placeholder,
         use_tpu=False,
         use_bfloat16=False,
         dropout=0.1,
@@ -65,11 +59,11 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     if tune:
         # loss layer
         total_loss = tf.reduce_mean(per_example_loss)
-        return is_training, input_ids, input_mask, segment_ids, label_ids, logits, total_loss
+        return logits, total_loss
     else:
         # prob Layer
         probs = tf.nn.softmax(logits, axis=-1, name='probs')
-        return input_ids, input_mask, segment_ids, probs
+        return probs
 
 
 def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_token, num_labels, tune=False):
@@ -360,13 +354,14 @@ class Tuner(object):
                 batch_sentences = []
                 batch_labels = []
                 start_index = batch_num * self.batch_size
-                end_index = min((batch_num + 1) * self.batch_size, data_size)
-                features = data[start_index:end_index]
-                for feature in features:
-                    sentence, label = feature
-                    batch_sentences.append(sentence)
-                    batch_labels.append(int(label))
-                yield self.make_input(batch_sentences, batch_labels, is_training)
+                end_index = (batch_num + 1) * self.batch_size
+                if end_index < data_size:
+                    features = data[start_index:end_index]
+                    for feature in features:
+                        sentence, label = feature
+                        batch_sentences.append(sentence)
+                        batch_labels.append(int(label))
+                    yield self.make_input(batch_sentences, batch_labels, is_training)
 
     def make_input(self, sentences, labels, is_training):
         raise NotImplementedError
@@ -521,102 +516,91 @@ class XLNetTuner(Tuner):
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  pretrain_model_fname, config_fname, model_save_path,
                  sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
-                 min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
-                 weight_decay=0.00, batch_size=128, learning_rate=3e-5, clip=1.0, num_labels=2):
+                 min_lr_ratio=0.0, adam_epsilon=1e-8, num_gpus=1, weight_decay=0.00,
+                 batch_size=128, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
-        self.batch_size = batch_size
+        self.batch_size = batch_size * num_gpus
         self.learning_rate = learning_rate
         self.warmup_steps = warmup_steps
         self.decay_method = decay_method
         self.min_lr_ratio = min_lr_ratio
         self.weight_decay = weight_decay
         self.adam_epsilon = adam_epsilon
-        self.lr_layer_decay_rate = lr_layer_decay_rate
         self.clip = clip
-        self.num_labels = 2  # positive, negative
+        self.num_labels = num_labels
         self.SEG_ID_A = 0
         self.SEG_ID_CLS = 2
         self.SEG_ID_PAD = 4
         self.CLS_ID = 3
         self.SEP_ID = 4
         self.training = tf.placeholder(tf.bool)
+        self.num_gpus = num_gpus
+        self.config_fname = config_fname
+        self.max_seq_length = max_seq_length
+        # define placeholders
+        self.is_training = tf.placeholder(tf.bool)
+        self.input_ids = tf.placeholder(tf.int32, [max_seq_length, batch_size * num_gpus], name='inputs_ids')
+        self.input_ids_list = tf.split(self.input_ids, num_gpus, axis=1)
+        self.input_mask = tf.placeholder(tf.float32, [max_seq_length, batch_size * num_gpus], name='input_mask')
+        self.input_mask_list = tf.split(self.input_mask, num_gpus, axis=1)
+        self.segment_ids = tf.placeholder(tf.int32, [max_seq_length, batch_size * num_gpus], name='segment_ids')
+        self.segment_ids_list = tf.split(self.segment_ids, num_gpus, axis=1)
+        self.label_ids = tf.placeholder(tf.int32, [batch_size * num_gpus], name='label_ids')
+        self.label_ids_list = tf.split(self.label_ids, num_gpus, axis=0)
         # Load a corpus.
         super().__init__(train_corpus_fname=train_corpus_fname,
                          tokenized_train_corpus_fname=train_corpus_fname + ".xlnet-tokenized",
-                         test_corpus_fname=test_corpus_fname, batch_size=batch_size,
+                         test_corpus_fname=test_corpus_fname, batch_size=batch_size * num_gpus,
                          tokenized_test_corpus_fname=test_corpus_fname + ".xlnet-tokenized",
-                         model_name="xlnet", vocab_fname=None, model_save_path=model_save_path, sp_model_path=sp_model_path)
+                         model_name="xlnet", model_save_path=model_save_path,
+                         sp_model_path=sp_model_path)
         self.train_steps = int(self.train_data_size * self.num_epochs / self.batch_size)
         self.eval_every = int(self.train_data_size / self.batch_size)  # epoch마다 평가
-        # build train graph
-        self.is_training, self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_xlnet_graph(config_fname, max_seq_length, num_labels, tune=True)
 
     def tune(self):
-        global_step = tf.train.get_or_create_global_step()
-        # increase the learning rate linearly
-        if self.warmup_steps > 0:
-            warmup_lr = (tf.cast(global_step, tf.float32)
-                         / tf.cast(self.warmup_steps, tf.float32)
-                         * self.learning_rate)
-        else:
-            warmup_lr = 0.0
-            # decay the learning rate
-        if self.decay_method == "poly":
-            decay_lr = tf.train.polynomial_decay(
-                self.learning_rate,
-                global_step=global_step - self.warmup_steps,
-                decay_steps=self.train_steps - self.warmup_steps,
-                end_learning_rate=self.learning_rate * self.min_lr_ratio)
-        elif self.decay_method == "cos":
-            decay_lr = tf.train.cosine_decay(
-                self.learning_rate,
-                global_step=global_step - self.warmup_steps,
-                decay_steps=self.train_steps - self.warmup_steps,
-                alpha=self.min_lr_ratio)
-        else:
-            raise ValueError(self.decay_method)
-        learning_rate = tf.where(global_step < self.warmup_steps, warmup_lr, decay_lr)
-        if self.weight_decay == 0:
-            optimizer = tf.train.AdamOptimizer(
-                learning_rate=learning_rate,
-                epsilon=self.adam_epsilon)
-        else:
-            optimizer = AdamWeightDecayOptimizer(
-                learning_rate=learning_rate,
-                epsilon=self.adam_epsilon,
-                exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"],
-                weight_decay_rate=self.weight_decay)
-        grads_and_vars = optimizer.compute_gradients(self.loss)
-        gradients, variables = zip(*grads_and_vars)
-        clipped, gnorm = tf.clip_by_global_norm(gradients, self.clip)
-        if self.lr_layer_decay_rate != 1.0:
-            n_layer = 0
-            for i in range(len(clipped)):
-                m = re.search(r"model/transformer/layer_(\d+?)/", variables[i].name)
-                if not m: continue
-                n_layer = max(n_layer, int(m.group(1)) + 1)
-            for i in range(len(clipped)):
-                for l in range(n_layer):
-                    if "model/transformer/layer_{}/".format(l) in variables[i].name:
-                        abs_rate = self.lr_layer_decay_rate ** (n_layer - 1 - l)
-                        clipped[i] *= abs_rate
-                        tf.logging.info("Apply mult {:.4f} to layer-{} grad of {}".format(
-                            abs_rate, l, variables[i].name))
-                        break
-        train_op = optimizer.apply_gradients(zip(clipped, variables), global_step=global_step)
-        output_feed = [train_op, global_step, self.logits, self.loss]
-        # Manually increment `global_step` for AdamWeightDecayOptimizer
-        if isinstance(optimizer, AdamWeightDecayOptimizer):
-            new_global_step = global_step + 1
-            train_op = tf.group(train_op, [global_step.assign(new_global_step)])
-        restore_vars = [v for v in tf.trainable_variables() if not "classification_layer" in v.name and not "sequnece_summary" in v.name]
-        sess = tf.Session()
-        tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
-        saver = tf.train.Saver(max_to_keep=1)
-        sess.run(tf.global_variables_initializer())
-        self.train(sess, saver, global_step, output_feed)
+        with tf.device('/cpu:0'):
+            global_step = tf.train.get_or_create_global_step()
+            all_grads, all_vars, total_loss, total_logits, optimizers = [], [], [], [], []
+            for k in range(self.num_gpus):
+                with tf.device('/gpu:%d' % k), tf.variable_scope('tower%d' % k, reuse=tf.AUTO_REUSE):
+                    optimizer = get_xlnet_optimizer(self.learning_rate, self.warmup_steps, self.decay_method,
+                                                    self.adam_epsilon, self.train_steps, self.min_lr_ratio,
+                                                    self.weight_decay, global_step)
+                    logits, loss = make_xlnet_graph(self.input_ids_list[k], self.input_mask_list[k],
+                                                    self.segment_ids_list[k], self.label_ids_list[k],
+                                                    self.config_fname, self.num_labels,
+                                                    self.is_training, tune=True)
+                    grads_and_vars = optimizer.compute_gradients(loss)
+                    gradients, variables = zip(*[el for el in grads_and_vars if el[0] is not None])
+                    clipped, _ = tf.clip_by_global_norm(gradients, self.clip)
+                    all_vars.append(variables)
+                    all_grads.append(clipped)
+                    optimizers.append(optimizer)
+                    total_loss.append(loss)
+                    total_logits.append(logits)
+            self.logits = tf.concat(total_logits, axis=0)
+            self.loss = tf.reduce_sum(total_loss)
+            average_grads = allreduce_grads(all_grads, average=True)
+            merged_grads_and_vars = merge_grad_list(average_grads, all_vars)
+            train_ops = []
+            for idx, grads_and_vars in enumerate(merged_grads_and_vars):
+                with tf.name_scope('apply_gradients'), tf.device(tf.DeviceSpec(device_type="GPU", device_index=idx)):
+                    train_ops.append(optimizers[idx].apply_gradients(grads_and_vars, global_step=global_step,
+                                                                     name='apply_grad_{}'.format(idx)))
+            train_op = tf.group(*train_ops, name='train_op')
+            output_feed = [train_op, global_step, self.logits, self.loss]
+            # Manually increment `global_step` for AdamWeightDecayOptimizer
+            if isinstance(optimizers[0], AdamWeightDecayOptimizer):
+                new_global_step = global_step + 1
+                train_op = tf.group(train_op, [global_step.assign(new_global_step)])
+            sess = tf.Session()
+            load_pretrained_xlnet_model(self.pretrain_model_fname, self.num_gpus)
+            # 0번 GPU의 param만 저장
+            saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='tower0') + [global_step], max_to_keep=1)
+            sess.run(tf.global_variables_initializer())
+            self.train(sess, saver, global_step, output_feed)
 
     def make_input(self, sentences, labels, is_training):
         features = {'input_ids': [], 'input_mask': [], 'segment_ids': []}
@@ -762,6 +746,107 @@ class WordEmbeddingTuner(Tuner):
         return embeddings, vocab
 
 
+def get_xlnet_optimizer(learning_rate, warmup_steps, decay_method, adam_epsilon,
+                        train_steps, min_lr_ratio, weight_decay, global_step):
+    # increase the learning rate linearly
+    if warmup_steps > 0:
+        warmup_lr = (tf.cast(global_step, tf.float32)
+                     / tf.cast(warmup_steps, tf.float32)
+                     * learning_rate)
+    else:
+        warmup_lr = 0.0
+        # decay the learning rate
+    if decay_method == "poly":
+        decay_lr = tf.train.polynomial_decay(
+            learning_rate,
+            global_step=global_step - warmup_steps,
+            decay_steps=train_steps - warmup_steps,
+            end_learning_rate=learning_rate * min_lr_ratio)
+    elif decay_method == "cos":
+        decay_lr = tf.train.cosine_decay(
+            learning_rate,
+            global_step=global_step - warmup_steps,
+            decay_steps=train_steps - warmup_steps,
+            alpha=min_lr_ratio)
+    else:
+        raise ValueError(decay_method)
+    learning_rate = tf.where(global_step < warmup_steps, warmup_lr, decay_lr)
+    if weight_decay == 0:
+        optimizer = tf.train.AdamOptimizer(
+            learning_rate=learning_rate,
+            epsilon=adam_epsilon)
+    else:
+        optimizer = AdamWeightDecayOptimizer(
+            learning_rate=learning_rate,
+            epsilon=adam_epsilon,
+            exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"],
+            weight_decay_rate=weight_decay)
+    # apply mixed precision
+    loss_scale_manager = tf.contrib.mixed_precision.FixedLossScaleManager(5000)
+    optimizer = tf.contrib.mixed_precision.LossScaleOptimizer(optimizer, loss_scale_manager)
+    return optimizer
+
+
+def allreduce_grads(all_grads, average):
+    """
+    All-reduce average the gradients among K devices. Results are broadcasted to all devices.
+    Args:
+        all_grads (K x N): List of list of gradients. N is the number of variables.
+        average (bool): average gradients or not.
+    Returns:
+        K x N: same as input, but each grad is replaced by the average over K devices.
+    """
+    nr_tower = len(all_grads)
+    if nr_tower == 1:
+        return all_grads
+    new_all_grads = []  # N x K
+    for grads in zip(*all_grads):
+        summed = nccl.all_sum(grads)
+        grads_for_devices = []  # K
+        for g in summed:
+            with tf.device(g.device):
+                # tensorflow/benchmarks didn't average gradients
+                if average:
+                    g = tf.multiply(g, 1.0 / nr_tower)
+            grads_for_devices.append(g)
+        new_all_grads.append(grads_for_devices)
+    # transpose to K x N
+    ret = list(zip(*new_all_grads))
+    return ret
+
+
+def merge_grad_list(all_grads, all_vars):
+    """
+    Args:
+        all_grads (K x N): gradients
+        all_vars(K x N): variables
+    Return:
+        K x N x 2: list of list of (grad, var) pairs
+    """
+    return [list(zip(gs, vs)) for gs, vs in zip(all_grads, all_vars)]
+
+
+def load_pretrained_xlnet_model(pretrained_model_fname, num_gpus):
+    tf.logging.info("Initialize from the ckpt {}".format(pretrained_model_fname))
+    name_to_variable = collections.OrderedDict()
+    for var in tf.trainable_variables():
+        name = var.name
+        m = re.match("^(.*):\\d+$", name)
+        if m is not None:
+            name = m.group(1)
+        name_to_variable[name] = var
+    init_vars = tf.train.list_variables(pretrained_model_fname)
+    assignment_map = collections.OrderedDict()
+    for x in init_vars:
+        (name, var) = (x[0], x[1])
+        if name not in name_to_variable:
+            continue
+        for k in range(num_gpus):
+            assignment_map[name] = name_to_variable['tower' + str(k) + '/' + name]
+    tf.train.init_from_checkpoint(pretrained_model_fname, assignment_map)
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str, help='model name')
@@ -773,6 +858,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_save_path', type=str, help='model save path')
     parser.add_argument('--embedding_name', type=str, help='embedding name')
     parser.add_argument('--embedding_fname', type=str, help='embedding file path')
+    parser.add_argument('--num_gpus', type=str, help='number of GPUs (XLNet only)')
     args = parser.parse_args()
 
     if args.model_name == "elmo":
@@ -795,7 +881,8 @@ if __name__ == '__main__':
                            pretrain_model_fname=args.pretrain_model_fname,
                            config_fname=args.config_fname,
                            model_save_path=args.model_save_path,
-                           sp_model_path=args.vocab_fname)
+                           sp_model_path=args.vocab_fname,
+                           num_gpus=int(args.num_gpus))
     elif args.model_name == "word":
         model = WordEmbeddingTuner(train_corpus_fname=args.train_corpus_fname,
                                    test_corpus_fname=args.test_corpus_fname,
