@@ -256,6 +256,7 @@ class Tuner(object):
                  batch_size=32, num_epochs=10, dropout_keep_prob_rate=0.9, model_ckpt_path=None,
                  sp_model_path=None):
         # configurations
+        tf.logging.set_verbosity(tf.logging.INFO)
         self.model_name = model_name
         self.eval_every = eval_every
         self.model_ckpt_path = model_ckpt_path
@@ -521,7 +522,7 @@ class XLNetTuner(Tuner):
                  pretrain_model_fname, config_fname, model_save_path,
                  sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
-                 weight_decay=0.00, batch_size=512, learning_rate=3e-5, clip=1.0, num_labels=2):
+                 weight_decay=0.00, batch_size=128, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
