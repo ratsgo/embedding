@@ -225,11 +225,11 @@ case $COMMAND in
     download-pretrained-xlnet)
         echo "download pretrained xlnet..."
         mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
-        gdrive_download 1EtajM5L1du5cHY9eFC1ePv-e2tpBRnO9 /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_config.json
-        gdrive_download 18QHQD-F_KkthUd4Z9diGJRGXimQrk6wb /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.data-00000-of-00001
-        gdrive_download 1-LPj_4rbXFafMI5zdB3z8dQ75hMSnT8h /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.index
-        gdrive_download 1PYqwUFixP5LioiIbnZkCZQVF2KiY-gnp /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.meta
-        gdrive_download 15Vsqp65y3ypSCzOACUlw2zYYC7NT7fvU /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model
+        gdrive_download 1fzK6bh1dXfBIceH7DzFxQ_1vJSNPDeuX /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_config.json
+        gdrive_download 1o72uZ9B3f887F1QKza6WCdPvc8g7DL8j /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.data-00000-of-00001
+        gdrive_download 1qP-imkmBbC4BLkBSk2_fjOuCEllNzzSX /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.index
+        gdrive_download 1bu1lOC_WtTqwLM6P70zjlk_hsS3SiwBV /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.meta
+        gdrive_download 1kIYl_KFwuqbwfvLbI-bU8mlteMM5Ond- /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model
         ;;
     tune-xlnet)
         echo "tune XLNet..."
