@@ -24,10 +24,14 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     input_mask = tf.placeholder(tf.float32, [max_seq_length, None], name='input_mask')
     segment_ids = tf.placeholder(tf.int32, [max_seq_length, None], name='segment_ids')
     label_ids = tf.placeholder(tf.int32, [None], name='label_ids')
+    if tune:
+        is_training = tf.placeholder(tf.bool)
+    else:
+        is_training = False
     xlnet_config = XLNetConfig(json_path=model_config_path)
     # 모두 기본값으로 세팅
     kwargs = dict(
-        is_training=tune,
+        is_training=is_training,
         use_tpu=False,
         use_bfloat16=False,
         dropout=0.1,
@@ -61,7 +65,7 @@ def make_xlnet_graph(model_config_path, max_seq_length, num_labels, tune=False):
     if tune:
         # loss layer
         total_loss = tf.reduce_mean(per_example_loss)
-        return input_ids, input_mask, segment_ids, label_ids, logits, total_loss
+        return is_training, input_ids, input_mask, segment_ids, label_ids, logits, total_loss
     else:
         # prob Layer
         probs = tf.nn.softmax(logits, axis=-1, name='probs')
@@ -517,7 +521,7 @@ class XLNetTuner(Tuner):
                  pretrain_model_fname, config_fname, model_save_path,
                  sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, lr_layer_decay_rate=1.0,
-                 weight_decay=0.00, batch_size=16, learning_rate=3e-5, clip=1.0, num_labels=2):
+                 weight_decay=0.00, batch_size=512, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
         self.pretrain_model_fname = pretrain_model_fname
         self.max_seq_length = max_seq_length
@@ -546,7 +550,7 @@ class XLNetTuner(Tuner):
         self.train_steps = int(self.train_data_size * self.num_epochs / self.batch_size)
         self.eval_every = int(self.train_data_size / self.batch_size)  # epoch마다 평가
         # build train graph
-        self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_xlnet_graph(config_fname, max_seq_length, num_labels, tune=True)
+        self.is_training, self.input_ids, self.input_mask, self.segment_ids, self.label_ids, self.logits, self.loss = make_xlnet_graph(config_fname, max_seq_length, num_labels, tune=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
@@ -631,7 +635,7 @@ class XLNetTuner(Tuner):
             features['segment_ids'].append(segment_ids)
         if is_training:
             input_feed = {
-                self.training: is_training,
+                self.is_training: is_training,
                 self.input_ids: np.transpose(np.array(features['input_ids'])),
                 self.segment_ids: np.transpose(np.array(features['segment_ids'])),
                 self.input_mask: np.transpose(np.array(features['input_mask'])),
@@ -639,7 +643,7 @@ class XLNetTuner(Tuner):
             }
         else:
             input_feed_ = {
-                self.training: is_training,
+                self.is_training: is_training,
                 self.input_ids: np.transpose(np.array(features['input_ids'])),
                 self.segment_ids: np.transpose(np.array(features['segment_ids'])),
                 self.input_mask: np.transpose(np.array(features['input_mask'])),
