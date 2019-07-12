@@ -872,13 +872,17 @@ if __name__ == '__main__':
                           bertconfig_fname=args.config_fname,
                           model_save_path=args.model_save_path)
     elif args.model_name == "xlnet":
+        if args.num_gpus is None:
+            num_gpus = 1
+        else:
+            num_gpus = int(args.num_gpus)
         model = XLNetTuner(train_corpus_fname=args.train_corpus_fname,
                            test_corpus_fname=args.test_corpus_fname,
                            pretrain_model_fname=args.pretrain_model_fname,
                            config_fname=args.config_fname,
                            model_save_path=args.model_save_path,
                            sp_model_path=args.vocab_fname,
-                           num_gpus=int(args.num_gpus))
+                           num_gpus=num_gpus)
     elif args.model_name == "word":
         model = WordEmbeddingTuner(train_corpus_fname=args.train_corpus_fname,
                                    test_corpus_fname=args.test_corpus_fname,
