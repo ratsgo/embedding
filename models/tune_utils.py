@@ -515,7 +515,7 @@ class XLNetTuner(Tuner):
 
     def __init__(self, train_corpus_fname, test_corpus_fname,
                  pretrain_model_fname, config_fname, model_save_path,
-                 sp_model_path, max_seq_length=64, warmup_steps=1000, decay_method="poly",
+                 sp_model_path, max_seq_length=64, warmup_steps=500, decay_method="poly",
                  min_lr_ratio=0.0, adam_epsilon=1e-8, num_gpus=1, weight_decay=0.00,
                  batch_size=128, learning_rate=3e-5, clip=1.0, num_labels=2):
         # configurations
@@ -582,7 +582,7 @@ class XLNetTuner(Tuner):
                     total_logits.append(logits)
             self.logits = tf.concat(total_logits, axis=0)
             self.loss = tf.reduce_sum(total_loss)
-            average_grads = allreduce_grads(all_grads, average=True)
+            average_grads = allreduce_grads(all_grads, average=False)
             merged_grads_and_vars = merge_grad_list(average_grads, all_vars)
             train_ops = []
             for idx, grads_and_vars in enumerate(merged_grads_and_vars):
@@ -781,9 +781,6 @@ def get_xlnet_optimizer(learning_rate, warmup_steps, decay_method, adam_epsilon,
             epsilon=adam_epsilon,
             exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"],
             weight_decay_rate=weight_decay)
-    # apply mixed precision
-    loss_scale_manager = tf.contrib.mixed_precision.FixedLossScaleManager(5000)
-    optimizer = tf.contrib.mixed_precision.LossScaleOptimizer(optimizer, loss_scale_manager)
     return optimizer
 
 
