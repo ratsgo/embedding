@@ -36,7 +36,7 @@ case $COMMAND in
         echo "download word embeddings..."
         mkdir -p /notebooks/embedding/data
         cd /notebooks/embedding/data
-        gdrive_download 1gpOaOl0BcUvYpgoOA2JpZY2z-BUhuBLX /notebooks/embedding/data/word-embeddings.zip
+        gdrive_download 1FeGIbSz2E1A63JZP_XIxnGaSRt7AhXFf /notebooks/embedding/data/word-embeddings.zip
         unzip word-embeddings.zip
         rm word-embeddings.zip
         ;;
