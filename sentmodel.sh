@@ -187,7 +187,7 @@ case $COMMAND in
         mkdir -p /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_xlnet_vocab \
             --input_path /notebooks/embedding/data/processed/pretrain.txt \
-            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3
+            --vocab_path /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3
         echo "preprocess corpus..."
         cd models/xlnet
         python data_utils.py --bsz_per_host=16 \
@@ -198,7 +198,7 @@ case $COMMAND in
 	                         --save_dir=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt \
 	                         --num_passes=10 \
 	                         --bi_data=True \
-	                         --sp_path=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
+	                         --sp_path=/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3.model \
 	                         --mask_alpha=6 \
 	                         --mask_beta=1 \
 	                         --num_predict=45
@@ -229,14 +229,14 @@ case $COMMAND in
         gdrive_download 1o72uZ9B3f887F1QKza6WCdPvc8g7DL8j /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.data-00000-of-00001
         gdrive_download 1qP-imkmBbC4BLkBSk2_fjOuCEllNzzSX /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.index
         gdrive_download 1bu1lOC_WtTqwLM6P70zjlk_hsS3SiwBV /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt.meta
-        gdrive_download 1kIYl_KFwuqbwfvLbI-bU8mlteMM5Ond- /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model
+        gdrive_download 1kIYl_KFwuqbwfvLbI-bU8mlteMM5Ond- /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3.model
         ;;
     tune-xlnet)
         echo "tune XLNet..."
         nohup sh -c "python models/tune_utils.py --model_name xlnet \
                       --train_corpus_fname /notebooks/embedding/data/processed/processed_ratings_train.txt \
                       --test_corpus_fname /notebooks/embedding/data/processed/processed_ratings_test.txt \
-                      --vocab_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sentence_model_sp10m.cased.v3.model \
+                      --vocab_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/sp10m.cased.v3.model \
                       --pretrain_model_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_model.ckpt \
                       --config_fname /notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt/xlnet_config.json \
                       --model_save_path /notebooks/embedding/data/sentence-embeddings/xlnet/tune-ckpt" > xlnet-tune.log &
