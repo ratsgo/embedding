@@ -113,7 +113,7 @@ def construct_elmo_vocab(corpus_fname, output_fname):
 def make_save_path(full_path):
     model_path = '/'.join(full_path.split("/")[:-1])
     if not os.path.exists(model_path):
-       os.mkdir(model_path)
+       os.makedirs(model_path)
 
 
 if __name__ == '__main__':
