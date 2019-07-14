@@ -25,13 +25,13 @@ case $COMMAND in
         ;;
     dump-blog)
         echo "download blog data.."
-        mkdir -p /notebooks/embedding/data
+        mkdir -p /notebooks/embedding/data/processed
         gdrive_download 1Few7-Mh3JypQN3rjnuXD8yAXrkxUwmjS /notebooks/embedding/data/processed/processed_blog.txt
         ;;
     dump-raw)
         echo "make directories..."
-        mkdir /notebooks/embedding/data/tokenized
         mkdir -p /notebooks/embedding/data
+        mkdir /notebooks/embedding/data/tokenized
         echo "download similar sentence data..."
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
         wget https://github.com/songys/Question_pair/raw/master/kor_Pair_test.csv -P /notebooks/embedding/data/raw
