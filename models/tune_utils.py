@@ -181,11 +181,11 @@ def make_bert_graph(bert_config, max_seq_length, dropout_keep_prob_rate, num_lab
         return model, input_ids, input_mask, segment_ids, probs
 
 
-def make_word_embedding_graph(num_labels, vocab_size, embedding_size, train=False):
+def make_word_embedding_graph(num_labels, vocab_size, embedding_size, tune=False):
     ids_placeholder = tf.placeholder(tf.int32, [None, None], name="input_ids")
     input_lengths = tf.placeholder(tf.int32, [None], name="input_lengths")
     labels_placeholder = tf.placeholder(tf.int32, [None], name="label_ids")
-    if train:
+    if tune:
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
     else:
         dropout_keep_prob = tf.constant(1.0, dtype=tf.float32)
@@ -231,7 +231,7 @@ def make_word_embedding_graph(num_labels, vocab_size, embedding_size, train=Fals
                                                activation_fn=None,
                                                weights_initializer=tf.contrib.layers.xavier_initializer(),
                                                biases_initializer=tf.zeros_initializer())
-    if train:
+    if tune:
         # Loss Layer
         CE = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels_placeholder, logits=logits)
         loss = tf.reduce_mean(CE)
@@ -655,7 +655,7 @@ class WordEmbeddingTuner(Tuner):
         # build train graph.
         self.ids_placeholder, self.input_lengths, self.labels_placeholder, \
         self.dropout_keep_prob, self.embedding_placeholder, self.embed_init, \
-        self.logits, self.loss = make_word_embedding_graph(num_labels, len(self.vocab) + 2, self.embedding_size, train=True)
+        self.logits, self.loss = make_word_embedding_graph(num_labels, len(self.vocab) + 2, self.embedding_size, tune=True)
 
     def tune(self):
         global_step = tf.train.get_or_create_global_step()
