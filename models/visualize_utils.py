@@ -158,7 +158,7 @@ def visualize_words(words, vecs, palette="Viridis256"):
     df['x'], df['y'], df['word'] = tsne_results[:, 0], tsne_results[:, 1], list(words)
     source = ColumnDataSource(ColumnDataSource.from_df(df))
     labels = LabelSet(x="x", y="y", text="word", y_offset=8,
-                      text_font_size="8pt", text_color="#555555",
+                      text_font_size="15pt", text_color="#555555",
                       source=source, text_align='center')
     color_mapper = LinearColorMapper(palette=palette, low=min(tsne_results[:, 1]), high=max(tsne_results[:, 1]))
     plot = figure(plot_width=900, plot_height=900)

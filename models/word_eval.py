@@ -185,7 +185,8 @@ class WordEmbeddingEvaluator:
         for line in open(words_fname, 'r'):
             if not line.startswith("#"):
                 for word in line.strip().split(" "):
-                    words.add(word)
+                    if len(word) > 0:
+                        words.add(word)
         vecs = np.array([self.get_sentence_vector(word) for word in words])
         visualize_words(words, vecs, palette)
 
