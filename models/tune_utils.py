@@ -672,15 +672,18 @@ class WordEmbeddingTuner(Tuner):
     def make_input(self, sentences, labels, is_training):
         input_ids, lengths = [], []
         max_token_length = self.get_max_token_length_this_batch(sentences)
+        unk_idx = len(self.vocab)
         for tokens in sentences:
             token_ids = []
+            tokens_length = len(tokens)
             for token in tokens:
                 if token in self.vocab:
                     token_ids.append(self.vocab[token])
                 else:
-                    token_ids.append(len(self.vocab))
+                    token_ids.append(unk_idx)
             if len(tokens) < max_token_length:
-                token_ids.extend([len(self.vocab) - 1] * (max_token_length - len(tokens)))
+                token_ids.extend(
+                    [len(self.vocab) - 1] * (max_token_length - tokens_length))
             input_ids.append(token_ids)
             lengths.append(len(token_ids))
         if is_training:
