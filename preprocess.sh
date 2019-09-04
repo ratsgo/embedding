@@ -141,6 +141,7 @@ case $COMMAND in
         ;;
     soy-tokenize)
         echo "soynlp, LTokenizing..."
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/unsupervised_nlputils.py --preprocess_mode compute_soy_word_score \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --model_path /notebooks/embedding/data/processed/soyword.model
@@ -151,29 +152,34 @@ case $COMMAND in
         ;;
     komoran-tokenize)
         echo "komoran, tokenizing..."
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/supervised_nlputils.py --tokenizer komoran \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_komoran.txt
         ;;
     okt-tokenize)
         echo "okt, tokenizing..."
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/supervised_nlputils.py --tokenizer okt \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_okt.txt
         ;;
     hannanum-tokenize)
         echo "hannanum, tokenizing..."
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/supervised_nlputils.py --tokenizer hannanum \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_hannanum.txt
         ;;
     khaiii-tokenize)
         echo "khaiii, tokenizing..."
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/supervised_nlputils.py --tokenizer khaiii \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
             --output_path /notebooks/embedding/data/tokenized/ratings_khaiii.txt
         ;;
     bert-tokenize)
+        mkdir -p /notebooks/embedding/data/tokenized
         python preprocess/unsupervised_nlputils.py --preprocess_mode bert_tokenize \
             --vocab_path /notebooks/embedding/data/sentence-embeddings/bert/pretrain-ckpt/vocab.txt \
             --input_path /notebooks/embedding/data/processed/corrected_ratings_corpus.txt \
