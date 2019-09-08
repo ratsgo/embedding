@@ -119,11 +119,8 @@ def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_toke
 
     # Attention Layer
     output_fw, output_bw = lstm_output
-    # (batch_size, seq_len, HIDDEN_SIZE)
-    H = tf.nn.tanh(output_fw + output_bw)
-    # softmax(dot(W, H)) : (batch_size, seq_len, 1)
+    H = tf.contrib.layers.fully_connected(inputs=output_fw + output_fw, num_outputs=256, activation_fn=tf.nn.tanh)
     attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
-    # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
     attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
     layer_output = tf.nn.dropout(tf.nn.tanh(attention_output), dropout_keep_prob)
 
@@ -211,11 +208,8 @@ def make_word_embedding_graph(num_labels, vocab_size, embedding_size, tune=False
 
     # Attention Layer
     output_fw, output_bw = lstm_output
-    # (batch_size, seq_len, HIDDEN_SIZE)
-    H = tf.nn.tanh(output_fw + output_bw)
-    # softmax(dot(W, H)) : (batch_size, seq_len, 1)
+    H = tf.contrib.layers.fully_connected(inputs=output_fw + output_fw, num_outputs=256, activation_fn=tf.nn.tanh)
     attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
-    # dot(prob, H) : (batch_size, HIDDEN_SIZE, 1) > (batch_size, HIDDEN_SIZE)
     attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
     layer_output = tf.nn.dropout(tf.nn.tanh(attention_output), dropout_keep_prob)
 
