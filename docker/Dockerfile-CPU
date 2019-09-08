@@ -58,6 +58,16 @@ RUN git clone https://github.com/ratsgo/embedding.git \
 RUN mv /notebooks/fastText /notebooks/embedding/models \
  && mv /notebooks/glove /notebooks/embedding/models
 
+WORKDIR /notebooks
+RUN apt-get install fonts-nanum* \
+ && rm -rf /usr/share/fonts/truetype/dejavu \
+ && fc-cache -fv \
+ && wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 \
+ && tar xvjf phantomjs-2.1.1-linux-x86_64.tar.bz2 \
+ && mv phantomjs-2.1.1-linux-x86_64 /usr/local/share \
+ && rm phantomjs-2.1.1-linux-x86_64.tar.bz2 \
+ && ln -sf /usr/local/share/phantomjs-2.1.1-linux-x86_64/bin/phantomjs /usr/local/bin
+
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
  && locale-gen
 
