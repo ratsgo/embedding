@@ -25,7 +25,7 @@ def visualize_sentences(vecs, sentences, palette="Viridis256", filename="/notebo
     plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None, fill_alpha=0.8)
     plot.add_layout(labels)
     export_png(plot, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
 
 
 """
@@ -70,7 +70,7 @@ def visualize_homonym(homonym, tokenized_sentences, vecs, model_name, palette="V
                  fill_alpha=0.8)
     plot.add_layout(labels)
     export_png(plot, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
 
 
 def visualize_between_sentences(sentences, vec_list, palette="Viridis256", filename="/notebooks/embedding/between-sentences.png"):
@@ -103,7 +103,7 @@ def visualize_between_sentences(sentences, vec_list, palette="Viridis256", filen
                         label_standoff=6, border_line_color=None, location=(0, 0))
     p.add_layout(color_bar, 'right')
     export_png(p, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
 
 
 def visualize_self_attention_scores(tokens, scores, filename="/notebooks/embedding/self-attention.png"):
@@ -151,7 +151,7 @@ def visualize_self_attention_scores(tokens, scores, filename="/notebooks/embeddi
     plot.renderers.append(labels)
     plot.add_tools(SaveTool())
     export_png(plot, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
 
 
 def visualize_words(words, vecs, palette="Viridis256", filename="/notebooks/embedding/words.png"):
@@ -169,7 +169,7 @@ def visualize_words(words, vecs, palette="Viridis256", filename="/notebooks/embe
                  fill_alpha=0.8)
     plot.add_layout(labels)
     export_png(plot, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
 
 
 def visualize_between_words(words, vecs, palette="Viridis256", filename="/notebooks/embedding/between-words.png"):
@@ -202,4 +202,4 @@ def visualize_between_words(words, vecs, palette="Viridis256", filename="/notebo
                          label_standoff=6, border_line_color=None, location=(0, 0))
     p.add_layout(color_bar, 'right')
     export_png(p, filename)
-    print(f"save @ {filename}")
+    print("save @ " + filename)
