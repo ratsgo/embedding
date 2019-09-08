@@ -72,7 +72,7 @@ def make_bert_vocab(input_fname, output_fname):
     spm.SentencePieceTrainer.Train(train)
     with open('sentpiece.vocab', 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:
-        f2.writelines("[PAD]\n[UNK]\n[CLS]\n[MASK]\n[SEP]\n")
+        f2.writelines("[PAD]\n[UNK]\n[CLS]\n[SEP]\n[MASK]\n")
         for line in f1:
             word = line.replace('\n', '').split('\t')[0].replace('▁', '##')
             if not word or word in ["##", "<unk>", "<s>", "</s>"]: continue
