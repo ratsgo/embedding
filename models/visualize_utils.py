@@ -4,14 +4,14 @@ import networkx as nx
 from sklearn.manifold import TSNE
 from sklearn.metrics.pairwise import cosine_similarity
 
-from bokeh.io import show
+from bokeh.io import export_png
 from bokeh.plotting import figure
 from bokeh.models import Plot, Range1d, MultiLine, Circle, HoverTool, TapTool, BoxSelectTool, LinearColorMapper, ColumnDataSource, LabelSet, SaveTool, ColorBar, BasicTicker
 from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges, EdgesAndLinkedNodes
 from bokeh.palettes import Spectral8
 
 
-def visualize_sentences(vecs, sentences, palette="Viridis256"):
+def visualize_sentences(vecs, sentences, palette="Viridis256", filename="sentences.png"):
     tsne = TSNE(n_components=2)
     tsne_results = tsne.fit_transform(vecs)
     df = pd.DataFrame(columns=['x', 'y', 'sentence'])
@@ -24,7 +24,7 @@ def visualize_sentences(vecs, sentences, palette="Viridis256"):
     plot = figure(plot_width=900, plot_height=900)
     plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None, fill_alpha=0.8)
     plot.add_layout(labels)
-    show(plot, notebook_handle=True)
+    export_png(plot, filename)
 
 
 """
@@ -32,7 +32,7 @@ Visualize homonyms (2d vector space)
 Inspired by:
     https://github.com/hengluchang/visualizing_contextual_vectors/blob/master/elmo_vis.py
 """
-def visualize_homonym(homonym, tokenized_sentences, vecs, model_name, palette="Viridis256"):
+def visualize_homonym(homonym, tokenized_sentences, vecs, model_name, palette="Viridis256", filename="homonym.png"):
     # process sentences
     token_list, processed_sentences = [], []
     for tokens in tokenized_sentences:
@@ -68,10 +68,10 @@ def visualize_homonym(homonym, tokenized_sentences, vecs, model_name, palette="V
                  line_color=None,
                  fill_alpha=0.8)
     plot.add_layout(labels)
-    show(plot, notebook_handle=True)
+    export_png(plot, filename)
 
 
-def visualize_between_sentences(sentences, vec_list, palette="Viridis256"):
+def visualize_between_sentences(sentences, vec_list, palette="Viridis256", filename="between-sentences.png"):
     df_list, score_list = [], []
     for sent1_idx, sentence1 in enumerate(sentences):
         for sent2_idx, sentence2 in enumerate(sentences):
@@ -100,10 +100,10 @@ def visualize_between_sentences(sentences, vec_list, palette="Viridis256"):
                         color_mapper=color_mapper, major_label_text_font_size="7pt",
                         label_standoff=6, border_line_color=None, location=(0, 0))
     p.add_layout(color_bar, 'right')
-    show(p)
+    export_png(p, filename)
 
 
-def visualize_self_attention_scores(tokens, scores, palette="Viridis256"):
+def visualize_self_attention_scores(tokens, scores, filename="self-attention.png"):
     mean_prob = np.mean(scores)
     weighted_edges = []
     for idx_1, token_prob_dist_1 in enumerate(scores):
@@ -112,7 +112,6 @@ def visualize_self_attention_scores(tokens, scores, palette="Viridis256"):
                 weighted_edges.append((tokens[idx_1], tokens[idx_2], 0))
             else:
                 weighted_edges.append((tokens[idx_1], tokens[idx_2], el))
-    min_prob = np.min([el[2] for el in weighted_edges])
     max_prob = np.max([el[2] for el in weighted_edges])
     weighted_edges = [(el[0], el[1], (el[2] - mean_prob) / (max_prob - mean_prob)) for el in weighted_edges]
 
@@ -148,10 +147,10 @@ def visualize_self_attention_scores(tokens, scores, palette="Viridis256"):
     labels = LabelSet(x='x', y='y', text='connectionNames', source=source, text_align='center')
     plot.renderers.append(labels)
     plot.add_tools(SaveTool())
-    show(plot)
+    export_png(plot, filename)
 
 
-def visualize_words(words, vecs, palette="Viridis256"):
+def visualize_words(words, vecs, palette="Viridis256", filename="words.png"):
     tsne = TSNE(n_components=2)
     tsne_results = tsne.fit_transform(vecs)
     df = pd.DataFrame(columns=['x', 'y', 'word'])
@@ -165,10 +164,10 @@ def visualize_words(words, vecs, palette="Viridis256"):
     plot.scatter("x", "y", size=12, source=source, color={'field': 'y', 'transform': color_mapper}, line_color=None,
                  fill_alpha=0.8)
     plot.add_layout(labels)
-    show(plot, notebook_handle=True)
+    export_png(plot, filename)
 
 
-def visualize_between_words(words, vecs, palette="Viridis256"):
+def visualize_between_words(words, vecs, palette="Viridis256", filename="between-words.png"):
     df_list = []
     for word1_idx, word1 in enumerate(words):
         for word2_idx, word2 in enumerate(words):
@@ -197,4 +196,4 @@ def visualize_between_words(words, vecs, palette="Viridis256"):
                          color_mapper=color_mapper, major_label_text_font_size="7pt",
                          label_standoff=6, border_line_color=None, location=(0, 0))
     p.add_layout(color_bar, 'right')
-    show(p)
+    export_png(p, filename)
