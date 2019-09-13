@@ -94,7 +94,7 @@ model = WordEmbeddingEval(vecs_fname="word2vec_path", method="word2vec")
 model.word_sim_test("data/kor_ws353.csv")
 model.word_analogy_test("data/kor_analogy_semantic.txt")
 model.word_analogy_test("data/kor_analogy_syntactic.txt")
-model.most_similar("문재인")
+model.most_similar("희망")
 model.visualize_words("data/kor_analogy_semantic.txt", palette="Viridis256")
 model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256")
 ```
