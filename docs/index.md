@@ -113,7 +113,7 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 
 
 
-### 6. Latent Semantic Analysis
+### 5-1. Latent Semantic Analysis
 
 TF-IDF Matrix에 Singular Value Decomposition을 시행합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -126,7 +126,7 @@ python models/sent_utils.py --method latent_semantic_analysis \
 
 
 
-### 6-1. Doc2Vec
+### 5-2. Doc2Vec
 
 Doc2Vec 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -139,7 +139,7 @@ python models/sent_utils.py --method doc2vec \
 
 
 
-### 6-2. Latent Dirichlet Allocation
+### 5-3. Latent Dirichlet Allocation
 
 LDA 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -152,7 +152,7 @@ python models/sent_utils.py --method latent_dirichlet_allocation \
 
 
 
-### 6-3. ELMo
+### 5-4. ELMo
 
 다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-elmo` 항목에서 `sent_utils.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석을 모두 마친 데이터여야 합니다.
 
@@ -183,7 +183,7 @@ bash sentmodel.sh tune-elmo
 
 
 
-### 6-4. BERT
+### 5-5. BERT
 
 다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-bert` 항목에서 `dump.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
 
@@ -209,7 +209,7 @@ bash sentmodel.sh tune-bert
 
 
 
-## 7. 문장 임베딩 모델 평가
+## 6. 문장 임베딩 모델 평가
 
 아래는 파인튜닝을 마친 문장 임베딩 모델을 평가하는 코드 예시입니다. 파이썬 콘솔에서 실행하면 됩니다. 단, 모든 파일이 해당 디렉토리에 존재해야 합니다. 
 
