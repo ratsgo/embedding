@@ -60,9 +60,9 @@
 
 
 
-- 문장 수준 임베딩 활용 : Word2Vec, FastText, Swivel + Bi-LSTM with attention
-- ELMo 활용 : ELMo layer + Bi-LSTM with attention
-- BERT 활용 : BERT layser + Fully-connected layer
+- 문장 수준 임베딩 활용 : Word2Vec, FastText, Swivel + Bi-LSTM with attention layer
+- ELMo 활용 : ELMo layer + Bi-LSTM with attention layer
+- BERT 활용 : BERT layer + Fully-connected layer
 
 
 
