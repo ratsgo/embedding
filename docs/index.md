@@ -12,12 +12,10 @@
 
 ## 개발환경 및 데이터 준비
 
-- 아래 모든 명령은 도커 컨테이너 상에서 동작합니다. 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.
-- 데이터 전처리 방법을 보시려면 [이 글](./preprocess.html)을 참조하세요.
-
-- 형태소 분석하는 방법은 [이 글](./tokenize.html)을 참조하세요.  
-
-- 데이터 다운로드는 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참조하세요.
+아래 모든 명령은 도커 컨테이너 상에서 동작합니다. 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.  
+데이터 전처리 방법을 보시려면 [이 글](./preprocess.html)을 참조하세요.   
+형태소 분석하는 방법은 [이 글](./tokenize.html)을 참조하세요.  
+데이터 다운로드는 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참조하세요.
 
 
 
