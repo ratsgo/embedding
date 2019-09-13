@@ -12,7 +12,9 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 
 이슈를 만드는 방법은 다음과 같습니다. 아래 그림의 양식을 채워 `Submit new issue` 버튼을 누르면 이슈가 완성됩니다.
 
-![그림](https://drive.google.com/uc?id=1sZHvqRiFMHch9UnVZKvZLxC5KZXnR654)
+
+
+<img src="https://i.imgur.com/9tVHsZ8.png" width="600px" title="source: imgur.com" /><
 
 
 

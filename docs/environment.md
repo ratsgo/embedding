@@ -27,8 +27,8 @@ docker 혹은 Nvidia-docker2 : [설치방법](https://hiseon.me/2018/02/19/insta
 ```bash
 git clone https://github.com/ratsgo/embedding.git
 cd embedding
-docker build -t ratsgo/embedding-gpu:1.2 -f docker/Dockerfile-GPU .
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.2 bash
+docker build -t ratsgo/embedding-gpu -f docker/Dockerfile-GPU .
+docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
 ```
 
 
@@ -36,8 +36,8 @@ docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.2 bash
 #### 로컬에 nvidia GPU가 있고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
 
 ```bash
-docker pull ratsgo/embedding-gpu:1.2
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.2 bash
+docker pull ratsgo/embedding-gpu
+docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
 ```
 
 
@@ -47,8 +47,8 @@ docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu:1.2 bash
 ```bash
 git clone https://github.com/ratsgo/embedding.git
 cd embedding
-docker build -t ratsgo/embedding-cpu:1.2 -f docker/Dockerfile-CPU .
-docker run -it --rm ratsgo/embedding-cpu:1.2 bash
+docker build -t ratsgo/embedding-cpu -f docker/Dockerfile-CPU .
+docker run -it --rm ratsgo/embedding-cpu bash
 ```
 
 
@@ -56,6 +56,6 @@ docker run -it --rm ratsgo/embedding-cpu:1.2 bash
 #### 로컬에 nvidia GPU가 없고 이미 만들어진 도커이미지를 다운로드 해서 컨테이너 띄우기
 
 ```bash
-docker pull ratsgo/embedding-cpu:1.2
-docker run -it --rm ratsgo/embedding-cpu:1.2 bash
+docker pull ratsgo/embedding-cpu
+docker run -it --rm ratsgo/embedding-cpu bash
 ```
