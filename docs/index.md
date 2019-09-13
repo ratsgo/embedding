@@ -2,7 +2,7 @@
 
 
 
-## 도서 안내
+## 1. 도서 안내
 
 이 튜토리얼은 다음 도서를 보완하기 위해 작성됐습니다. 도서를 구매하지 않아도 튜토리얼 수행에 문제는 없으나 일부 내용은 도서를 참고해야 그 맥락을 완전하게 이해할 수 있습니다. 다음 그림을 클릭하면 도서 구매 사이트로 이동합니다.
 
@@ -10,7 +10,7 @@
 
 
 
-## 개발환경 및 데이터 준비
+## 2. 개발환경 및 데이터 준비
 
 아래 모든 명령은 도커 컨테이너 상에서 동작합니다. 개발환경 설정과 관련해선 [이 글](./environment.html)을 참조하세요.  
 데이터 전처리 방법을 보시려면 [이 글](./preprocess.html)을 참조하세요.   
@@ -19,13 +19,13 @@
 
 
 
-## 단어 임베딩 모델 학습
+## 3. 단어 임베딩 모델 학습
 
 `/notebooks/embedding` 위치에서 다음을 실행하면 각 단어 임베딩 모델을 학습할 수 있습니다.  각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 명령이 여러 라인으로 구성되어 있을 경우 반드시 순서대로 실행하여야 합니다.
 
 
 
-### Latent Semantic Analysis
+### 3-1. Latent Semantic Analysis
 
 Word-Context 혹은 PPMI Matrix에 Singular Value Decomposition을 시행합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -38,7 +38,7 @@ python models/word_utils.py --method latent_semantic_analysis \
 
 
 
-### Word2Vec
+### 3-2. Word2Vec
 
 Word2Vec 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -51,7 +51,7 @@ python models/word_utils.py --method train_word2vec \
 
 
 
-### GloVe
+### 3-3. GloVe
 
 GloVe 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 아래 스크립트에서 `/notebooks/embedding/data/tokenized/corpus_mecab.txt`를 해당 데이터 경로로 바꿔주면 됩니다.
 
@@ -65,7 +65,7 @@ mkdir -p /notebooks/embedding/data/word-embeddings/glove
 
 
 
-### FastText
+### 3-4. FastText
 
 FastText 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input`을 바꿔주면 됩니다.
 
@@ -76,7 +76,7 @@ mkdir -p /notebooks/embedding/data/word-embeddings/fasttext
 
 
 
-### Swivel
+### 3-5. Swivel
 
 Swivel 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 임베딩하고 싶다면 `input`만 바꿔주면 됩니다. 아래 `swivel.py` 를 실행할 때는 Nvidia-GPU가 있는 환경이면 학습을 빠르게 진행할 수 있습니다.
 
@@ -88,7 +88,7 @@ python /notebooks/embedding/models/swivel/swivel.py --input_base_path /notebooks
 
 
 
-## 단어 임베딩 모델 평가
+## 4. 단어 임베딩 모델 평가
 
 아래는 단어 임베딩 모델 평가 코드입니다. 단, 해당 단어 임베딩이 로컬 디렉토리에 존재해야 합니다. 이미 학습이 완료된 단어 임베딩을 내려받으려면 [이 글](https://ratsgo.github.io/embedding/downloaddata.html)을 참고하세요. 아래 코드는 파이썬 콘솔에서 실행합니다.
 
@@ -105,7 +105,7 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 
 
 
-## 문장 임베딩 모델 학습
+## 5. 문장 임베딩 모델 학습
 
 `/notebooks/embedding` 위치에서 다음을 실행하면 각 문장 임베딩 모델을 학습할 수 있습니다. 
 각 모델의 입력파일은 (1) 한 라인이 하나의 문서 형태이며 (2) 모두 형태소 분석이 완료되어 있어야 합니다. 
@@ -113,7 +113,7 @@ model.visualize_between_words("data/kor_analogy_semantic.txt", palette="Greys256
 
 
 
-### Latent Semantic Analysis
+### 6. Latent Semantic Analysis
 
 TF-IDF Matrix에 Singular Value Decomposition을 시행합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -126,7 +126,7 @@ python models/sent_utils.py --method latent_semantic_analysis \
 
 
 
-### Doc2Vec
+### 6-1. Doc2Vec
 
 Doc2Vec 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -139,7 +139,7 @@ python models/sent_utils.py --method doc2vec \
 
 
 
-### Latent Dirichlet Allocation
+### 6-2. Latent Dirichlet Allocation
 
 LDA 임베딩을 학습합니다. 자신이 가진 데이터(단 형태소 분석이 완료되어 있어야 함)로 수행하고 싶다면 `input_path`를 바꿔주면 됩니다.
 
@@ -152,7 +152,7 @@ python models/sent_utils.py --method latent_dirichlet_allocation \
 
 
 
-### ELMo
+### 6-3. ELMo
 
 다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-elmo` 항목에서 `sent_utils.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석을 모두 마친 데이터여야 합니다.
 
@@ -183,7 +183,7 @@ bash sentmodel.sh tune-elmo
 
 
 
-### BERT
+### 6-4. BERT
 
 다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-bert` 항목에서 `dump.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
 
@@ -209,33 +209,7 @@ bash sentmodel.sh tune-bert
 
 
 
-### XLNet
-
-다음을 실행하면 프리트레인(pretrain)을 수행할 수 있습니다. 자신이 가지고 있는 데이터로 프리트레인을 수행하고 싶다면 `sentmodel.sh`의 `pretrain-xlnet` 항목에서 `dump.py`를 실행하는 부분의 `input_path`를 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 단 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
-
-```bash
-bash sentmodel.sh pretrain-xlnet
-```
-
-컴퓨팅 환경이 여의치 않거나 XLNet 프리트레인에 리소스를 투자하고 싶지 않다면 아래 명령을 수행하면 프리트레인이 완료된 XLNet 모델을 내려받을 수 있습니다. 이 모델은 자연어 처리 연구자 오연택 님께서 공개한 모델입니다. 자세한 구축 방법은 [이곳](https://github.com/yeontaek/XLNET-Korean-Model)을 참고하세요.
-
-```bash
-bash sentmodel.sh download-pretrained-xlnet
-```
-
-아래를 실행해 내 데이터에 맞게 파인튜닝합니다. 파인튜닝을 수행하려면 프리트레인이 완료된 XLNet 모델이 `/notebooks/embedding/data/sentence-embeddings/xlnet/pretrain-ckpt` 경로에 있어야 합니다. 
-
-자신이 가지고 있는 데이터로 파인튜닝을 수행하고 싶다면 `sentmodel.sh`의 `tune-xlnet` 항목에서 `train_corpus_fname`과 `test_corpus_fname`을 자신이 가진 말뭉치 경로로 바꿔주면 됩니다. 해당 말뭉치는 형태소 분석이 안된 원시 데이터여야 합니다.
-
-```bash
-bash sentmodel.sh tune-xlnet
-```
-
-
-
-
-
-## 문장 임베딩 모델 평가
+## 7. 문장 임베딩 모델 평가
 
 아래는 파인튜닝을 마친 문장 임베딩 모델을 평가하는 코드 예시입니다. 파이썬 콘솔에서 실행하면 됩니다. 단, 모든 파일이 해당 디렉토리에 존재해야 합니다. 
 
