@@ -11,7 +11,7 @@
 
 본 튜토리얼은 다음 도서를 보완하기 위해 작성됐습니다. 도서를 구매하지 않아도 튜토리얼 수행에 문제는 없으나 일부 내용은 도서를 참고해야 그 맥락을 완전하게 이해할 수 있습니다. 다음 그림을 클릭하면 도서 구매 사이트로 이동합니다.
 
-<a href="http://www.yes24.com/Product/Goods/78569687"><img src="https://i.imgur.com/LiXiYzn.jpg" width="500px" title="source: imgur.com" /></a>
+<a href="http://www.yes24.com/Product/Goods/78569687"><img src="https://i.imgur.com/j03ENCc.jpg" width="500px" title="embeddings" /></a>
 
 
 
