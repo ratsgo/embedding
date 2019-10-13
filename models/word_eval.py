@@ -152,7 +152,7 @@ class WordEmbeddingEvaluator:
                 try:
                     word_with_scores = self.most_similar_by_vector(query_vecs, topn)
                     if verbose:
-                        print(words[0] + " + " + words[1] + " - " + words[2])
+                        print(words[0] + " - " + words[1] + " + " + words[2])
                         print("correct answer:", words[3])
                         print("predicted answers:", word_with_scores)
                         print("")
