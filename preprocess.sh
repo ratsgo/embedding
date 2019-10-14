@@ -11,17 +11,20 @@ case $COMMAND in
     dump-raw-wiki)
         echo "download ko-wikipedia..."
         wget https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-articles.xml.bz2 -P /notebooks/embedding/data/raw
+        mkdir -p /notebooks/embedding/data/processed
         ;;
     dump-raw-korquad)
         echo "download KorQuAD data..."
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_train.json -P /notebooks/embedding/data/raw
         wget https://korquad.github.io/dataset/KorQuAD_v1.0_dev.json -P /notebooks/embedding/data/raw
+        mkdir -p /notebooks/embedding/data/processed
         ;;
     dump-raw-nsmc)
         echo "download naver movie corpus..."
         wget https://github.com/e9t/nsmc/raw/master/ratings.txt -P /notebooks/embedding/data/raw
         wget https://github.com/e9t/nsmc/raw/master/ratings_train.txt -P /notebooks/embedding/data/raw
         wget https://github.com/e9t/nsmc/raw/master/ratings_test.txt -P /notebooks/embedding/data/raw
+        mkdir -p /notebooks/embedding/data/processed
         ;;
     dump-blog)
         echo "download blog data.."
@@ -31,6 +34,7 @@ case $COMMAND in
     dump-raw)
         echo "make directories..."
         mkdir -p /notebooks/embedding/data
+        mkdir -p /notebooks/embedding/data/processed
         mkdir /notebooks/embedding/data/tokenized
         echo "download similar sentence data..."
         wget https://github.com/songys/Question_pair/raw/master/kor_pair_train.csv -P /notebooks/embedding/data/raw
@@ -38,7 +42,7 @@ case $COMMAND in
         ;;
     dump-word-embeddings)
         echo "download word embeddings..."
-        mkdir -p /notebooks/embedding/data
+        mkdir -p /notebooks/embedding/data/processed
         cd /notebooks/embedding/data
         gdrive_download 1FeGIbSz2E1A63JZP_XIxnGaSRt7AhXFf /notebooks/embedding/data/word-embeddings.zip
         unzip word-embeddings.zip
@@ -46,7 +50,7 @@ case $COMMAND in
         ;;
     dump-sentence-embeddings)
         echo "download sentence embeddings..."
-        mkdir -p /notebooks/embedding/data
+        mkdir -p /notebooks/embedding/data/processed
         cd /notebooks/embedding/data
         gdrive_download 1jL3Q5H1vwATewHrx0PJgJ8YoUCtEkaGW /notebooks/embedding/data/sentence-embeddings.zip
         unzip sentence-embeddings.zip
@@ -54,7 +58,7 @@ case $COMMAND in
         ;;
     dump-tokenized)
         echo "download tokenized data..."
-        mkdir -p /notebooks/embedding/data
+        mkdir -p /notebooks/embedding/data/processed
         cd /notebooks/embedding/data
         gdrive_download 1Ybp_DmzNEpsBrUKZ1-NoPDzCMO39f-fx /notebooks/embedding/data/tokenized.zip
         unzip tokenized.zip
@@ -70,12 +74,14 @@ case $COMMAND in
         ;;
     process-wiki)
         echo "processing ko-wikipedia..."
+        mkdir -p /notebooks/embedding/data/processed
         python preprocess/dump.py --preprocess_mode wiki \
             --input_path /notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2 \
             --output_path /notebooks/embedding/data/processed/processed_wiki_ko.txt
         ;;
     process-nsmc)
         echo "processing naver movie corpus..."
+        mkdir -p /notebooks/embedding/data/processed
         python preprocess/dump.py --preprocess_mode nsmc \
             --input_path /notebooks/embedding/data/raw/ratings.txt \
             --output_path /notebooks/embedding/data/processed/processed_ratings.txt \
@@ -91,6 +97,7 @@ case $COMMAND in
         ;;
     process-korquad)
         echo "processing KorQuAD corpus..."
+        mkdir -p /notebooks/embedding/data/processed
         python preprocess/dump.py --preprocess_mode korquad \
             --input_path /notebooks/embedding/data/raw/KorQuAD_v1.0_train.json \
             --output_path /notebooks/embedding/data/processed/processed_korquad_train.txt
