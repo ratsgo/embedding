@@ -200,4 +200,16 @@ case $COMMAND in
         make install
         cd /notebooks/embedding
         ;;
+    make-bert-vocab)
+        echo "making BERT vocabulary..."
+        mkdir -p /notebooks/embedding/data
+        cd /notebooks/embedding/data
+        gdrive_download 1kUecR7xO7bsHFmUI6AExtY5u2XXlObOG /notebooks/embedding/data/processed.zip
+        unzip processed.zip
+        rm processed.zip
+        python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
+            --input_path /notebooks/embedding/data/processed/processed_wiki_ko.txt \
+            --vocab_path /notebooks/embedding/data/processed/vocab.txt
+        mv sentpiece* /notebooks/embedding/data/processed
+        ;;
 esac
