@@ -68,7 +68,7 @@ def soy_tokenize(corpus_fname, model_fname, output_fname):
 
 
 def make_bert_vocab(input_fname, output_fname):
-    train = '--input=' + input_fname + ' --model_prefix=sentpiece --vocab_size=32000 --model_type=bpe --character_coverage=1.0'
+    train = '--input=' + input_fname + ' --model_prefix=sentpiece --vocab_size=32000 --model_type=bpe --character_coverage=0.9995'
     spm.SentencePieceTrainer.Train(train)
     with open('sentpiece.vocab', 'r', encoding='utf-8') as f1, \
             open(output_fname, 'w', encoding='utf-8') as f2:

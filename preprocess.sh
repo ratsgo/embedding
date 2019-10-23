@@ -207,9 +207,10 @@ case $COMMAND in
         gdrive_download 1kUecR7xO7bsHFmUI6AExtY5u2XXlObOG /notebooks/embedding/data/processed.zip
         unzip processed.zip
         rm processed.zip
+        cd /notebooks/embedding
         python preprocess/unsupervised_nlputils.py --preprocess_mode make_bert_vocab \
             --input_path /notebooks/embedding/data/processed/processed_wiki_ko.txt \
-            --vocab_path /notebooks/embedding/data/processed/vocab.txt
+            --vocab_path /notebooks/embedding/data/processed/bert.vocab
         mv sentpiece* /notebooks/embedding/data/processed
         ;;
 esac
