@@ -15,8 +15,11 @@ description: 도커 설치 및 컨테이너 실행 방법을 안내합니다.
 ### 요구사항
 
 (1) 우분투 운영 체제에서 `nvidia-docker` 설치하기 : [링크](https://hiseon.me/2018/02/19/install-docker/)
+
 (2) 윈도우 운영 체제에서 `docker` 설치하기 : [링크](https://steemit.com/kr/@mystarlight/docker)
-(3) 윈도우 운영 체제에서 `nvidia-docker` 설치하기 : **[윈도우에서는 nvidia-docker를 지원하지 않습니다.](https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#is-microsoft-windows-supported)** 아마존 웹 서비스(AWS)를 활용해 개발환경을 구축하는 걸 추천해 드립니다. AWS 사용 방법은 [이곳](https://drive.google.com/open?id=1Zo7_F-ruU5NW9YtAR8IE2zKzm5lz_Cz7)을 참고하세요.
+
+(3) 윈도우 운영 체제에서 `nvidia-docker` 설치하기 : **nvidia-docker는 윈도우를 지원하지 않습니다([참고](https://github.com/NVIDIA/nvidia-docker/wiki/Frequently-Asked-Questions#is-microsoft-windows-supported))** 아마존 웹 서비스(AWS)를 활용해 개발환경을 구축하는 걸 추천해 드립니다. AWS 사용 방법은 [이곳](https://drive.google.com/open?id=1Zo7_F-ruU5NW9YtAR8IE2zKzm5lz_Cz7)을 참고하세요.
+
 
 
 ### 도커 실행방법
