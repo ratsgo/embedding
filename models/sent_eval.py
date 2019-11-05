@@ -19,9 +19,10 @@ from sklearn.preprocessing import normalize
 
 class Doc2VecEvaluator:
 
-    def __init__(self, model_fname="data/doc2vec.vecs"):
+    def __init__(self, model_fname="data/doc2vec.vecs", use_notebook=False):
         self.model = Doc2Vec.load(model_fname)
         self.doc2idx = {el:idx for idx, el in enumerate(self.model.docvecs.doctags.keys())}
+        self.use_notebook = use_notebook
 
     def most_similar(self, movie_id, topn=10):
         similar_movies = self.model.docvecs.most_similar('MOVIE_' + str(movie_id), topn=topn)
@@ -47,9 +48,9 @@ class Doc2VecEvaluator:
         movie_titles = [movie_ids[key] for key in movie_ids.keys()]
         movie_vecs = [self.model.docvecs[self.doc2idx[movie_id]] for movie_id in movie_ids.keys()]
         if type == "between":
-            visualize_between_words(movie_titles, movie_vecs, palette)
+            visualize_between_words(movie_titles, movie_vecs, palette, use_notebook=self.use_notebook)
         else:
-            visualize_words(movie_titles, movie_vecs, palette)
+            visualize_words(movie_titles, movie_vecs, palette, use_notebook=self.use_notebook)
 
 
 class LDAEvaluator:
@@ -89,8 +90,10 @@ class LDAEvaluator:
 
 class LSAEvaluator:
 
-    def __init__(self, model_fname="data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs"):
+    def __init__(self, model_fname="data/sentence-embeddings/lsa-tfidf/lsa-tfidf.vecs",
+                 use_notebook=False):
         self.titles, self.vectors = self.load_model(model_fname)
+        self.use_notebook = use_notebook
 
     def most_similar(self, doc_id, topn=10):
         query_doc_vec = self.vectors[doc_id]
@@ -118,18 +121,19 @@ class LSAEvaluator:
         sentences = [self.titles[idx] for idx in doc_idxes]
         vecs = [self.vectors[idx] for idx in doc_idxes]
         if mode == "between":
-            visualize_between_sentences(sentences, vecs, palette)
+            visualize_between_sentences(sentences, vecs, palette, use_notebook=self.use_notebook)
         else:
-            visualize_sentences(vecs, sentences, palette)
+            visualize_sentences(vecs, sentences, palette, use_notebook=self.use_notebook)
 
 
 class SentenceEmbeddingEvaluator:
 
-    def __init__(self, model_name, dimension):
+    def __init__(self, model_name, dimension, use_notebook=False):
         # reset graphs.
         tf.reset_default_graph()
         self.model_name = model_name
         self.dimension = dimension
+        self.use_notebook = use_notebook
 
     def get_token_vector_sequence(self, sentence):
         raise NotImplementedError
@@ -153,18 +157,18 @@ class SentenceEmbeddingEvaluator:
             tokens, vec = self.get_token_vector_sequence(sentence)
             tokenized_sentences.append(tokens)
             vecs = np.concatenate([vecs, vec], axis=0)
-        visualize_homonym(homonym, tokenized_sentences, vecs, self.model_name, palette)
+        visualize_homonym(homonym, tokenized_sentences, vecs, self.model_name, palette, use_notebook=self.use_notebook)
 
     def visualize_sentences(self, sentences, palette="Viridis256"):
         vecs = np.array([self.get_sentence_vector(sentence)[1] for sentence in sentences])
-        visualize_sentences(vecs, sentences, palette)
+        visualize_sentences(vecs, sentences, palette, use_notebook=self.use_notebook)
 
     def visualize_between_sentences(self, sentences, palette="Viridis256"):
         vec_list = []
         for sentence in sentences:
             _, vec = self.get_sentence_vector(sentence)
             vec_list.append(vec)
-        visualize_between_sentences(sentences, vec_list, palette)
+        visualize_between_sentences(sentences, vec_list, palette, use_notebook=self.use_notebook)
 
 
 class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
@@ -172,9 +176,9 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
     def __init__(self, model_fname="/notebooks/embedding/data/sentence-embeddings/bert/tune-ckpt",
                  bertconfig_fname="/notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/bert_config.json",
                  vocab_fname="/notebooks/embedding/data/sentence-embeddings/bert/multi_cased_L-12_H-768_A-12/vocab.txt",
-                 max_seq_length=32, dimension=768, num_labels=2):
+                 max_seq_length=32, dimension=768, num_labels=2, use_notebook=False):
 
-        super().__init__("bert", dimension)
+        super().__init__("bert", dimension, use_notebook)
         config = BertConfig.from_json_file(bertconfig_fname)
         self.max_seq_length = max_seq_length
         self.tokenizer = FullTokenizer(vocab_file=vocab_fname, do_lower_case=False)
@@ -255,10 +259,10 @@ class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
                  pretrain_model_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo.model",
                  options_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/options.json",
                  vocab_fname="/notebooks/embedding/data/sentence-embeddings/elmo/pretrain-ckpt/elmo-vocab.txt",
-                 max_characters_per_token=30, dimension=256, num_labels=2):
+                 max_characters_per_token=30, dimension=256, num_labels=2, use_notebook=False):
 
         # configurations
-        super().__init__("elmo", dimension)
+        super().__init__("elmo", dimension, use_notebook)
         self.tokenizer = get_tokenizer("mecab")
         self.batcher = Batcher(lm_vocab_file=vocab_fname, max_token_length=max_characters_per_token)
         self.ids_placeholder, self.elmo_embeddings, self.probs = make_elmo_graph(options_fname,
