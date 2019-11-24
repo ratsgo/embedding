@@ -87,6 +87,21 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 그림 5-3 오른쪽의 리스트는 해당 마크다운 문서의 영문 제목명과 그에 해당하는 문서 임베딩의 코사인 유사도를 가리킨다. (중략) 그림 5-3의 좌측 그림은 실제 블로그 에서 Related Posts로 제시하고 있는 문서 목록이다. 
 ```
 
+**P. 211**
+
+그림 5-18을 다음으로 교체
+
+<a href="https://imgur.com/lhrbOGB"><img src="https://i.imgur.com/lhrbOGB.png" width="700px" title="source: imgur.com" /></a>
+
+
+**P. 213**
+
+```
+gamma^task는 해당 태스크가 얼마나 중요한지 뜻하는 가중치를 의미한다.
+>
+gamma^task는 전체 ELMo 벡터의 크기를 스케일해 태스크 수행을 돕는 역할을 한다.
+```
+
 **P. 222**
 
 ```
