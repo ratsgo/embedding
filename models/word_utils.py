@@ -26,6 +26,8 @@ def train_word2vec(corpus_fname, model_fname, max_num_tokens_per_doc):
         while len(tokens) > max_num_tokens_per_doc:
             corpus.append(tokens[:max_num_tokens_per_doc])
             tokens = tokens[max_num_tokens_per_doc:]
+        if len(tokens) > 0:
+            corpus.append(tokens)
     model = Word2Vec(corpus, size=100, workers=4, sg=1)
     model.save(model_fname)
 
