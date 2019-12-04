@@ -10,13 +10,20 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from preprocess import get_tokenizer
 
 
-def train_word2vec(corpus_fname, model_fname, max_num_tokens_per_doc=10000):
+def train_word2vec(corpus_fname, model_fname, max_num_tokens_per_doc):
     make_save_path(model_fname)
     corpus_data = open(corpus_fname, 'r').readlines()
     max_num_tokens = np.max([len(sent.replace('\n', '').strip().split(" ")) for sent in corpus_data])
+    if max_num_tokens_per_doc is None:
+        max_num_tokens_per_doc = max_num_tokens
     print("Maximum number of tokens in corpus: ", max_num_tokens)
     print("Maximum token length per document: ", max_num_tokens_per_doc)
-    corpus = [sent.replace('\n', '').strip().split(" ")[:max_num_tokens_per_doc] for sent in corpus_data]
+    corpus = []
+    for sent in corpus_data:
+        tokens = sent.replace('\n', '').strip().split(" ")
+        while len(tokens) > max_num_tokens_per_doc:
+            corpus.append(tokens[:max_num_tokens_per_doc])
+            tokens = tokens[max_num_tokens_per_doc:]
     model = Word2Vec(corpus, size=100, workers=4, sg=1)
     model.save(model_fname)
 
@@ -263,14 +270,15 @@ if __name__ == '__main__':
     parser.add_argument('--train_corpus_path', type=str, help='Location of train corpus')
     parser.add_argument('--test_corpus_path', type=str, help='Location of test corpus')
     parser.add_argument('--embedding_name', type=str, help='embedding name')
-    parser.add_argument('--embedding_corpus_path', type=str, help='embedding name')
+    parser.add_argument('--embedding_corpus_path', type=str, help='embedding corpus path')
+    parser.add_argument('--max_num_tokens_per_doc', type=str, help='maximum number of tokens(word2vec)')
     args = parser.parse_args()
 
     def str2bool(str):
         return str.lower() in ["true", "t"]
 
     if args.method == "train_word2vec":
-        train_word2vec(args.input_path, args.output_path)
+        train_word2vec(args.input_path, args.output_path, int(args.max_num_tokens_per_doc))
     elif args.method == "latent_semantic_analysis":
         latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "cbow":
