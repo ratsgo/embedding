@@ -16,6 +16,8 @@ def train_word2vec(corpus_fname, model_fname, max_num_tokens_per_doc):
     max_num_tokens = np.max([len(sent.replace('\n', '').strip().split(" ")) for sent in corpus_data])
     if max_num_tokens_per_doc is None:
         max_num_tokens_per_doc = max_num_tokens
+    else:
+        max_num_tokens_per_doc = int(max_num_tokens_per_doc)
     print("Maximum number of tokens in corpus: ", max_num_tokens)
     print("Maximum token length per document: ", max_num_tokens_per_doc)
     corpus = []
@@ -278,7 +280,7 @@ if __name__ == '__main__':
         return str.lower() in ["true", "t"]
 
     if args.method == "train_word2vec":
-        train_word2vec(args.input_path, args.output_path, int(args.max_num_tokens_per_doc))
+        train_word2vec(args.input_path, args.output_path, args.max_num_tokens_per_doc)
     elif args.method == "latent_semantic_analysis":
         latent_semantic_analysis(args.input_path, args.output_path)
     elif args.method == "cbow":
