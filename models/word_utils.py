@@ -10,9 +10,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from preprocess import get_tokenizer
 
 
-def train_word2vec(corpus_fname, model_fname):
+def train_word2vec(corpus_fname, model_fname, max_num_tokens_per_doc=10000):
     make_save_path(model_fname)
-    corpus = [sent.replace('\n', '').strip().split(" ") for sent in open(corpus_fname, 'r').readlines()]
+    corpus_data = open(corpus_fname, 'r').readlines()
+    max_num_tokens = np.max([len(sent.replace('\n', '').strip().split(" ")) for sent in corpus_data])
+    print("Maximum number of tokens in corpus: ", max_num_tokens)
+    print("Maximum token length per document: ", max_num_tokens_per_doc)
+    corpus = [sent.replace('\n', '').strip().split(" ")[:max_num_tokens_per_doc] for sent in corpus_data]
     model = Word2Vec(corpus, size=100, workers=4, sg=1)
     model.save(model_fname)
 
