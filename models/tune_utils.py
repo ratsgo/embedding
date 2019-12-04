@@ -120,7 +120,7 @@ def make_elmo_graph(options_fname, pretrain_model_fname, max_characters_per_toke
     # Attention Layer
     output_fw, output_bw = lstm_output
     H = tf.contrib.layers.fully_connected(inputs=output_fw + output_bw, num_outputs=256, activation_fn=tf.nn.tanh)
-    attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+    attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
     attention_output = tf.squeeze(tf.matmul(tf.transpose(H, perm=[0, 2, 1]), attention_score), axis=-1)
     layer_output = tf.nn.dropout(attention_output, dropout_keep_prob)
 
