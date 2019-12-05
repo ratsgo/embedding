@@ -646,6 +646,8 @@ class WordEmbeddingTuner(Tuner):
         self.embedding_size = embedding_size
         # Load Pretrained Word Embeddings.
         self.embeddings, self.vocab = self.load_embeddings(embedding_name, embedding_fname)
+        self.unk_idx = len(self.vocab)
+        self.pad_idx = len(self.vocab) + 1
         # build train graph.
         self.ids_placeholder, self.input_lengths, self.labels_placeholder, \
         self.dropout_keep_prob, self.embedding_placeholder, self.embed_init, \
@@ -666,7 +668,6 @@ class WordEmbeddingTuner(Tuner):
     def make_input(self, sentences, labels, is_training):
         input_ids, lengths = [], []
         max_token_length = self.get_max_token_length_this_batch(sentences)
-        unk_idx = len(self.vocab)
         for tokens in sentences:
             token_ids = []
             tokens_length = len(tokens)
@@ -674,10 +675,10 @@ class WordEmbeddingTuner(Tuner):
                 if token in self.vocab:
                     token_ids.append(self.vocab[token])
                 else:
-                    token_ids.append(unk_idx)
+                    token_ids.append(self.unk_idx)
             if len(tokens) < max_token_length:
                 token_ids.extend(
-                    [len(self.vocab) - 1] * (max_token_length - tokens_length))
+                    [self.pad_idx] * (max_token_length - tokens_length))
             input_ids.append(token_ids)
             lengths.append(len(token_ids))
         if is_training:
@@ -736,7 +737,7 @@ class WordEmbeddingTuner(Tuner):
             vocab = {word:idx for idx, word in enumerate(words)}
             random_embeddings = random_generator.rvs(len(vocab) * self.embedding_size)
             embeddings = random_embeddings.reshape(len(vocab), self.embedding_size)
-        # for PAD, UNK token
+        # for UNK, PAD token
         added_embeddings = random_generator.rvs(self.embedding_size * 2)
         embeddings = np.append(embeddings, added_embeddings.reshape(2, self.embedding_size), axis=0)
         return embeddings, vocab
