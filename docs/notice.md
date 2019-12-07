@@ -473,6 +473,16 @@ attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_
 ```
 
 
+**P. 259**
+
+```
+코드 6-10
+token_ids.extend([len(self.vocab) - 1] * (max_token_length - tokens_length))
+>
+token_ids.extend([len(self.vocab) + 1] * (max_token_length - tokens_length))
+```
+
+
 **P. 265**
 
 ```
