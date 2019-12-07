@@ -454,6 +454,16 @@ Position-wise Feedforward Networks
 ```
 
 
+**P. 265**
+
+```
+코드 6-7
+attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+>
+attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
+```
+
+
 **P. 256**
 
 ```
@@ -462,6 +472,15 @@ Position-wise Feedforward Networks
 한편 6장에서 언급하는 코드의 대부분은 tune_utils.py에 정의돼 있다.
 ```
 
+
+**P. 265**
+
+```
+코드 6-18
+attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
+>
+attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
+```
 
 **P. 273**
 
