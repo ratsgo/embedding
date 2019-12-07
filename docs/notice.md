@@ -353,6 +353,14 @@ ELMo의 original 모델에서는 코드 5-27의 필터들을 사용하여 컨볼
 <a href="https://imgur.com/lhrbOGB"><img src="https://i.imgur.com/lhrbOGB.png" width="700px" title="source: imgur.com" /></a>
 
 
+**P. 212**
+
+```
+수식 5-5에서 h_{k,j}^{LM}는 k번째 토큰의 j번째 레이어의 양방향, 역방향 LSTM 히든 벡터를 이어 붙인 벡터를 가리킨다.
+>
+수식 5-5에서 h_{k,j}^{LM}는 k번째 토큰의 j번째 레이어의 순방향, 역방향 LSTM 히든 벡터를 이어 붙인 벡터를 가리킨다.
+```
+
 **P. 213**
 
 ```
