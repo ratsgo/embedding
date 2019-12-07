@@ -30,6 +30,17 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 구체적으로는 첫 번째 단어 벡터 - 두 번째 단어 벡터 + 세 번째 단어 벡터를 계산해 보는 것이다. 그림 1-3처럼 아들 - 딸 + 소녀 = 소년이 성립하면 성공적인 임베딩이라고 볼 수 있다. (중략) 단어1 - 단어2 + 단어3 연산을 수행한 벡터와 코사인 유사도가 가장 높은 단어들이 네 번째 열의 단어들이다.
 ```
 
+
+**P. 35~36**
+
+그림 1-4를 다음으로 대체
+
+<a href="https://imgur.com/Dd4e8u2"><img src="https://i.imgur.com/Dd4e8u2.png" width="600px" title="source: imgur.com" /></a>
+
+그림 1-5를 다음으로 대체
+
+<a href="https://imgur.com/3Yi6FjB"><img src="https://i.imgur.com/3Yi6FjB.png" width="600px" title="source: imgur.com" /></a>
+
 **P. 40**
 
 ```
@@ -454,6 +465,15 @@ Position-wise Feedforward Networks
 ```
 
 
+**P. 263**
+
+그림 6-3을 다음으로 대체
+
+<a href="https://imgur.com/Dd4e8u2"><img src="https://i.imgur.com/Dd4e8u2.png" width="600px" title="source: imgur.com" /></a>
+
+<a href="https://imgur.com/3Yi6FjB"><img src="https://i.imgur.com/3Yi6FjB.png" width="600px" title="source: imgur.com" /></a>
+
+
 **P. 265**
 
 ```
@@ -491,6 +511,20 @@ attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_
 >
 attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
 ```
+
+
+**P. 270**
+
+```
+ELMo 모델의 베스트 스코어는 100점 만점에 87.42점을 기록했다.
+>
+ELMo 모델의 베스트 스코어는 100점 만점에 87.44점을 기록했다.
+```
+
+그림 6-5를 다음으로 대체
+
+<a href="https://imgur.com/z13cHsM"><img src="https://i.imgur.com/z13cHsM.png" width="600px" title="source: imgur.com" /></a>
+
 
 **P. 273**
 
