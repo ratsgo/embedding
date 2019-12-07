@@ -41,6 +41,7 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 
 <a href="https://imgur.com/3Yi6FjB"><img src="https://i.imgur.com/3Yi6FjB.png" width="600px" title="source: imgur.com" /></a>
 
+
 **P. 40**
 
 ```
@@ -194,7 +195,7 @@ from models.bert.tokenization import FullTokenizer
 
 표 4-7과 그 설명을 다음으로 대체
 
-<a href="https://imgur.com/QhjADS4"><img src="https://i.imgur.com/QhjADS4.png" title="source: imgur.com" /></a>
+<a href="https://imgur.com/QhjADS4"><img src="https://i.imgur.com/QhjADS4.png" width="600px" title="source: imgur.com" /></a>
 
 
 **P. 159**
