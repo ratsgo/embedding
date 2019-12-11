@@ -467,9 +467,9 @@ class BERTTuner(Tuner):
         output_feed = [train_op, global_step, self.logits, self.loss]
         restore_vars = [v for v in tf.trainable_variables() if "bert" in v.name]
         sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
         tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
         saver = tf.train.Saver(max_to_keep=1)
-        sess.run(tf.global_variables_initializer())
         self.train(sess, saver, global_step, output_feed)
 
     def make_input(self, sentences, labels, is_training):
@@ -589,10 +589,10 @@ class XLNetTuner(Tuner):
                 new_global_step = global_step + 1
                 train_op = tf.group(train_op, [global_step.assign(new_global_step)])
             sess = tf.Session()
+            sess.run(tf.global_variables_initializer())
             load_pretrained_xlnet_model(self.pretrain_model_fname, self.num_gpus)
             # 0번 GPU의 param만 저장
             saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='tower0') + [global_step], max_to_keep=1)
-            sess.run(tf.global_variables_initializer())
             self.train(sess, saver, global_step, output_feed)
 
     def make_input(self, sentences, labels, is_training):
