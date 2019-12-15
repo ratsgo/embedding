@@ -410,9 +410,9 @@ ELMo 모델에서 어휘 집합이 쓰이는 경우는 프리트레인 입력 �
 **P. 216**
 
 ```
-cell_clip, proj_clip은 LSTM 셀과 셀 사이로 전파되는 그래디언트의 제한 크기를 뜻한다.
+cell_clip, proj_clip은 LSTM 셀과 셀 사이로 전파되는 그래디언트의 제한 크기를 뜻한다. 이보다 크면 해당 값으로 바꿔 그래디언트 익스플로딩(gradient exploding)을 막는다.
 >
-cell_clip, proj_clip은 LSTM 셀의 값(value)의 제한 크기를 뜻한다.
+cell_clip, proj_clip은 LSTM 셀의 값(value)의 제한 크기를 뜻한다. 이보다 크면 해당 값으로 바꿔 그래디언트 문제를 막는다.
 ```
 
 
