@@ -561,6 +561,21 @@ BERT 모델에 문장을 입력해 스페셜 토큰 [CLS]에 해당하는 벡터
 ```
 
 
+**P. 279**
+
+```python
+sess = tf.Session()
+tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
+saver = tf.train.Saver(max_to_keep=1)
+sess.run(tf.global_variables_initializer())
+>
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+tf.train.Saver(restore_vars).restore(sess, self.pretrain_model_fname)
+saver = tf.train.Saver(max_to_keep=1)
+```
+
+
 **P. 282**
 
 ```
