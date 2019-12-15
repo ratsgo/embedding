@@ -583,3 +583,12 @@ saver = tf.train.Saver(max_to_keep=1)
 >
 이를 t-SNE로 2차원으로 줄이고 Bokeh로 시각화한다.
 ```
+
+
+**P. 303**
+
+```
+수식 33에서
+a_k a_k^T = 1 > a_k^Ta_k=1
+v_k v_k^T = 1 > v_k^Tv_k=1
+```
