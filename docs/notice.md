@@ -493,6 +493,15 @@ attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_
 ```
 
 
+**P. 258**
+
+```
+이보다 짧으면 [PAD]에 해당하는 ID(len(self.vocab) - 1)를 붙여 해당 길이로 맞춰준다.
+>
+이보다 짧으면 [PAD]에 해당하는 ID(len(self.vocab) + 1)를 붙여 해당 길이로 맞춰준다.
+```
+
+
 **P. 259**
 
 ```
