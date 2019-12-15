@@ -458,6 +458,14 @@ Position-wise Feedforward Networks
 학습 데이터 한 문장 토큰의 15%를 마스킹한다
 ```
 
+**P. 232**
+
+```
+BERT가 사용하는 트랜스포머 블록에서 원조 트랜스포머와 가장 큰 차이점을 보이는 대목은 Pointwise Feedforward Networks 쪽이다.
+> 
+BERT가 사용하는 트랜스포머 블록에서 원조 트랜스포머와 가장 큰 차이점을 보이는 대목은 Position-wise Feedforward Networks 쪽이다.
+```
+
 **P. 246**
 
 ```
