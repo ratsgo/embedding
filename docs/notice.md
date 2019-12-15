@@ -470,7 +470,7 @@ Position-wise Feedforward Networks
 **P. 249**
 
 ```
-코드 6-3에서 if is_traning: > 삭제
+코드 6-3의 7행에서 if is_traning: > 삭제
 ```
 
 
