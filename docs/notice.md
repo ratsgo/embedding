@@ -458,6 +458,14 @@ Position-wise Feedforward Networks
 학습 데이터 한 문장 토큰의 15%를 마스킹한다
 ```
 
+**P. 246**
+
+```
+한편 6장에서 언급하는 코드의 대부분은 tuning_utils.py에 정의돼 있다.
+>
+한편 6장에서 언급하는 코드의 대부분은 tune_utils.py에 정의돼 있다.
+```
+
 
 **P. 249**
 
@@ -482,15 +490,6 @@ Position-wise Feedforward Networks
 attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
 >
 attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
-```
-
-
-**P. 256**
-
-```
-한편 6장에서 언급하는 코드의 대부분은 tuning_utils.py에 정의돼 있다.
->
-한편 6장에서 언급하는 코드의 대부분은 tune_utils.py에 정의돼 있다.
 ```
 
 
