@@ -14,7 +14,7 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 
 
 
-<img src="https://i.imgur.com/9tVHsZ8.png" width="600px" title="source: imgur.com" /><
+<img src="https://i.imgur.com/9tVHsZ8.png" width="600px" title="source: imgur.com" />
 
 
 
@@ -76,6 +76,29 @@ TF-IDF 행렬 구축 튜토리얼은 4.4절, '잠재 의미 분석'에서 설명
 언어학자들이 제시하는 품사 분류 기준은 기능(function), 의미(meaning), 형태(form) 등 세 가지다. 
 > 
 학교문법에 따르면 품사 분류 기준은 기능(function), 의미(meaning), 형식(form) 등 세 가지다.
+```
+
+
+**P. 83**
+
+코드 3-2를 다음으로 교체
+
+```python
+from gensim.corpora import WikiCorpus, Dictionary
+from gensim.utils import to_unicode
+
+in_f = "/notebooks/embedding/data/raw/kowiki-latest-pages-articles.xml.bz2" 
+out_f = "/notebooks/embedding/data/processed/processed_wiki_ko.txt"
+output = open(out_f, 'w')
+wiki = WikiCorpus(in_f, tokenizer_func=tokenize, dictionary=Dictionary())
+i = 0
+for text in wiki.get_texts():
+    output.write(bytes(' '.join(text), 'utf-8').decode('utf-8') + '\n')
+    i = i + 1
+    if (i % 10000 == 0):
+        print('Processed ' + str(i) + ' articles')
+output.close()
+print('Processing complete!')
 ```
 
 
