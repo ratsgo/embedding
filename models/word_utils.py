@@ -258,7 +258,7 @@ class CBoWModel(object):
 
 def make_save_path(full_path):
     if full_path[:4] == "data":
-        full_path = "/notebooks/embedding/" + full_path
+        full_path = os.path.join(os.path.abspath("."), full_path)
     model_path = '/'.join(full_path.split("/")[:-1])
     if not os.path.exists(model_path):
        os.makedirs(model_path)
