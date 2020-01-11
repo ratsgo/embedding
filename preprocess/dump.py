@@ -1,5 +1,5 @@
 import re, json, glob, argparse
-from gensim.corpora import WikiCorpus
+from gensim.corpora import WikiCorpus, Dictionary
 from gensim.utils import to_unicode
 
 """
@@ -10,7 +10,7 @@ https://www.kdnuggets.com/2017/11/building-wikipedia-text-corpus-nlp.html
 def make_corpus(in_f, out_f):
     """Convert Wikipedia xml dump file to text corpus"""
     output = open(out_f, 'w')
-    wiki = WikiCorpus(in_f, tokenizer_func=tokenize)
+    wiki = WikiCorpus(in_f, tokenizer_func=tokenize, dictionary=Dictionary())
     i = 0
     for text in wiki.get_texts():
         output.write(bytes(' '.join(text), 'utf-8').decode('utf-8') + '\n')
