@@ -118,6 +118,12 @@ Mecab : 아버지/NNG, 가/JKS, 방/NNG, 에/JKB, 들어가/VV, 신다/EP+EC
 /notebooks/embedding/preprocess/mecab-user-dic.csv에 붙여 썼으면 하는 단어를 그림 3-15와 같이 추가해주면 된다.
 ```
 
+```
+그림 3-15
+가우스전자,,,,NNP,**,T,가우스전자,**,**,**,**,**
+>
+가우스전자,,,,NNP,*,T,가우스전자,*,*,*,*,*
+```
 
 **P. 106**
 
