@@ -505,19 +505,11 @@ BERT가 사용하는 트랜스포머 블록에서 원조 트랜스포머와 가�
 ```
 
 
-**P. 263**
+**P. 254~255**
 
-그림 6-3을 다음으로 대체
+코드 6-7을 다음으로 교체
 
-<a href="https://imgur.com/Dd4e8u2"><img src="https://i.imgur.com/Dd4e8u2.png" width="600px" title="source: imgur.com" /></a>
-
-<a href="https://imgur.com/3Yi6FjB"><img src="https://i.imgur.com/3Yi6FjB.png" width="600px" title="source: imgur.com" /></a>
-
-
-**P. 265**
-
-```
-코드 6-7
+```python
 attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None))
 >
 attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_outputs=1, activation_fn=None), axis=1)
@@ -535,12 +527,22 @@ attention_score = tf.nn.softmax(tf.contrib.layers.fully_connected(inputs=H, num_
 
 **P. 259**
 
-```
-코드 6-10
+코드 6-10을 다음으로 교체
+
+```python
 token_ids.extend([len(self.vocab) - 1] * (max_token_length - tokens_length))
 >
 token_ids.extend([len(self.vocab) + 1] * (max_token_length - tokens_length))
 ```
+
+
+**P. 263**
+
+그림 6-3을 다음으로 대체
+
+<a href="https://imgur.com/Dd4e8u2"><img src="https://i.imgur.com/Dd4e8u2.png" width="600px" title="source: imgur.com" /></a>
+
+<a href="https://imgur.com/3Yi6FjB"><img src="https://i.imgur.com/3Yi6FjB.png" width="600px" title="source: imgur.com" /></a>
 
 
 **P. 265**
