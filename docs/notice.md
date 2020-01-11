@@ -211,6 +211,17 @@ from models.bert.tokenization import FullTokenizer
 ```
 
 
+**P. 146**
+
+코드 4-26의 마지막 라인을 다음으로 교체
+
+```
+models/glove/build/glove -save-file data/word-embeddings/glove/glove.vecs -threads 4 (하략)
+>
+models/glove/build/glove -save-file data/word-embeddings/glove/glove -threads 4 (하략)
+```
+
+
 **P. 148**
 
 ```
