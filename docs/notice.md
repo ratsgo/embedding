@@ -184,6 +184,18 @@ from models.bert.tokenization import FullTokenizer
 모델 학습이 완료되면 U만 d차원의 단어 임베딩으로 쓸 수도 있고, U+V^T 행렬을 임베딩으로 쓸 수도 있다. 혹은 U, V^T를 이어 붙여 2d 차원의 단어 임베딩으로 사용할 수도 있다.
 ```
 
+
+**P. 126**
+
+코드 4-4의 첫번째 라인을 다음으로 교체
+```
+cd /notebooks/embedding
+>
+cd /notebooks/embedding
+mkdir -p data/word-embeddings/word2vec
+```
+
+
 **P. 127**
 
 ```
@@ -208,6 +220,16 @@ from models.bert.tokenization import FullTokenizer
 이밖에 U+V, U와 V를 이어 붙여 임베딩으로 사용하는 것도 가능하다.
 >
 이밖에 U+V^T, U와 V^T를 이어 붙여 임베딩으로 사용하는 것도 가능하다.
+```
+
+
+**P. 143**
+
+코드 4-21 앞에 다음 두 개 라인 추가
+
+```bash
+cd /notebooks/embedding
+mkdir -p data/word-embeddings/lsa
 ```
 
 
