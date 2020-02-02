@@ -50,6 +50,18 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 우리가 풀고 싶은 자연어 처리의 구체적 문제들을 다운스트림 태스크(downstream task)라고 한다.
 ```
 
+
+**P. 48**
+
+코드 1-2를 다음과 같이 수정
+
+```
+docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
+>
+docker run -it --rm --gpus all ratsgo/embedding-gpu bash
+```
+
+
 **P. 55**
 
 ```
