@@ -205,6 +205,16 @@ mkdir -p data/word-embeddings/word2vec
 ```
 
 
+**P. 143**
+
+코드 4-21 앞에 다음 두 개 라인 추가
+
+```bash
+cd /notebooks/embedding
+mkdir -p data/word-embeddings/lsa
+```
+
+
 **P. 144**
 
 ```
@@ -220,16 +230,6 @@ mkdir -p data/word-embeddings/word2vec
 이밖에 U+V, U와 V를 이어 붙여 임베딩으로 사용하는 것도 가능하다.
 >
 이밖에 U+V^T, U와 V^T를 이어 붙여 임베딩으로 사용하는 것도 가능하다.
-```
-
-
-**P. 143**
-
-코드 4-21 앞에 다음 두 개 라인 추가
-
-```bash
-cd /notebooks/embedding
-mkdir -p data/word-embeddings/lsa
 ```
 
 
@@ -296,7 +296,7 @@ models/glove/build/glove -save-file data/word-embeddings/glove/glove -threads 4 
 ```
 따라서 우리는 우리가 관찰하고 있는 문장의 등장 확률을 최대한으로 높이는 주제 벡터를 수식 4-29와 같이 정리할 수 있다.
 >
-따라서 우리는 우리가 관찰하고 있는 문장의 등장 확률을 최대한으로 높이는 주제 벡터를 수식 4-29와 같이 정리할 수 있다(Arora et al., 2016은 벡터 크기 정규화는 생략했).
+따라서 우리는 우리가 관찰하고 있는 문장의 등장 확률을 최대한으로 높이는 주제 벡터를 수식 4-29와 같이 정리할 수 있다(벡터 크기 정규화는 생략).
 ```
 
 
