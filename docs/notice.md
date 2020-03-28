@@ -698,3 +698,12 @@ saver = tf.train.Saver(max_to_keep=1)
 a_k a_k^T = 1 > a_k^Ta_k=1
 v_k v_k^T = 1 > v_k^Tv_k=1
 ```
+
+
+**P. 315**
+
+```
+DAG는 깊이 우선 탐색(Breath First Search) 방식으로 계산한다. 깊이 우선 탐색이란 더 이상 나아갈 엣지가 없을 때까지 차례대로 깊이 탐색하는 그래프 순회(graph traverse) 기법이다. 
+>
+DAG는 너비 우선 탐색(Breath First Search) 방식으로 계산한다. 너비 우선 탐색이란 시작 노드를 방문한 후 이 노드에 인접한 노드를 우선 탐색하는 그래프 순회(graph traverse) 기법이다. 
+```
