@@ -276,6 +276,7 @@ if __name__ == '__main__':
     parser.add_argument('--embedding_name', type=str, help='embedding name')
     parser.add_argument('--embedding_corpus_path', type=str, help='embedding corpus path')
     parser.add_argument('--max_num_tokens_per_doc', type=str, help='maximum number of tokens(word2vec)')
+    parser.add_argument('--average', type=str, default="False", help='average or not')
     args = parser.parse_args()
 
     def str2bool(str):
@@ -288,5 +289,6 @@ if __name__ == '__main__':
     elif args.method == "cbow":
         model = CBoWModel(args.train_corpus_path, args.embedding_path,
                           args.output_path, args.embedding_corpus_path,
-                          args.embedding_name, str2bool(args.is_weighted))
+                          args.embedding_name, str2bool(args.is_weighted),
+                          str2bool(args.average))
         model.evaluate(args.test_corpus_path)
