@@ -50,6 +50,11 @@ description: 코드/도서 오류를 리포트하는 방법과 정정 결과를 
 우리가 풀고 싶은 자연어 처리의 구체적 문제들을 다운스트림 태스크(downstream task)라고 한다.
 ```
 
+```
+sequence-to-sequenece
+> sequence-to-sequence
+```
+
 
 **P. 48**
 
