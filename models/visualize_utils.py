@@ -11,7 +11,7 @@ from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges, EdgesAndLink
 from bokeh.palettes import Spectral8
 
 
-def visualize_sentences(vecs, sentences, palette="Viridis256", filename="sentences.png",
+def visualize_sentences(vecs, sentences, palette="Viridis256", filename="/notebooks/embedding/homonym.png",
                         use_notebook=False):
     tsne = TSNE(n_components=2)
     tsne_results = tsne.fit_transform(vecs)
