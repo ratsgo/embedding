@@ -11,7 +11,7 @@ from bokeh.models.graphs import from_networkx, NodesAndLinkedEdges, EdgesAndLink
 from bokeh.palettes import Spectral8
 
 
-def visualize_sentences(vecs, sentences, palette="Viridis256", filename="/notebooks/embedding/sentences.png",
+def visualize_sentences(vecs, sentences, palette="Viridis256", filename="sentences.png",
                         use_notebook=False):
     tsne = TSNE(n_components=2)
     tsne_results = tsne.fit_transform(vecs)
@@ -29,7 +29,7 @@ def visualize_sentences(vecs, sentences, palette="Viridis256", filename="/notebo
         output_notebook()
         show(plot)
     else:
-        export_png(plot, filename)
+        export_png(plot)
         print("save @ " + filename)
 
 
@@ -79,7 +79,7 @@ def visualize_homonym(homonym, tokenized_sentences, vecs, model_name, palette="V
         output_notebook()
         show(plot)
     else:
-        export_png(plot, filename)
+        export_png(plot) #filename)
         print("save @ " + filename)
 
 
@@ -118,7 +118,7 @@ def visualize_between_sentences(sentences, vec_list, palette="Viridis256",
         output_notebook()
         show(p)
     else:
-        export_png(p, filename)
+        export_png(p) # filename)
         print("save @ " + filename)
 
 
@@ -171,7 +171,7 @@ def visualize_self_attention_scores(tokens, scores, filename="/notebooks/embeddi
         output_notebook()
         show(plot)
     else:
-        export_png(plot, filename)
+        export_png(plot) #, filename)
         print("save @ " + filename)
 
 
@@ -194,7 +194,7 @@ def visualize_words(words, vecs, palette="Viridis256", filename="/notebooks/embe
         output_notebook()
         show(plot)
     else:
-        export_png(plot, filename)
+        export_png(plot) #, filename)
         print("save @ " + filename)
 
 
@@ -232,5 +232,5 @@ def visualize_between_words(words, vecs, palette="Viridis256", filename="/notebo
         output_notebook()
         show(p)
     else:
-        export_png(p, filename)
+        export_png(p) #, filename)
         print("save @ " + filename)
