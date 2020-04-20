@@ -103,7 +103,7 @@ case $COMMAND in
             --output_path /notebooks/embedding/data/processed/processed_korquad_train.txt
         python preprocess/dump.py --preprocess_mode korquad \
             --input_path /notebooks/embedding/data/raw/KorQuAD_v1.0_dev.json \
-            --output_path data/processed/processed_korquad_dev.txt
+            --output_path /notebooks/embedding/data/processed/processed_korquad_dev.txt
         cat /notebooks/embedding/data/processed/processed_korquad_train.txt /notebooks/embedding/data/processed/processed_korquad_dev.txt > /notebooks/embedding/data/processed/processed_korquad.txt
         rm /notebooks/embedding/data/processed/processed_korquad_*.txt
         ;;
