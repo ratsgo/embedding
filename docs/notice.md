@@ -294,6 +294,16 @@ models/glove/build/glove -save-file data/word-embeddings/glove/glove -threads 4 
 두 단어가 한 번도 동시에 등장하지 않았을 때 PMI는 음의 무한대(infinity)로 발산하기 때문에...
 ```
 
+**P. 149**
+
+종이책 3쇄의 아래 문장을 다음으로 대체
+
+```
+f(xij)가 클수록 Ui,Uj 벡터 간 내적값이 실제 PMI 값과 좀 더 비슷해야 학습 손실이 줄어든다.
+> f(xij)가 클수록 Ui,Vj 벡터 간 내적값이 실제 PMI 값과 좀 더 비슷해야 학습 손실이 줄어든다.
+```
+
+
 
 **P. 155**
 
