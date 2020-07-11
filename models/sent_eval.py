@@ -248,9 +248,9 @@ class BERTEmbeddingEvaluator(SentenceEmbeddingEvaluator):
         }
         return input_feed
 
-    def visualize_self_attention_scores(self, sentence, palette="Viridis256"):
+    def visualize_self_attention_scores(self, sentence):
         tokens, scores = self.get_self_attention_score(sentence)
-        visualize_self_attention_scores(tokens, scores, palette, use_notebook=self.use_notebook)
+        visualize_self_attention_scores(tokens, scores, use_notebook=self.use_notebook)
 
 
 class ELMoEmbeddingEvaluator(SentenceEmbeddingEvaluator):
