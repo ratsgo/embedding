@@ -182,7 +182,7 @@ class WordEmbeddingEvaluator:
     """
     def visualize_words(self, words_fname, palette="Viridis256"):
         words = set()
-        for line in open(words_fname, 'r'):
+        for line in open(words_fname, 'r', encoding='utf-8'):
             if not line.startswith("#"):
                 for word in line.strip().split(" "):
                     if len(word) > 0:
