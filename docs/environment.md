@@ -34,7 +34,7 @@ description: 도커 설치 및 컨테이너 실행 방법을 안내합니다.
 git clone https://github.com/ratsgo/embedding.git
 cd embedding
 docker build -t ratsgo/embedding-gpu -f docker/Dockerfile-GPU .
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
+docker run -it --rm --gpus all ratsgo/embedding-gpu bash
 ```
 
 
@@ -43,7 +43,7 @@ docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
 
 ```bash
 docker pull ratsgo/embedding-gpu
-docker run -it --rm --runtime=nvidia ratsgo/embedding-gpu bash
+docker run -it --rm --gpus all ratsgo/embedding-gpu bash
 ```
 
 
