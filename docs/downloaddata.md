@@ -77,7 +77,7 @@ bash preprocess.sh dump-tokenized
 
 ## 4. 단어 임베딩
 
-[이곳](https://drive.google.com/open?id=1gpOaOl0BcUvYpgoOA2JpZY2z-BUhuBLX)을 클릭하시면 학습이 완료된 단어 수준 임베딩을 내려받을 수 있습니다. `FastText-Jamo`를 제외한 모든 임베딩은 한국어 위키백과, KorQuAD, 네이버 영화 말뭉치를 은전한닢(mecab)으로 형태소 분석한 말뭉치로 학습됐습니다. `FastText-Jamo`의 학습데이터는 `corpus_mecab_jamo.txt`입니다.
+[이곳](https://drive.google.com/file/d/1FeGIbSz2E1A63JZP_XIxnGaSRt7AhXFf)을 클릭하시면 학습이 완료된 단어 수준 임베딩을 내려받을 수 있습니다. `FastText-Jamo`를 제외한 모든 임베딩은 한국어 위키백과, KorQuAD, 네이버 영화 말뭉치를 은전한닢(mecab)으로 형태소 분석한 말뭉치로 학습됐습니다. `FastText-Jamo`의 학습데이터는 `corpus_mecab_jamo.txt`입니다.
 
 
 
