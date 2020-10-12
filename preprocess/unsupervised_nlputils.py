@@ -74,8 +74,13 @@ def make_bert_vocab(input_fname, output_fname):
             open(output_fname, 'w', encoding='utf-8') as f2:
         f2.writelines("[PAD]\n[UNK]\n[CLS]\n[SEP]\n[MASK]\n")
         for line in f1:
-            word = line.replace('\n', '').split('\t')[0].replace('▁', '##')
-            if not word or word in ["##", "<unk>", "<s>", "</s>"]: continue
+            word = line.replace('\n', '').split('\t')[0]
+            if not word or word in ["▁", "<unk>", "<s>", "</s>"]:
+                continue
+            if word[0] == '▁':
+                word = word.replace('▁', '')
+            else:
+                word = '##' + word
             f2.writelines(word + "\n")
 
 
