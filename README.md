@@ -92,3 +92,17 @@
 - preprocess.sh : 말뭉치 전처리 자동화 스크립트 모음
 - sentmodel.sh : 문장 수준 임베딩 자동화 스크립트 모음
 - wordmodel.sh : 단어 수준 임베딩 자동화 스크립트 모음
+
+
+### environment
+
+본 레파지토리를 수행하기 위한 최적 환경은 도커(docker)입니다. 자세한 내용은 아래를 참고하세요.
+
+- [https://ratsgo.github.io/embedding/environment.html](https://ratsgo.github.io/embedding/environment.html)
+
+구글 코랩(colab) 등 도커 이외에서 수행해야 하는 경우도 있을 수 있습니다.
+위의 도커 환경을 구성할 때 썼던 도커파일(dockerfile)을 참고하시면 좋을 것 같습니다. 
+CPU, GPU 환경이 각각 다르니 참고에 주의해 주세요!
+기본적으로는 tensorflow:1.12.0 버전을 사용하며 아래에 기재된 패키지 버전 이외의 수행은 동작을 보장할 수 없습니다.
+
+- [https://github.com/ratsgo/embedding/tree/master/docker](https://github.com/ratsgo/embedding/tree/master/docker)
