@@ -169,7 +169,7 @@ class WordEmbeddingEvaluator:
             token_1 = self.get_sentence_vector(words[0])
             token_2 = self.get_sentence_vector(words[1])
             token_3 = self.get_sentence_vector(words[2])
-            result = token_1 - token_2 + token_3
+            result = token_2 + token_3 - token_1
         else:
             result = np.zeros(self.dim)
         return result
